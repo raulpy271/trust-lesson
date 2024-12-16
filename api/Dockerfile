@@ -5,3 +5,4 @@ COPY requirements.txt /api/requirements.txt
 RUN pip install -r /api/requirements.txt
 COPY . /api/
 
+CMD ["flask", "--app", "run", "run", "--host=0.0.0.0"]
