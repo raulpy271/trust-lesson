@@ -28,9 +28,12 @@ resource "docker_container" "api" {
     container_path = "/api/"
   }
   env = [
-    "REDIS_HOST=${var.redis_host}",
-    "REDIS_PORT=${var.redis_port}",
-    "REDIS_PASSWORD=${var.redis_password}"
+    "REDIS_HOST=${docker_container.redis.hostname}",
+    "REDIS_PASSWORD=${var.redis_password}",
+    "DB_HOST=${docker_container.postgres.hostname}",
+    "DB_USER=${var.db_user}",
+    "DB_PASSWORD=${var.db_password}",
+    "DB_NAME=${var.db_name}"
   ]
   networks_advanced {
     name = docker_network.api_network.id
@@ -40,7 +43,22 @@ resource "docker_container" "api" {
 resource "docker_container" "redis" {
   image = "redis:7.2.4-alpine3.19"
   name = "redis"
+  hostname = "redis"
   command = ["redis-server", "--requirepass", var.redis_password]
+  networks_advanced {
+    name = docker_network.api_network.id
+  }
+}
+
+resource "docker_container" "postgres" {
+  image = "postgres:17.1-alpine3.20"
+  name = "postgres"
+  hostname = "postgres"
+  env = [
+    "POSTGRES_USER=${var.db_user}",
+    "POSTGRES_PASSWORD=${var.db_password}",
+    "POSTGRES_DB=${var.db_name}"
+  ]
   networks_advanced {
     name = docker_network.api_network.id
   }

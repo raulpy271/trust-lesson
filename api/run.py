@@ -1,12 +1,16 @@
 from flask import Flask
+from sqlalchemy import text
 
 from api import redis
+from api.models import Session 
 
 app = Flask(__name__)
 
 @app.route("/test_db")
 def test_db():
-    return ""
+    with Session() as session:
+        result = session.connection().execute(text("select version() as v"))
+        return list(result)[0][0]
 
 @app.route("/test_redis")
 def test_redis():
