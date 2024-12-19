@@ -33,7 +33,9 @@ resource "docker_container" "api" {
     "DB_HOST=${docker_container.postgres.hostname}",
     "DB_USER=${var.db_user}",
     "DB_PASSWORD=${var.db_password}",
-    "DB_NAME=${var.db_name}"
+    "DB_NAME=${var.db_name}",
+    #"DB_DIALECT=sqlite",
+    #"DB_DRIVER=pysqlite",
   ]
   networks_advanced {
     name = docker_network.api_network.id
@@ -61,6 +63,10 @@ resource "docker_container" "postgres" {
   ]
   networks_advanced {
     name = docker_network.api_network.id
+  }
+  volumes {
+    volume_name = "pgdata"
+    container_path = "/var/lib/postgresql/data"
   }
 }
 
