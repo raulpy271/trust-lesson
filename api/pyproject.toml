@@ -1,0 +1,9 @@
+[project]
+name = "api"
+version = "0.0.1"
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+addopts = [
+    "--import-mode=importlib",
+]
