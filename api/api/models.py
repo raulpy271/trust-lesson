@@ -63,7 +63,7 @@ class User(TimestempMixin, Base):
     username: Mapped[str] = mapped_column(String(50))
     fullname: Mapped[str] = mapped_column(String(100))
     email: Mapped[str] = mapped_column(String(100))
-    role: Mapped[UserRole] = mapped_column()
+    role: Mapped[UserRole] = mapped_column(default=UserRole.STUDANT, server_default=UserRole.STUDANT.value)
     is_admin: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
     password_hash: Mapped[str] = mapped_column(String(255))
     password_salt: Mapped[str] = mapped_column(String(255))
@@ -108,6 +108,9 @@ class Lesson(TimestempMixin, Base):
     term: Mapped["CourseTerm"] = relationship(back_populates="lessons")
     users: Mapped[List["User"]] = relationship(secondary="lesson_user", back_populates="lessons")
 
-engine = create_engine(settings.DB_URL)
-Session = sessionmaker(engine)
+_engine = create_engine(settings.DB_URL)
+_session = sessionmaker(_engine)
+
+def Session():
+    return _session()
 
