@@ -1,6 +1,4 @@
 
-from hashlib import scrypt
-from secrets import token_hex
 from http import HTTPStatus
 
 from flask import (
@@ -8,10 +6,10 @@ from flask import (
     request)
 from sqlalchemy import text
 
-from api import settings
 from api import redis
 from api.models import User
-from api.models import Session, Base
+from api.models import Session
+from api.auth import create_hash_salt
 
 bp = Blueprint('api', __name__)
 
@@ -26,14 +24,6 @@ def test_redis():
     client = redis.get_default_client()
     client.set('test', 'hello')
     return client.get('test')
-
-def create_hash_salt(password):
-    salt = token_hex()
-    phash = scrypt(
-        password.encode('utf-8'),
-        salt=salt.encode('utf-8'),
-        **settings.SCRYPT_SETTINGS)
-    return phash.hex(), salt
 
 @bp.post("/create")
 def create():

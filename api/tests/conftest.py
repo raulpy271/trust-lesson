@@ -3,9 +3,11 @@ from dotenv import load_dotenv
 load_dotenv("testing.env")
 
 import pytest
+import fakeredis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import api.redis
 from api import models, settings
 from api import create_app
 
@@ -16,6 +18,11 @@ def session():
     models.Base.metadata.create_all(models._engine)
     with models.Session() as s:
         yield s
+
+@pytest.fixture
+def redis():
+    api.redis._redis = fakeredis.FakeRedis()
+    return api.redis._redis
 
 @pytest.fixture
 def app():
