@@ -6,24 +6,7 @@ import pytest
 import jwt
 
 from api import settings
-from api.auth import create_hash_salt
-from api import models
-
-@pytest.fixture
-def user_password(session):
-    password = "hello1234"
-    phash, salt = create_hash_salt(password)
-    u = models.User(
-        username="Raul",
-        fullname="Jose Raul",
-        email="raul@gmail.com",
-        role=models.UserRole.STUDANT,
-        password_hash=phash,
-        password_salt=salt,
-    )
-    session.add(u)
-    session.commit()
-    return (u, password)
+from tests.conftest import authenticate
 
 def test_login_correct_password(user_password, client, redis):
     user, password = user_password
@@ -56,4 +39,15 @@ def test_login_wrong_email(user_password, client, redis):
     assert resp.status_code == HTTPStatus.UNAUTHORIZED
     assert not resp.headers.get('Token')
     assert not resp.headers.get('Token-Expiration')
+
+@pytest.mark.parametrize("path,method,data,json", [
+    ("create", "POST", None, {})
+])
+def test_views_that_require_login(client, redis, user_password, path, method, data, json):
+    user, password = user_password
+    resp = client.open(path, method=method, data=data, json=json)
+    assert resp.status_code == HTTPStatus.UNAUTHORIZED
+    t = authenticate(client, user, password)
+    resp = client.open(path, method=method, data=data, json=json, auth=t)
+    assert resp.status_code != HTTPStatus.UNAUTHORIZED
 

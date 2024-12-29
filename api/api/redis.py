@@ -16,3 +16,16 @@ def get_default_client():
         _redis = Redis(**args)
     return _redis
 
+def hgetall_str(client, key):
+    mapping = client.hgetall(key)
+    if isinstance(mapping, dict):
+        new_mapping = {}
+        for k, v in mapping.items():
+            if isinstance(v, bytes):
+                v = str(v, encoding='utf-8')
+            if isinstance(k, bytes):
+                new_mapping[str(k, encoding='utf-8')] = v
+        return new_mapping
+    else:
+        return mapping
+

@@ -9,7 +9,7 @@ from sqlalchemy import text
 from api import redis
 from api.models import User
 from api.models import Session
-from api.auth import create_hash_salt
+from api.auth import create_hash_salt, require_login
 
 bp = Blueprint('api', __name__)
 
@@ -26,6 +26,7 @@ def test_redis():
     return client.get('test')
 
 @bp.post("/create")
+@require_login
 def create():
     with Session() as session:
         data = request.get_json()

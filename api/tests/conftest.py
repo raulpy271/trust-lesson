@@ -2,13 +2,17 @@
 from dotenv import load_dotenv
 load_dotenv("testing.env")
 
+from http import HTTPStatus
+
 import pytest
 import fakeredis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from werkzeug.datastructures import Authorization
 
 import api.redis
 from api import models, settings
+from api.auth import create_hash_salt
 from api import create_app
 
 @pytest.fixture()
@@ -39,4 +43,31 @@ def app():
 def client(app):
     """A test client for the app."""
     return app.test_client()
+
+@pytest.fixture
+def user_password(session):
+    password = "hello1234"
+    phash, salt = create_hash_salt(password)
+    u = models.User(
+        username="Raul",
+        fullname="Jose Raul",
+        email="raul@gmail.com",
+        role=models.UserRole.STUDANT,
+        password_hash=phash,
+        password_salt=salt,
+    )
+    session.add(u)
+    session.commit()
+    return (u, password)
+
+def authenticate(client, user, password):
+    resp = client.post("auth/login", json={"email": user.email, "password": password})
+    assert resp.headers.get('Token')
+    return Authorization("bearer", token=resp.headers['Token'])
+
+@pytest.fixture
+def token(client, redis, user_password):
+    user, password = user_password
+    return authenticate(client, user, password)
+
 
