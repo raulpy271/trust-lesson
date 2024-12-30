@@ -3,8 +3,11 @@ from http import HTTPStatus
 
 from flask import (
     Blueprint,
-    request)
-from sqlalchemy import text
+    request,
+    g)
+from sqlalchemy import (
+    text,
+    select)
 
 from api import redis
 from api.models import User
@@ -38,6 +41,14 @@ def create():
         session.add(user)
         session.commit()
     return {}, HTTPStatus.CREATED
+
+@bp.get("/me")
+@require_login
+def me():
+    with Session() as session:
+        u = session.scalars(select(User).where(User.id == g.user_id)).one()
+    return u.to_dict()
+
 
 @bp.route("/")
 def hello_world():

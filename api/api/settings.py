@@ -17,6 +17,7 @@ DB_USER = environ.get("DB_USER")
 DB_PASSWORD = environ.get("DB_PASSWORD")
 
 TOKEN_EXP = 10 * 60 # Expiration in seconds
+TOKEN_REGENERATE = 2 * 60 # Remaining seconds to regenerate new token
 JWT_ALGORITHM = 'HS256'
 JWT_ISSUER = 'Trust Lesson API'
 SCRYPT_SETTINGS = {

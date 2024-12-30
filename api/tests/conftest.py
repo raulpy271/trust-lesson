@@ -18,6 +18,7 @@ from api import create_app
 @pytest.fixture()
 def general(monkeypatch):
     monkeypatch.setattr(settings, "TOKEN_EXP", 10)
+    monkeypatch.setattr(settings, "TOKEN_REGENERATE", 2)
     monkeypatch.setattr(settings, "SCRYPT_SETTINGS", {'n': 2 ** 6, 'r': 8, 'p': 1})
 
 @pytest.fixture

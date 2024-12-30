@@ -20,9 +20,12 @@ from api import settings
 
 
 class Base(DeclarativeBase):
-    pass
+    __exclude__ = ()
+    
+    def to_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns if not c in self.__exclude__}
 
-class UserRole(enum.Enum):
+class UserRole(str, enum.Enum):
     STUDANT = "STUDANT"
     INSTRUCTOR = "INSTRUCTOR"
     ADMIN = "ADMIN"
