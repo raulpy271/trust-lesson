@@ -54,6 +54,14 @@ def test_views_that_require_login(client, redis, user_password, path, method, da
     resp = client.open(path, method=method, data=data, json=json, auth=t)
     assert resp.status_code != HTTPStatus.UNAUTHORIZED
 
+def test_logout(client, redis, token):
+    resp = client.get("me", auth=token)
+    assert resp.status_code == HTTPStatus.OK
+    resp = client.post("auth/logout", auth=token)
+    assert resp.status_code == HTTPStatus.OK
+    resp = client.get("me", auth=token)
+    assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
 @pytest.mark.slow
 def test_expiration_token(monkeypatch, client, redis, user_password):
     exp = 1

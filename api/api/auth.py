@@ -67,6 +67,17 @@ def login():
         else:
             return {}, HTTPStatus.UNAUTHORIZED
 
+@bp.post("/logout")
+def logout():
+    if request.authorization and request.authorization.type == "bearer":
+        token = str(request.authorization.token)
+        redis = get_default_client()
+        deleted = redis.delete(token)
+        if deleted:
+            return {}, HTTPStatus.OK
+        else: return {}, HTTPStatus.BAD_REQUEST
+    else: return {}, HTTPStatus.BAD_REQUEST
+
 def require_login(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
