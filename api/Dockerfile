@@ -10,4 +10,4 @@ WORKDIR /api/
 COPY . /api/
 RUN poetry install
 
-CMD ["flask", "--app", "api", "run", "--host=0.0.0.0"]
+CMD ["poetry", "run", "flask", "--app", "api", "run", "--host=0.0.0.0"]

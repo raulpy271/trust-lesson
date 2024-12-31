@@ -11,6 +11,7 @@ redis = "^5.2.1"
 sqlalchemy = "^2.0.36"
 psycopg = {extras = ["binary"], version = "^3.2.3"}
 pyjwt = "^2.10.1"
+flask = "^3.1.0"
 
 [tool.pytest.ini_options]
 testpaths = "tests"
