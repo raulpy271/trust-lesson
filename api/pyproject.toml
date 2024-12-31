@@ -5,6 +5,9 @@ version = "0.1.0"
 description = ""
 authors = ["raulpy271 <raulrufino0@gmail.com>"]
 
+[tool.poetry.group.dev]
+optional = true
+
 [tool.poetry.dependencies]
 python = "^3.10"
 redis = "^5.2.1"
@@ -12,6 +15,11 @@ sqlalchemy = "^2.0.36"
 psycopg = {extras = ["binary"], version = "^3.2.3"}
 pyjwt = "^2.10.1"
 flask = "^3.1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+python-dotenv = "^1.0.1"
+fakeredis = "^2.26.2"
 
 [tool.pytest.ini_options]
 testpaths = "tests"
