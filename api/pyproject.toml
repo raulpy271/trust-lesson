@@ -1,6 +1,16 @@
-[project]
+
+[tool.poetry]
 name = "api"
-version = "0.0.1"
+version = "0.1.0"
+description = ""
+authors = ["raulpy271 <raulrufino0@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+redis = "^5.2.1"
+sqlalchemy = "^2.0.36"
+psycopg = {extras = ["binary"], version = "^3.2.3"}
+pyjwt = "^2.10.1"
 
 [tool.pytest.ini_options]
 testpaths = "tests"
@@ -11,3 +21,4 @@ markers = [
 addopts = [
     "--import-mode=importlib",
 ]
+
