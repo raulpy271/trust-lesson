@@ -1,25 +1,28 @@
 
+from typing import Annotated
 from uuid import UUID
 from functools import wraps
 from datetime import datetime
 from hashlib import scrypt
 from secrets import token_hex
 from http import HTTPStatus
+import re
 
 import jwt
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy import select
-from flask import (
-    Blueprint,
-    request,
-    g)
+from fastapi import APIRouter, Response, Header, HTTPException, Request
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from api import settings
+from api import dto
 from api.models import Session, User
-from api.utils import add_headers_to_response
 from api.redis import get_default_client, hgetall_str
 
-bp = Blueprint('auth', __name__, url_prefix='/auth')
+router = APIRouter(
+    prefix="/auth",
+    tags=["auth"]
+)
 
 def create_hash_salt(password):
     salt = token_hex()
@@ -54,61 +57,87 @@ def create_token(user):
     pipe.execute()
     return token, exp
 
-@bp.post("/login")
-def login():
-    data = request.get_json()
-    email = data.pop('email')
-    password = data.pop('password')
-    with Session() as session:
-        user = session.scalars(select(User).where(User.email == email)).one_or_none()
-        if user and check_hash(user, password):
-            token, expiration = create_token(user)
-            return {}, HTTPStatus.NO_CONTENT, {'Token': token, 'Token-Expiration': expiration}
+class CheckAuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        if self.should_be_logged(request):
+            logged, token, mapping = self.verify_token(request)
+            request.state.logged = logged
+            request.state.token = token
+            response = await call_next(request)
+            if logged:
+                self.add_logged_headers(response, token, mapping)
         else:
-            return {}, HTTPStatus.UNAUTHORIZED
+            response = await call_next(request)
+        return response
 
-@bp.post("/logout")
-def logout():
-    if request.authorization and request.authorization.type == "bearer":
-        token = str(request.authorization.token)
+    def should_be_logged(self, request):
+        print(request.url.path)
+        return "/logged/" in request.url.path
+
+    def verify_token(self, request):
+        authorization = request.headers.get('Authorization')
+        if authorization:
+            token = parse_bearer(authorization)
+            if token:
+                redis = get_default_client()
+                mapping = hgetall_str(redis, token)
+                if mapping and mapping.get('password_hash') and mapping.get('email') and mapping.get('id'):
+                    try:
+                        jwt.decode(
+                            token,
+                            mapping['password_hash'],
+                            issuer=settings.JWT_ISSUER,
+                            audience=mapping['email'],
+                            algorithms=[settings.JWT_ALGORITHM])
+                    except InvalidTokenError:
+                        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+                    except:
+                        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
+                    return True, token, mapping
+        return False, None, None
+
+    def add_logged_headers(self, response, token, mapping):
         redis = get_default_client()
-        deleted = redis.delete(token)
-        if deleted:
-            return {}, HTTPStatus.OK
-        else: return {}, HTTPStatus.BAD_REQUEST
-    else: return {}, HTTPStatus.BAD_REQUEST
+        exp_s = redis.ttl(token)
+        exp_ts = int(datetime.now().timestamp() + exp_s)
+        if exp_s <= settings.TOKEN_REGENERATE:
+            token, exp_ts = generate_new_token(token, mapping)
+        response.headers['Token'] = token
+        response.headers['Token-Expiration'] = str(exp_ts)
 
-def require_login(f):
-    @wraps(f)
-    def wrapper(*args, **kwargs):
-        if request.authorization and request.authorization.type == "bearer":
-            token = str(request.authorization.token)
-            redis = get_default_client()
-            mapping = hgetall_str(redis, token)
-            if mapping and mapping.get('password_hash') and mapping.get('email') and mapping.get('id'):
-                try:
-                    jwt.decode(
-                        token,
-                        mapping['password_hash'],
-                        issuer=settings.JWT_ISSUER,
-                        audience=mapping['email'],
-                        algorithms=[settings.JWT_ALGORITHM])
-                except InvalidTokenError:
-                    return {}, HTTPStatus.UNAUTHORIZED
-                except:
-                    return {}, HTTPStatus.INTERNAL_SERVER_ERROR
-                g.user_id = UUID(mapping['id'])
-                resp = f(*args, **kwargs)
-                exp_s = redis.ttl(token)
-                exp_ts = int(datetime.now().timestamp() + exp_s)
-                if exp_s <= settings.TOKEN_REGENERATE:
-                    token, exp_ts = generate_new_token(token, mapping)
-                return add_headers_to_response(resp, {'Token': token, 'Token-Expiration': exp_ts})
-            else:
-                return {}, HTTPStatus.UNAUTHORIZED
+def get_user_id(request: Request):
+    if request.state.logged:
+        redis = get_default_client()
+        mapping = hgetall_str(redis, request.state.token)
+        if mapping and mapping.get('id'):
+            return mapping['id']
+    raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+
+@router.post("/login")
+def login(response: Response, data: dto.LoginIn):
+    with Session() as session:
+        user = session.scalars(select(User).where(User.email == data.email)).all()[0]
+        if user and check_hash(user, data.password):
+            token, expiration = create_token(user)
+            response.headers.update({'Token': token, 'Token-Expiration': str(expiration)})
+            response.status_code = HTTPStatus.NO_CONTENT
+            return {}
         else:
-            return {}, HTTPStatus.UNAUTHORIZED
-    return wrapper
+            response.status_code = HTTPStatus.UNAUTHORIZED
+            return {}
+
+@router.post("/logout")
+def logout(response: Response, authorization: Annotated[str | None, Header()] = None):
+    if authorization:
+        token = parse_bearer(authorization)
+        if token:
+            redis = get_default_client()
+            deleted = redis.delete(token)
+            if deleted:
+                response.status_code = HTTPStatus.OK
+                return response
+    response.status_code = HTTPStatus.BAD_REQUEST
+    return response
 
 def generate_new_token(old_token, mapping):
     exp = int(datetime.now().timestamp() + settings.TOKEN_EXP)
@@ -128,3 +157,7 @@ def generate_new_token(old_token, mapping):
     pipe.execute()
     return token, exp
 
+def parse_bearer(token: str) -> str | None:
+    match = re.fullmatch("Bearer\s+(\w+\.\w+\.\S+)", token)
+    if match:
+        return match.group(1)
