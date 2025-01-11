@@ -90,9 +90,7 @@ class CheckAuthMiddleware(BaseHTTPMiddleware):
                             audience=mapping['email'],
                             algorithms=[settings.JWT_ALGORITHM])
                     except InvalidTokenError:
-                        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-                    except:
-                        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
+                        return False, None, None
                     return True, token, mapping
         return False, None, None
 
