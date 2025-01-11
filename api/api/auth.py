@@ -4,6 +4,7 @@ from datetime import datetime
 from hashlib import scrypt
 from secrets import token_hex
 from http import HTTPStatus
+from uuid import UUID
 import re
 
 import jwt
@@ -61,9 +62,11 @@ class CheckAuthMiddleware(BaseHTTPMiddleware):
             logged, token, mapping = self.verify_token(request)
             request.state.logged = logged
             request.state.token = token
-            response = await call_next(request)
             if logged:
+                response = await call_next(request)
                 self.add_logged_headers(response, token, mapping)
+            else:
+                response = Response(status_code=HTTPStatus.UNAUTHORIZED)
         else:
             response = await call_next(request)
         return response
@@ -107,13 +110,13 @@ def get_user_id(request: Request):
         redis = get_default_client()
         mapping = hgetall_str(redis, request.state.token)
         if mapping and mapping.get('id'):
-            return mapping['id']
+            return UUID(mapping['id'])
     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
 
 @router.post("/login")
 def login(response: Response, data: dto.LoginIn):
     with Session() as session:
-        user = session.scalars(select(User).where(User.email == data.email)).all()[0]
+        user = session.scalars(select(User).where(User.email == data.email)).one_or_none()
         if user and check_hash(user, data.password):
             token, expiration = create_token(user)
             response.headers.update({'Token': token, 'Token-Expiration': str(expiration)})
@@ -155,6 +158,6 @@ def generate_new_token(old_token, mapping):
     return token, exp
 
 def parse_bearer(token: str) -> str | None:
-    match = re.fullmatch("Bearer\s+(\w+\.\w+\.\S+)", token)
+    match = re.fullmatch(r"Bearer\s+(\w+\.\w+\.\S+)", token)
     if match:
         return match.group(1)

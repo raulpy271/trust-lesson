@@ -10,7 +10,7 @@ def create_app():
     app = FastAPI()
     logged_router = APIRouter(
         prefix="/logged",
-        tags=["logged"]
+        tags=["logged"],
     )
     logged_router.include_router(user.router)
     app.include_router(public.router)
