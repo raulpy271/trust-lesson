@@ -1,10 +1,9 @@
 
 from http import HTTPStatus
+from typing import Annotated
 
-from flask import (
-    Blueprint,
-    request,
-    g)
+from fastapi import APIRouter, Depends
+
 from sqlalchemy import (
     text,
     select)
@@ -12,27 +11,30 @@ from sqlalchemy import (
 from api import redis
 from api.models import User
 from api.models import Session
-from api.auth import create_hash_salt, require_login
+from api import dto
+from api.auth import create_hash_salt, get_user_id
 
-bp = Blueprint('api', __name__)
+router = APIRouter(
+    prefix="/public",
+    tags=["public"]
+)
 
-@bp.route("/test_db")
+@router.get("/test_db")
 def test_db():
     with Session() as session:
         result = session.connection().execute(text("select version() as v"))
         return list(result)[0][0]
 
-@bp.route("/test_redis")
+@router.get("/test_redis")
 def test_redis():
     client = redis.get_default_client()
     client.set('test', 'hello')
     return client.get('test')
 
-@bp.post("/create")
-@require_login
-def create():
+@router.post("/logged/create", status_code=HTTPStatus.CREATED)
+def create(data: dto.CreateUserIn):
     with Session() as session:
-        data = request.get_json()
+        data = data.model_dump()
         password = data.pop('password')
         phash, salt = create_hash_salt(password)
         data['password_hash'] = phash
@@ -40,17 +42,16 @@ def create():
         user = User(**data)
         session.add(user)
         session.commit()
-    return {}, HTTPStatus.CREATED
+    return {}
 
-@bp.get("/me")
-@require_login
-def me():
+@router.get("/logged/me")
+def me(user_id: Annotated[str, Depends(get_user_id)]):
     with Session() as session:
-        u = session.scalars(select(User).where(User.id == g.user_id)).one()
+        u = session.scalars(select(User).where(User.id == user_id)).one()
     return u.to_dict()
 
 
-@bp.route("/")
+@router.get("/")
 def hello_world():
     return "<p>Hello, World!</p>"
 

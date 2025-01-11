@@ -1,7 +1,5 @@
 
 from typing import Annotated
-from uuid import UUID
-from functools import wraps
 from datetime import datetime
 from hashlib import scrypt
 from secrets import token_hex
@@ -71,7 +69,6 @@ class CheckAuthMiddleware(BaseHTTPMiddleware):
         return response
 
     def should_be_logged(self, request):
-        print(request.url.path)
         return "/logged/" in request.url.path
 
     def verify_token(self, request):

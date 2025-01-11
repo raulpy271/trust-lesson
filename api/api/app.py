@@ -1,10 +1,8 @@
 
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
 
 from api import public
 from api import auth
-
 
 def create_app():
     app = FastAPI()
