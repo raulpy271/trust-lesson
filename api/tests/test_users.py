@@ -14,7 +14,7 @@ def test_create(session, client, token):
         'email': 'raul@gmail.com',
         'password': 'hello_password',
     }
-    resp = client.post("create", json=user, auth=token)
+    resp = client.post("logged/user/create", json=user, auth=token)
     assert resp.status_code == HTTPStatus.CREATED
     u = session.scalars(select(User).where(User.username == user['username'])).one()
     assert u.fullname == user['fullname']

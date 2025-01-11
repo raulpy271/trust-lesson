@@ -20,8 +20,8 @@ resource "docker_container" "api" {
   image = docker_image.api-img.image_id
   name  = "api"
   ports {
-    internal = 5000
-    external = 5000
+    internal = 8000
+    external = 8000
   }
   volumes {
     host_path = abspath("api/")

@@ -2,18 +2,18 @@
 from dotenv import load_dotenv
 load_dotenv("testing.env")
 
-from http import HTTPStatus
-
 import pytest
 import fakeredis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from werkzeug.datastructures import Authorization
+from fastapi.testclient import TestClient
+from sqlalchemy.pool import StaticPool
 
 import api.redis
 from api import models, settings
 from api.auth import create_hash_salt
-from api import create_app
+from api.app import create_app
+from tests.utils import authenticate
 
 @pytest.fixture()
 def general(monkeypatch):
@@ -23,7 +23,7 @@ def general(monkeypatch):
 
 @pytest.fixture
 def session():
-    models._engine = create_engine(settings.DB_URL)
+    models._engine = create_engine(settings.DB_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool)
     models._session = sessionmaker(models._engine)
     models.Base.metadata.create_all(models._engine)
     with models.Session() as s:
@@ -43,7 +43,7 @@ def app():
 @pytest.fixture
 def client(app):
     """A test client for the app."""
-    return app.test_client()
+    return TestClient(app)
 
 @pytest.fixture
 def user_password(session):
@@ -60,11 +60,6 @@ def user_password(session):
     session.add(u)
     session.commit()
     return (u, password)
-
-def authenticate(client, user, password):
-    resp = client.post("auth/login", json={"email": user.email, "password": password})
-    assert resp.headers.get('Token')
-    return Authorization("bearer", token=resp.headers['Token'])
 
 @pytest.fixture
 def token(client, redis, user_password):
