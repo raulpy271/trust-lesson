@@ -9,6 +9,10 @@ terraform {
 
 provider "docker" {}
 
+locals {
+  db_url = "postgresql+psycopg://${var.db_user}:${var.db_password}@localhost:${var.db_port_ext}/${var.db_name}"
+}
+
 resource "docker_image" "api-img" {
   name = "api-img"
   build {
@@ -34,6 +38,7 @@ resource "docker_container" "api" {
     "DB_USER=${var.db_user}",
     "DB_PASSWORD=${var.db_password}",
     "DB_NAME=${var.db_name}",
+    "DB_PORT=${var.db_port}",
     #"DB_DIALECT=sqlite",
     #"DB_DRIVER=pysqlite",
   ]
@@ -67,6 +72,13 @@ resource "docker_container" "postgres" {
   volumes {
     volume_name = "pgdata"
     container_path = "/var/lib/postgresql/data"
+  }
+  ports {
+    internal = var.db_port
+    external = var.db_port_ext
+  }
+  provisioner "local-exec" {
+    command = "poetry -C api run alembic -x sqlalchemy.url=${local.db_url} upgrade head"
   }
 }
 
