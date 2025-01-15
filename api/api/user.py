@@ -1,13 +1,12 @@
 
 from http import HTTPStatus
-from typing import Annotated
 
 from sqlalchemy import select
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from api import dto
 from api.models import Session, User
-from api.auth import create_hash_salt, get_user_id
+from api.auth import create_hash_salt, LoggedUserId
 
 router = APIRouter(
     prefix="/user",
@@ -28,7 +27,7 @@ def create(data: dto.CreateUserIn):
     return {}
 
 @router.get("/me")
-def me(user_id: Annotated[str, Depends(get_user_id)]):
+def me(user_id: LoggedUserId):
     with Session() as session:
         u = session.scalars(select(User).where(User.id == user_id)).one()
     return u.to_dict()

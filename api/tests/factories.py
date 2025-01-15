@@ -5,7 +5,34 @@ import pytest
 from api import models
 from api.auth import create_hash_salt
 
+class Factory:
+    def __init__(self):
+        self.factories = {}
+
+    def __getattr__(self, name):
+        if name in self.factories:
+            return self.factories[name]
+        else:
+            raise ValueError(f"Attribute {name} not found")
+
+    def register(self, func):
+        #def func_factory(n, list_args=[[]], list_kwargs=[{}]):
+        #    return [
+        #        func(
+        #            *(list_args[min(i, len(list_args) - 1)]),
+        #            **(list_kwargs[min(i, len(list_kwargs) - 1)])
+        #        )
+        #        for i in range(n)
+        #    ]
+        #self.factories["list_" + func.__name__] = func_factory
+        self.factories[func.__name__] = func
+        return func
+
+
+factory = Factory()
+
 @pytest.fixture
+@factory.register
 def user_password(session):
     person = mimesis.Person()
     password = person.password()
