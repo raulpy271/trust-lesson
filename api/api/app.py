@@ -4,6 +4,7 @@ from fastapi import FastAPI, APIRouter
 from api import public
 from api import user
 from api import auth
+from api import lesson
 
 
 def create_app():
@@ -13,6 +14,7 @@ def create_app():
         tags=["logged"],
     )
     logged_router.include_router(user.router)
+    logged_router.include_router(lesson.router)
     app.include_router(public.router)
     app.include_router(auth.router)
     app.include_router(logged_router)

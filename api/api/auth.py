@@ -10,7 +10,7 @@ import re
 import jwt
 from jwt.exceptions import InvalidTokenError
 from sqlalchemy import select
-from fastapi import APIRouter, Response, Header, HTTPException, Request
+from fastapi import APIRouter, Response, Header, HTTPException, Request, Depends
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from api import settings
@@ -22,6 +22,7 @@ router = APIRouter(
     prefix="/auth",
     tags=["auth"]
 )
+
 
 def create_hash_salt(password):
     salt = token_hex()
@@ -110,6 +111,8 @@ def get_user_id(request: Request):
         if mapping and mapping.get('id'):
             return UUID(mapping['id'])
     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+
+LoggedUserId = Annotated[str, Depends(get_user_id)]
 
 @router.post("/login")
 def login(response: Response, data: dto.LoginIn):

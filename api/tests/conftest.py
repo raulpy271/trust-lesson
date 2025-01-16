@@ -11,9 +11,13 @@ from sqlalchemy.pool import StaticPool
 
 import api.redis
 from api import models, settings
-from api.auth import create_hash_salt
 from api.app import create_app
 from tests.utils import authenticate
+
+pytest_plugins = [
+    "tests.factories",
+]
+
 
 @pytest.fixture()
 def general(monkeypatch):
@@ -46,24 +50,7 @@ def client(app):
     return TestClient(app)
 
 @pytest.fixture
-def user_password(session):
-    password = "hello1234"
-    phash, salt = create_hash_salt(password)
-    u = models.User(
-        username="Raul",
-        fullname="Jose Raul",
-        email="raul@gmail.com",
-        role=models.UserRole.STUDANT,
-        password_hash=phash,
-        password_salt=salt,
-    )
-    session.add(u)
-    session.commit()
-    return (u, password)
-
-@pytest.fixture
 def token(client, redis, user_password):
     user, password = user_password
     return authenticate(client, user, password)
-
 

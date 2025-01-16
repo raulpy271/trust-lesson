@@ -41,6 +41,12 @@ class LessonStatus(enum.Enum):
     FINISHED = "FINISHED"
     LATE = "LATE"
 
+    def can_start(self):
+        return self in (self.WAITING, self.LATE)
+
+    def can_stop(self):
+        return self in (self.RUNNING, self.LATE)
+
 class TimestempMixin:
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
@@ -65,7 +71,7 @@ class User(TimestempMixin, Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     username: Mapped[str] = mapped_column(String(50))
     fullname: Mapped[str] = mapped_column(String(100))
-    email: Mapped[str] = mapped_column(String(100))
+    email: Mapped[str] = mapped_column(String(100), unique=True)
     role: Mapped[UserRole] = mapped_column(default=UserRole.STUDANT, server_default=UserRole.STUDANT.value)
     is_admin: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
     password_hash: Mapped[str] = mapped_column(String(255))
@@ -101,8 +107,9 @@ class Lesson(TimestempMixin, Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     status: Mapped[LessonStatus] = mapped_column(default=LessonStatus.WAITING, server_default=LessonStatus.WAITING.value)
-    effective_start_date: Mapped[date] = mapped_column()
-    start_date: Mapped[date] = mapped_column()
+    effective_start_date: Mapped[Optional[datetime]] = mapped_column()
+    start_date: Mapped[datetime] = mapped_column()
+    effective_duration_min: Mapped[Optional[int]] = mapped_column()
     duration_min: Mapped[int] = mapped_column()
     description: Mapped[Optional[str]] = mapped_column(String(255))
     instructor_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="no action"))
