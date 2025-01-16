@@ -104,8 +104,8 @@ class Lesson(TimestempMixin, Base):
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     status: Mapped[LessonStatus] = mapped_column(default=LessonStatus.WAITING, server_default=LessonStatus.WAITING.value)
-    effective_start_date: Mapped[Optional[date]] = mapped_column()
-    start_date: Mapped[date] = mapped_column()
+    effective_start_date: Mapped[Optional[datetime]] = mapped_column()
+    start_date: Mapped[datetime] = mapped_column()
     effective_duration_min: Mapped[Optional[int]] = mapped_column()
     duration_min: Mapped[int] = mapped_column()
     description: Mapped[Optional[str]] = mapped_column(String(255))

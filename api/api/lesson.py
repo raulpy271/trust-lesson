@@ -1,5 +1,5 @@
 
-from datetime import date
+from datetime import datetime
 from uuid import UUID
 from http import HTTPStatus
 from typing import Annotated
@@ -28,7 +28,7 @@ def lesson_start(lesson_id: UUID, user_id: LoggedUserId):
                 )
             elif lesson.status.can_start():
                 lesson.status = LessonStatus.RUNNING
-                lesson.effective_start_date = date.today()
+                lesson.effective_start_date = datetime.now()
                 session.commit()
             else:
                 raise HTTPException(

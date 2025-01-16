@@ -82,7 +82,7 @@ def lesson(session, course_term, user_password):
     datetime = mimesis.Datetime()
     lesson = models.Lesson(
         status=models.LessonStatus.WAITING,
-        start_date=datetime.date(),
+        start_date=datetime.datetime(),
         duration_min=60,
         description=text.sentence(),
         instructor=user,

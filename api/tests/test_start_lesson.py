@@ -1,6 +1,6 @@
 
 from uuid import uuid4
-from datetime import date
+from datetime import datetime, timedelta
 from http import HTTPStatus
 
 from api import models
@@ -15,7 +15,8 @@ def test_lesson_start(client, token, session, lesson):
     assert response.status_code == HTTPStatus.OK
     session.refresh(lesson)
     assert lesson.status == models.LessonStatus.RUNNING
-    assert lesson.effective_start_date == date.today()
+    assert isinstance(lesson.effective_start_date, datetime)
+    assert (datetime.now() - lesson.effective_start_date) < timedelta(minutes=1)
 
 def test_start_undefined_lesson(client, token):
     response = client.post(f"/logged/lesson/start/{uuid4()}", auth=token)
@@ -25,7 +26,7 @@ def test_start_undefined_lesson(client, token):
 
 def test_cannot_start_a_running_lesson(client, token, session, lesson):
     lesson.status = models.LessonStatus.RUNNING
-    lesson.effective_start_date = date.today()
+    lesson.effective_start_date = datetime.now()
     session.commit()
     response = client.post(f"/logged/lesson/start/{lesson.id}", auth=token)
     assert response.status_code == HTTPStatus.BAD_REQUEST
