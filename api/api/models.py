@@ -44,6 +44,9 @@ class LessonStatus(enum.Enum):
     def can_start(self):
         return self in (self.WAITING, self.LATE)
 
+    def can_stop(self):
+        return self in (self.RUNNING, self.LATE)
+
 class TimestempMixin:
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
