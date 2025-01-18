@@ -16,15 +16,12 @@ class Factory:
             raise ValueError(f"Attribute {name} not found")
 
     def register(self, func):
-        #def func_factory(n, list_args=[[]], list_kwargs=[{}]):
-        #    return [
-        #        func(
-        #            *(list_args[min(i, len(list_args) - 1)]),
-        #            **(list_kwargs[min(i, len(list_kwargs) - 1)])
-        #        )
-        #        for i in range(n)
-        #    ]
-        #self.factories["list_" + func.__name__] = func_factory
+        def func_factory(n, *args, **kwargs):
+            return [
+                func(*args, **kwargs)
+                for _ in range(n)
+            ]
+        self.factories["list_" + func.__name__] = func_factory
         self.factories[func.__name__] = func
         return func
 
@@ -51,6 +48,7 @@ def user_password(session):
     return (u, password)
 
 @pytest.fixture
+@factory.register
 def course(session):
     text = mimesis.Text()
     course = models.Course(
@@ -62,6 +60,7 @@ def course(session):
     return course
 
 @pytest.fixture
+@factory.register
 def course_term(session, course):
     datetime = mimesis.Datetime()
     term = models.CourseTerm(
@@ -76,13 +75,16 @@ def course_term(session, course):
     return term
 
 @pytest.fixture
-def lesson(session, course_term, user_password):
+@factory.register
+def lesson(session, course_term, user_password, start_date=None):
     user, _ = user_password
     text = mimesis.Text()
     datetime = mimesis.Datetime()
+    if not start_date:
+        start_date = datetime.datetime()
     lesson = models.Lesson(
         status=models.LessonStatus.WAITING,
-        start_date=datetime.datetime(),
+        start_date=start_date,
         duration_min=60,
         description=text.sentence(),
         instructor=user,
