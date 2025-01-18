@@ -9,7 +9,7 @@ from fastapi import APIRouter, HTTPException
 
 from api import dto
 from api.auth import LoggedUserId
-from api.models import Session, Lesson, LessonUser, LessonStatus
+from api.models import Session, Lesson, User, UserRole, LessonUser, LessonStatus
 
 router = APIRouter(
     prefix="/lesson",
@@ -18,16 +18,24 @@ router = APIRouter(
 
 @router.get("/list")
 def lesson_list(start_date: date, end_date: date, user_id: LoggedUserId):
+    date_filter = (start_date <= Lesson.start_date) & (end_date >= Lesson.start_date)
     with Session() as session:
-        stmt = (
-            select(Lesson)
-            .join(LessonUser)
-            .where(
-                (start_date <= Lesson.start_date) &
-                (end_date >= Lesson.start_date) &
-                (LessonUser.user_id == user_id)
+        role = session.scalars(select(User.role).filter_by(id=user_id)).one()
+        if role == UserRole.STUDANT:
+            stmt = (
+                select(Lesson)
+                .join(LessonUser)
+                .where(
+                    date_filter & (LessonUser.user_id == user_id)
+                )
             )
-        )
+        else:
+            stmt = (
+                select(Lesson)
+                .where(
+                    date_filter & (Lesson.instructor_id == user_id)
+                )
+            )
         lessons = session.scalars(stmt).all()
     return {
         "lessons": [lesson.to_dict() for lesson in lessons]
