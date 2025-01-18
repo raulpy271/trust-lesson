@@ -27,9 +27,9 @@ def test_filter_by_date(client, user_password, token, session, course_term):
     start_date = datetime.now().date()
     end_date = (datetime.now()+ timedelta(days=1)).date()
     # lessons inside filter
-    lessons_to_include = factory.list_lesson(10, [[session, course_term, user_password]], {"start_date": datetime.now()})
+    lessons_to_include = factory.list_lesson(3, session, course_term, user_password, start_date=datetime.now())
     # lessons outside filter
-    lessons_to_exclude = factory.list_lesson(10, [[session, course_term, user_password]], {"start_date": datetime(year=2022, month=2, day=1)})
+    lessons_to_exclude = factory.list_lesson(3, session, course_term, user_password, start_date=datetime(year=2022, month=2, day=1))
     [lesson.users.append(user_password[0]) for lesson in lessons_to_include + lessons_to_exclude]
     session.commit()
     response = client.get("/logged/lesson/list",
@@ -51,7 +51,7 @@ def test_filter_by_logged_user(client, session, course_term):
     user_password2 = factory.user_password(session)
     start_date = datetime.now().date()
     end_date = (datetime.now()+ timedelta(days=1)).date()
-    (lesson_user1, lesson_user2)= factory.list_lesson(2, [[session, course_term, user_password1]], {"start_date": datetime.now()})
+    (lesson_user1, lesson_user2)= factory.list_lesson(2, session, course_term, user_password1, start_date=datetime.now())
     lesson_user1.users.append(user_password1[0])
     lesson_user2.users.append(user_password2[0])
     session.commit()

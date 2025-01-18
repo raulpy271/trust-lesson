@@ -16,19 +16,11 @@ class Factory:
             raise ValueError(f"Attribute {name} not found")
 
     def register(self, func):
-        def func_factory(n, list_args=[[]], list_kwargs=[{}]):
-            if not isinstance(list_args, list):
-                list_args = [list_args]
-            if not isinstance(list_kwargs, list):
-                list_kwargs = [list_kwargs]
-            ret = []
-            for i in range(n):
-                args = list_args[min(i, len(list_args) - 1)]
-                if not isinstance(args, list):
-                    args = [args]
-                kwargs = list_kwargs[min(i, len(list_kwargs) - 1)]
-                ret.append(func(*args, **kwargs))
-            return ret
+        def func_factory(n, *args, **kwargs):
+            return [
+                func(*args, **kwargs)
+                for _ in range(n)
+            ]
         self.factories["list_" + func.__name__] = func_factory
         self.factories[func.__name__] = func
         return func
