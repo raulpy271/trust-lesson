@@ -3,20 +3,16 @@ output "resource_group_id" {
   value = azurerm_resource_group.rg.id
 }
 
-output "db_id" {
-  value = azurerm_postgresql_flexible_server.pg.id
-}
-
 output "db_domain" {
-  value = azurerm_postgresql_flexible_server.pg.fqdn
+  value = module.database.db_domain
 }
 
 output "db_user" {
-  value = azurerm_postgresql_flexible_server.pg.administrator_login
+  value = module.database.db_user
 }
 
 output "db_password" {
-  value     = azurerm_postgresql_flexible_server.pg.administrator_password
+  value     = module.database.db_password
   sensitive = true
 }
 
