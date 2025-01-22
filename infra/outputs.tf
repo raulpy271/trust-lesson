@@ -16,3 +16,16 @@ output "db_password" {
   sensitive = true
 }
 
+output "cache_hostname" {
+  value = module.cache.hostname
+}
+
+output "cache_ssl_port" {
+  value = module.cache.ssl_port
+}
+
+output "cache_access_key" {
+  value     = module.cache.access_key
+  sensitive = true
+}
+

@@ -7,6 +7,7 @@ DEBUG = environ.get('DEBUG', 'false').lower() == "true"
 REDIS_HOST = environ.get("REDIS_HOST")
 REDIS_PORT = environ.get("REDIS_PORT", 6379)
 REDIS_PASSWORD = environ.get("REDIS_PASSWORD")
+REDIS_SSL = bool(environ.get("REDIS_SSL", False))
 
 DB_DIALECT = environ.get("DB_DIALECT", "postgresql")
 DB_DRIVER = environ.get("DB_DRIVER", "psycopg")

@@ -11,7 +11,8 @@ def get_default_client():
         args = {
             "host": settings.REDIS_HOST,
             "port": settings.REDIS_PORT,
-            "password": settings.REDIS_PASSWORD
+            "password": settings.REDIS_PASSWORD,
+            "ssl": settings.REDIS_SSL,
         }
         _redis = Redis(**args)
     return _redis
