@@ -29,3 +29,7 @@ output "cache_access_key" {
   sensitive = true
 }
 
+output "api_hostname" {
+  value = module.api.hostname
+}
+

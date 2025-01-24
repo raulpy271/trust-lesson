@@ -20,6 +20,13 @@ provider "azurerm" {
   features {}
 }
 
+module "api" {
+  source      = "./modules/api"
+  stage       = var.stage
+  rg_name     = azurerm_resource_group.rg.name
+  rg_location = azurerm_resource_group.rg.location
+}
+
 module "database" {
   source      = "./modules/database"
   stage       = var.stage

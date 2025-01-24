@@ -17,6 +17,11 @@ resource "azurerm_postgresql_flexible_server" "pg" {
   tags = {
     "stage" = var.stage
   }
+  lifecycle {
+    ignore_changes = [
+      zone,
+    ]
+  }
 }
 
 resource "azurerm_postgresql_flexible_server_database" "pg_database" {

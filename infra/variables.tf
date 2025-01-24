@@ -4,6 +4,6 @@ variable "stage" {
 }
 
 variable "region" {
-  default = "westus"
+  default = "Brazil South"
 }
 
