@@ -11,3 +11,6 @@ variable "rg_location" {
   type = string
 }
 
+variable "app_envs" {
+  type = map(string)
+}
