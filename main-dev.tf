@@ -17,6 +17,7 @@ resource "docker_image" "api-img" {
   name = "api-img"
   build {
     context = "api/"
+    dockerfile = "Dockerfile-dev"
   }
 }
 

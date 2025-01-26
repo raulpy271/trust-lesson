@@ -1,20 +1,50 @@
 
+terraform {
+  required_providers {
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "3.0.2"
+    }
+  }
+}
+
+provider "docker" {
+  registry_auth {
+    address  = azurerm_container_registry.acr.login_server
+    username = azurerm_container_registry.acr.admin_username
+    password = azurerm_container_registry.acr.admin_password
+  }
+}
+
 locals {
-  zip_file = abspath("api-build-${formatdate("YYYYMMDDHHmm", timestamp())}-${var.stage}.zip")
   local_app_settings = {
-    SCM_DO_BUILD_DURING_DEPLOYMENT = true
   }
   app_settings = merge(local.local_app_settings, var.app_envs)
 }
 
-resource "terraform_data" "api_pkg" {
-  triggers_replace = local.zip_file
-  provisioner "local-exec" {
-    command     = "./build-pkg.sh"
-    working_dir = "../api"
-    environment = {
-      ZIP_FILE = local.zip_file
-    }
+resource "azurerm_container_registry" "acr" {
+  name                = "trustLessonRegistry"
+  resource_group_name = var.rg_name
+  location            = var.rg_location
+  sku                 = "Basic"
+  admin_enabled       = true
+  tags = {
+    "stage" = var.stage
+  }
+}
+
+resource "docker_image" "api_img" {
+  name = "trust-lesson/api-img-${var.stage}"
+  build {
+    context    = "../api/"
+    dockerfile = "Dockerfile-infra"
+  }
+}
+
+resource "docker_registry_image" "api_img_registry" {
+  name = "${azurerm_container_registry.acr.login_server}/${docker_image.api_img.name}"
+  triggers = {
+    "image_id" = docker_image.api_img.image_id
   }
 }
 
@@ -34,19 +64,17 @@ resource "azurerm_linux_web_app" "api_webapp" {
   resource_group_name = var.rg_name
   location            = var.rg_location
   service_plan_id     = azurerm_service_plan.api_sp.id
-  zip_deploy_file     = local.zip_file
   app_settings        = local.app_settings
   site_config {
-    always_on        = false
-    app_command_line = "fastapi run api/app.py --host 0.0.0.0"
+    always_on = false
     application_stack {
-      python_version = "3.12"
+      docker_image_name        = docker_image.api_img.name
+      docker_registry_url      = "https://${azurerm_container_registry.acr.login_server}"
+      docker_registry_username = azurerm_container_registry.acr.admin_username
+      docker_registry_password = azurerm_container_registry.acr.admin_password
     }
   }
   tags = {
     "stage" = var.stage
   }
-  depends_on = [
-    terraform_data.api_pkg,
-  ]
 }
