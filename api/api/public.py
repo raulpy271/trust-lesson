@@ -20,7 +20,7 @@ def test_db():
 @router.get("/test_redis")
 def test_redis():
     client = redis.get_default_client()
-    client.set('test', 'hello')
+    client.set('test', 'hello from redis!')
     return client.get('test')
 
 
