@@ -1,4 +1,13 @@
 
+terraform {
+  required_providers {
+    random = {
+      source  = "hashicorp/random"
+      version = "3.6.3"
+    }
+  }
+}
+
 locals {
   domain        = azurerm_postgresql_flexible_server.pg.fqdn
   user_password = "${var.db_user}:${random_password.password.result}"

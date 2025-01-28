@@ -21,8 +21,8 @@ locals {
     # This environment is not actually used in the application. It is setted to force the app service to be deployed when there's a change in the image
     APP_IMAGE_ID = docker_image.api_img.id
   }
-  app_settings = merge(local.local_app_settings, var.app_envs)
-  image_name = "trust-lesson/api-img-${var.stage}"
+  app_settings   = merge(local.local_app_settings, var.app_envs)
+  image_name     = "trust-lesson/api-img-${var.stage}"
   image_fullname = "${azurerm_container_registry.acr.login_server}/${local.image_name}"
 }
 
@@ -38,16 +38,16 @@ resource "azurerm_container_registry" "acr" {
 }
 
 resource "docker_image" "api_img" {
-  name = local.image_name
+  name         = local.image_name
   force_remove = true
   build {
     context    = "../api/"
     dockerfile = "Dockerfile-infra"
-    tag = [local.image_fullname]
+    tag        = [local.image_fullname]
   }
   triggers = {
     # Always build the image locally. TODO: Build only when the code changes
-    "random_uuid": uuid()
+    "random_uuid" : uuid()
   }
 }
 
@@ -75,7 +75,7 @@ resource "azurerm_linux_web_app" "api_webapp" {
   location            = var.rg_location
   service_plan_id     = azurerm_service_plan.api_sp.id
   app_settings        = local.app_settings
-  https_only = true
+  https_only          = true
   site_config {
     always_on = false
     application_stack {
