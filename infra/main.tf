@@ -43,6 +43,13 @@ module "cache" {
   rg_location = azurerm_resource_group.rg.location
 }
 
+module "storage" {
+  source      = "./modules/storage"
+  stage       = var.stage
+  rg_name     = azurerm_resource_group.rg.name
+  rg_location = azurerm_resource_group.rg.location
+}
+
 resource "azurerm_resource_group" "rg" {
   name     = "trustLessonResourceGroup-${var.stage}"
   location = var.region

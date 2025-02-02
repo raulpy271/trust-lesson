@@ -33,3 +33,7 @@ output "api_hostname" {
   value = module.api.hostname
 }
 
+output "storage_endpoint" {
+  value = module.storage.endpoint
+}
+
