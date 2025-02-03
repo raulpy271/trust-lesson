@@ -23,3 +23,6 @@ variable "db_port_ext" {
   default = 54322
 }
 
+variable "storage_url" {
+  default = "https://trustlessontest.blob.core.windows.net/"
+}

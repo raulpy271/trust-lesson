@@ -76,6 +76,9 @@ resource "azurerm_linux_web_app" "api_webapp" {
   service_plan_id     = azurerm_service_plan.api_sp.id
   app_settings        = local.app_settings
   https_only          = true
+  identity {
+    type = "SystemAssigned"
+  }
   site_config {
     always_on = false
     application_stack {
@@ -92,3 +95,13 @@ resource "azurerm_linux_web_app" "api_webapp" {
     docker_registry_image.api_img_registry
   ]
 }
+
+data "azurerm_subscription" "primary" {
+}
+
+resource "azurerm_role_assignment" "storage_role" {
+  scope                = data.azurerm_subscription.primary.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_linux_web_app.api_webapp.identity[0].principal_id
+}
+
