@@ -47,6 +47,10 @@ class LessonStatus(enum.Enum):
     def can_stop(self):
         return self in (self.RUNNING, self.LATE)
 
+class MediaType(enum.Enum):
+    IMAGE = "IMAGE"
+    VIDEO = "VIDEO"
+
 class TimestempMixin:
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
     updated_at: Mapped[datetime] = mapped_column(default=datetime.now, onupdate=datetime.now)
@@ -64,6 +68,7 @@ class LessonUser(Base):
     lesson_id: Mapped[UUID] = mapped_column(ForeignKey("lesson.id", ondelete="no action"), primary_key=True)
     user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="no action"), primary_key=True)
     validated: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
+    validated_success: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
 
 class User(TimestempMixin, Base):
     __tablename__ = "user"
@@ -79,6 +84,7 @@ class User(TimestempMixin, Base):
     terms: Mapped[List["CourseTerm"]] = relationship(secondary="term_user", back_populates="users")
     ministrate_lessons: Mapped[List["Lesson"]] = relationship(back_populates="instructor")
     lessons: Mapped[List["Lesson"]] = relationship(secondary="lesson_user", back_populates="users")
+    validations: Mapped[List["LessonValidation"]] = relationship(back_populates="user")
 
 class Course(TimestempMixin, Base):
     __tablename__ = "course"
@@ -117,6 +123,20 @@ class Lesson(TimestempMixin, Base):
     instructor: Mapped["User"] = relationship(back_populates="ministrate_lessons")
     term: Mapped["CourseTerm"] = relationship(back_populates="lessons")
     users: Mapped[List["User"]] = relationship(secondary="lesson_user", back_populates="lessons")
+    validations: Mapped[List["LessonValidation"]] = relationship(back_populates="lesson")
+
+class LessonValidation(TimestempMixin, Base):
+    __tablename__ = "lesson_validation"
+
+    lesson_id: Mapped[UUID] = mapped_column(ForeignKey("lesson.id", ondelete="no action"), primary_key=True)
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="no action"), primary_key=True)
+    validated: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
+    validated_success: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
+    validated_value: Mapped[Optional[float]] = mapped_column()
+    media_path: Mapped[str] = mapped_column()
+    media_type: Mapped[MediaType] = mapped_column()
+    lesson: Mapped[Lesson] = relationship(back_populates="validations")
+    user: Mapped[User] = relationship(back_populates="validations")
 
 _engine = create_engine(settings.DB_URL)
 _session = sessionmaker(_engine)
