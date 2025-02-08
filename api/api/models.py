@@ -128,8 +128,9 @@ class Lesson(TimestempMixin, Base):
 class LessonValidation(TimestempMixin, Base):
     __tablename__ = "lesson_validation"
 
-    lesson_id: Mapped[UUID] = mapped_column(ForeignKey("lesson.id", ondelete="no action"), primary_key=True)
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="no action"), primary_key=True)
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    lesson_id: Mapped[UUID] = mapped_column(ForeignKey("lesson.id", ondelete="no action"))
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="no action"))
     validated: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
     validated_success: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
     validated_value: Mapped[Optional[float]] = mapped_column()
