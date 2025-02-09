@@ -26,12 +26,12 @@ def test_redis():
     return client.get('test')
 
 @router.get("/test_storage")
-def test_storage():
+async def test_storage():
     container = get_container_image()
     filename = f"{uuid4()}.txt"
-    container.upload_blob(filename, "Hello World from storage", encoding="utf-8")
-    stream = container.download_blob(filename, encoding="utf-8")
-    return stream.readall()
+    await container.upload_blob(filename, "Hello World from storage", encoding="utf-8")
+    stream = await container.download_blob(filename, encoding="utf-8")
+    return await stream.readall()
 
 @router.get("/")
 def hello_world():

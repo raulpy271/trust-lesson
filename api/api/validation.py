@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Form, HTTPException
 from sqlalchemy import text
+from azure.storage.blob import ContentSettings
 
 from api.models import Session, Lesson, MediaType, LessonValidation
 from api.dto import ValidationIn
@@ -38,7 +39,7 @@ async def create(data: Annotated[ValidationIn, Form()], user_id: LoggedUserId):
             validation_id = uuid4()
             key = f"{validation_id}.{media_type}"
             container = azure.get_container_image()
-            await container.upload_blob(key, data.file)
+            await container.upload_blob(key, data.file, content_settings=ContentSettings(content_type=data.file.content_type))
             validation = LessonValidation(
                 lesson_id=lesson.id,
                 user_id=user_id,
