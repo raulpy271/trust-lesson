@@ -17,6 +17,9 @@ DB_NAME = environ.get("DB_NAME")
 DB_USER = environ.get("DB_USER")
 DB_PASSWORD = environ.get("DB_PASSWORD")
 
+STORAGE_URL = environ.get("STORAGE_URL")
+CONTAINER_IMAGE_NAME = "lesson-image"
+
 TOKEN_EXP = 10 * 60 # Expiration in seconds
 TOKEN_REGENERATE = 2 * 60 # Remaining seconds to regenerate new token
 JWT_ALGORITHM = 'HS256'

@@ -40,6 +40,7 @@ resource "docker_container" "api" {
     "DB_PASSWORD=${var.db_password}",
     "DB_NAME=${var.db_name}",
     "DB_PORT=${var.db_port}",
+    "STORAGE_URL=${var.storage_url}"
     #"DB_DIALECT=sqlite",
     #"DB_DRIVER=pysqlite",
   ]

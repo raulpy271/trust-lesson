@@ -26,6 +26,7 @@ module "api" {
     DB_USER        = module.database.db_user
     DB_NAME        = module.database.db_name
     DB_PASSWORD    = module.database.db_password
+    STORAGE_URL    = module.storage.endpoint
   }
 }
 
@@ -38,6 +39,13 @@ module "database" {
 
 module "cache" {
   source      = "./modules/cache"
+  stage       = var.stage
+  rg_name     = azurerm_resource_group.rg.name
+  rg_location = azurerm_resource_group.rg.location
+}
+
+module "storage" {
+  source      = "./modules/storage"
   stage       = var.stage
   rg_name     = azurerm_resource_group.rg.name
   rg_location = azurerm_resource_group.rg.location
