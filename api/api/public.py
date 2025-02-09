@@ -6,7 +6,7 @@ from sqlalchemy import text
 
 from api import redis
 from api.models import Session
-from api.aws import get_container_image
+from api.azure import get_container_image
 
 router = APIRouter(
     prefix="/public",

@@ -1,5 +1,5 @@
 from azure.identity import DefaultAzureCredential
-from azure.storage.blob import ContainerClient
+from azure.storage.blob.aio import ContainerClient
 
 from api.settings import STORAGE_URL, CONTAINER_IMAGE_NAME
 

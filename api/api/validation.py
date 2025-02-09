@@ -9,7 +9,7 @@ from sqlalchemy import text
 
 from api.models import Session, Lesson, MediaType, LessonValidation
 from api.dto import ValidationIn
-from api.aws import get_container_image
+from api import azure
 from api.auth import LoggedUserId
 
 router = APIRouter(
@@ -18,7 +18,7 @@ router = APIRouter(
 )
 
 @router.post("/create", status_code=HTTPStatus.CREATED)
-def create(data: Annotated[ValidationIn, Form()], user_id: LoggedUserId):
+async def create(data: Annotated[ValidationIn, Form()], user_id: LoggedUserId):
     match = re.fullmatch(r'(\w+)/(\w+)', data.file.content_type.lower())
     mime_types = {
         "image": MediaType.IMAGE,
@@ -35,7 +35,18 @@ def create(data: Annotated[ValidationIn, Form()], user_id: LoggedUserId):
     with Session() as session:
         lesson = session.get(Lesson, data.lesson_id)
         if lesson:
-            pass
+            validation_id = uuid4()
+            key = f"{validation_id}.{media_type}"
+            container = azure.get_container_image()
+            await container.upload_blob(key, data.file)
+            validation = LessonValidation(
+                lesson_id=lesson.id,
+                user_id=user_id,
+                media_path=key,
+                media_type=mime_type_enum,
+            )
+            lesson.validations.append(validation)
+            session.commit()
         else:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
