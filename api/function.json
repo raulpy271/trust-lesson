@@ -1,0 +1,4 @@
+{
+  "scriptFile": "api/jobs/update_status_lesson.py",
+  "entryPoint": "run"
+}
