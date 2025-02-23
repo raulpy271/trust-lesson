@@ -2,18 +2,16 @@
 terraform {
   required_providers {
     archive = {
-      source = "hashicorp/archive"
+      source  = "hashicorp/archive"
       version = "2.7.0"
     }
   }
 }
 
 locals {
-  zip_file = "../api/dist/api-0.1.0-py3-none-any.whl"
   local_app_settings = {
     SCM_DO_BUILD_DURING_DEPLOYMENT = true
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.application_insights.instrumentation_key
-    ZIP_HASH                       = data.archive_file.api_zip.output_md5
   }
   app_settings = merge(local.local_app_settings, var.app_envs)
 }
@@ -40,7 +38,7 @@ resource "terraform_data" "requirements" {
 
 data "archive_file" "api_zip" {
   type        = "zip"
-  output_path = local.zip_file
+  output_path = "../api/dist/functions-${uuid()}.zip"
   source_dir  = "../api"
   excludes    = ["Dockerfile*", "*.env", "tests", "dist", "**/__pycache__", ".pytest_cache"]
   depends_on = [
@@ -69,7 +67,7 @@ resource "azurerm_linux_function_app" "update_status_lesson" {
   service_plan_id            = azurerm_service_plan.functions_sp.id
   storage_account_name       = var.storage_account_name
   storage_account_access_key = var.storage_access_key
-  zip_deploy_file            = local.zip_file
+  zip_deploy_file            = data.archive_file.api_zip.output_path
   app_settings               = local.app_settings
   site_config {
     always_on = false
@@ -80,8 +78,9 @@ resource "azurerm_linux_function_app" "update_status_lesson" {
   tags = {
     "stage" = var.stage
   }
-  depends_on = [
-    data.archive_file.api_zip
-  ]
+  provisioner "local-exec" {
+    command = "rm ../api/dist/functions-*.zip"
+    when    = destroy
+  }
 }
 
