@@ -30,6 +30,21 @@ module "api" {
   }
 }
 
+module "schedule" {
+  source               = "./modules/schedule"
+  stage                = var.stage
+  rg_name              = azurerm_resource_group.rg.name
+  rg_location          = azurerm_resource_group.rg.location
+  storage_account_name = module.storage.account_name
+  storage_access_key   = module.storage.access_key
+  app_envs = {
+    DB_HOST     = module.database.db_domain
+    DB_USER     = module.database.db_user
+    DB_NAME     = module.database.db_name
+    DB_PASSWORD = module.database.db_password
+  }
+}
+
 module "database" {
   source      = "./modules/database"
   stage       = var.stage
