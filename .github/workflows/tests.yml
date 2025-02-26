@@ -33,6 +33,8 @@ jobs:
       run: pipx install poetry==2.0.0
     - name: Install dependencies
       run: poetry install --with=dev
+    - name: Black code checking
+      run: poetry run black --check .
     - name: Run fastest tests
       run: poetry run pytest -m "not slow"
     - name: Run slow tests
