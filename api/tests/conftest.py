@@ -1,5 +1,5 @@
-
 from dotenv import load_dotenv
+
 load_dotenv("testing.env")
 
 import pytest
@@ -23,20 +23,25 @@ pytest_plugins = [
 def general(monkeypatch):
     monkeypatch.setattr(settings, "TOKEN_EXP", 10)
     monkeypatch.setattr(settings, "TOKEN_REGENERATE", 2)
-    monkeypatch.setattr(settings, "SCRYPT_SETTINGS", {'n': 2 ** 6, 'r': 8, 'p': 1})
+    monkeypatch.setattr(settings, "SCRYPT_SETTINGS", {"n": 2**6, "r": 8, "p": 1})
+
 
 @pytest.fixture
 def session():
-    models._engine = create_engine(settings.DB_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool)
+    models._engine = create_engine(
+        settings.DB_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+    )
     models._session = sessionmaker(models._engine)
     models.Base.metadata.create_all(models._engine)
     with models.Session() as s:
         yield s
 
+
 @pytest.fixture
 def redis():
     api.redis._redis = fakeredis.FakeRedis()
     return api.redis._redis
+
 
 @pytest.fixture
 def app():
@@ -44,13 +49,14 @@ def app():
     app = create_app()
     return app
 
+
 @pytest.fixture
 def client(app):
     """A test client for the app."""
     return TestClient(app)
 
+
 @pytest.fixture
 def token(client, redis, user_password):
     user, password = user_password
     return authenticate(client, user, password)
-

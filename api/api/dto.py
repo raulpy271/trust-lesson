@@ -1,4 +1,3 @@
-
 from typing import Annotated
 from uuid import UUID
 
@@ -12,11 +11,12 @@ class CreateUserIn(BaseModel):
     email: str
     password: str
 
+
 class LoginIn(BaseModel):
     email: str
     password: str
 
+
 class ValidationIn(BaseModel):
     lesson_id: UUID
     file: UploadFile
-

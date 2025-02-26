@@ -1,4 +1,3 @@
-
 from uuid import uuid4
 
 from fastapi import APIRouter
@@ -8,10 +7,8 @@ from api import redis
 from api.models import Session
 from api.azure import get_container_image
 
-router = APIRouter(
-    prefix="/public",
-    tags=["public"]
-)
+router = APIRouter(prefix="/public", tags=["public"])
+
 
 @router.get("/test_db")
 def test_db():
@@ -19,11 +16,13 @@ def test_db():
         result = session.connection().execute(text("select version() as v"))
         return list(result)[0][0]
 
+
 @router.get("/test_redis")
 def test_redis():
     client = redis.get_default_client()
-    client.set('test', 'hello from redis!')
-    return client.get('test')
+    client.set("test", "hello from redis!")
+    return client.get("test")
+
 
 @router.get("/test_storage")
 async def test_storage():
@@ -33,7 +32,7 @@ async def test_storage():
     stream = await container.download_blob(filename, encoding="utf-8")
     return await stream.readall()
 
+
 @router.get("/")
 def hello_world():
     return "<p>Hello, World!</p>"
-

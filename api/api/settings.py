@@ -1,8 +1,7 @@
-
 from os import environ
 
 
-DEBUG = environ.get('DEBUG', 'false').lower() == "true"
+DEBUG = environ.get("DEBUG", "false").lower() == "true"
 
 REDIS_HOST = environ.get("REDIS_HOST")
 REDIS_PORT = environ.get("REDIS_PORT", 6379)
@@ -20,19 +19,14 @@ DB_PASSWORD = environ.get("DB_PASSWORD")
 STORAGE_URL = environ.get("STORAGE_URL")
 CONTAINER_IMAGE_NAME = "lesson-image"
 
-TOKEN_EXP = 10 * 60 # Expiration in seconds
-TOKEN_REGENERATE = 2 * 60 # Remaining seconds to regenerate new token
-JWT_ALGORITHM = 'HS256'
-JWT_ISSUER = 'Trust Lesson API'
-SCRYPT_SETTINGS = {
-    'n': 2 ** 14,
-    'r': 8,
-    'p': 1
-}
+TOKEN_EXP = 10 * 60  # Expiration in seconds
+TOKEN_REGENERATE = 2 * 60  # Remaining seconds to regenerate new token
+JWT_ALGORITHM = "HS256"
+JWT_ISSUER = "Trust Lesson API"
+SCRYPT_SETTINGS = {"n": 2**14, "r": 8, "p": 1}
 
 if DB_DIALECT == "sqlite":
     # In-memory sqlite
     DB_URL = f"{DB_DIALECT}+{DB_DRIVER}://"
 else:
     DB_URL = f"{DB_DIALECT}+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-
