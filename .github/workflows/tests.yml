@@ -35,6 +35,8 @@ jobs:
       run: poetry install --with=dev
     - name: Black code checking
       run: poetry run black --check .
+    - name: Flake8 code checking
+      run: poetry run flake8 .
     - name: Run fastest tests
       run: poetry run pytest -m "not slow"
     - name: Run slow tests

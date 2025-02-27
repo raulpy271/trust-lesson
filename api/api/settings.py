@@ -29,4 +29,4 @@ if DB_DIALECT == "sqlite":
     # In-memory sqlite
     DB_URL = f"{DB_DIALECT}+{DB_DRIVER}://"
 else:
-    DB_URL = f"{DB_DIALECT}+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    DB_URL = f"{DB_DIALECT}+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"  # noqa

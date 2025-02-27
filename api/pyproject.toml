@@ -27,6 +27,7 @@ fakeredis = "^2.26.2"
 httpx = "^0.28.1"
 mimesis = "^18.0.0"
 black = "^25.1.0"
+flake8 = "^7.1.2"
 
 [tool.black]
 target-version = ["py312"]
