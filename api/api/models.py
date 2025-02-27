@@ -23,7 +23,7 @@ class Base(DeclarativeBase):
         return {
             c.name: getattr(self, c.name)
             for c in self.__table__.columns
-            if not c in self.__exclude__
+            if c not in self.__exclude__
         }
 
 

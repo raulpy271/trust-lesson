@@ -1,12 +1,10 @@
 from datetime import date, datetime
 from uuid import UUID
 from http import HTTPStatus
-from typing import Annotated
 
 from sqlalchemy import select
 from fastapi import APIRouter, HTTPException
 
-from api import dto
 from api.auth import LoggedUserId
 from api.models import Session, Lesson, User, UserRole, LessonUser, LessonStatus
 

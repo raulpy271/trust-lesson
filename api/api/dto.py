@@ -1,8 +1,7 @@
-from typing import Annotated
 from uuid import UUID
 
 from pydantic import BaseModel
-from fastapi import UploadFile, Query
+from fastapi import UploadFile
 
 
 class CreateUserIn(BaseModel):

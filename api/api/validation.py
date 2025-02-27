@@ -4,7 +4,6 @@ from http import HTTPStatus
 from uuid import uuid4
 
 from fastapi import APIRouter, Form, HTTPException
-from sqlalchemy import text
 from azure.storage.blob import ContentSettings
 
 from api.models import Session, Lesson, MediaType, LessonValidation
