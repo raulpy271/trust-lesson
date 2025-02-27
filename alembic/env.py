@@ -16,7 +16,8 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from api.models import Base
+from api.models import Base  # noqa
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -37,7 +38,9 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = context.get_x_argument(True).get("sqlalchemy.url") or config.get_main_option("sqlalchemy.url")
+    url = context.get_x_argument(True).get("sqlalchemy.url") or config.get_main_option(
+        "sqlalchemy.url"
+    )
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -58,12 +61,12 @@ def run_migrations_online() -> None:
     """
     ini_section = config.get_section(config.config_ini_section, {})
     ini_section.update(context.get_x_argument(True))
-    connectable = engine_from_config(ini_section, prefix="sqlalchemy.", poolclass=pool.NullPool)
+    connectable = engine_from_config(
+        ini_section, prefix="sqlalchemy.", poolclass=pool.NullPool
+    )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
