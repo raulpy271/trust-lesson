@@ -31,9 +31,9 @@ jobs:
     - name: Install dependencies
       run: poetry -C api install --with=dev
     - name: Black code checking
-      run: poetry -C api run black --config api/pyproject.toml --check .
+      run: poetry -C api run black --check ..
     - name: Flake8 code checking
-      run: poetry -C api run flake8 .
+      run: poetry -C api run flake8 ..
     - name: Run fastest tests
       run: cd api && poetry run pytest -m "not slow"
     - name: Run slow tests
