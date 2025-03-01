@@ -1,9 +1,9 @@
-
 import mimesis
 import pytest
 
 from api import models
 from api.auth import create_hash_salt
+
 
 class Factory:
     def __init__(self):
@@ -17,16 +17,15 @@ class Factory:
 
     def register(self, func):
         def func_factory(n, *args, **kwargs):
-            return [
-                func(*args, **kwargs)
-                for _ in range(n)
-            ]
+            return [func(*args, **kwargs) for _ in range(n)]
+
         self.factories["list_" + func.__name__] = func_factory
         self.factories[func.__name__] = func
         return func
 
 
 factory = Factory()
+
 
 @pytest.fixture
 @factory.register
@@ -47,6 +46,7 @@ def user_password(session):
     session.commit()
     return (u, password)
 
+
 @pytest.fixture
 @factory.register
 def course(session):
@@ -59,6 +59,7 @@ def course(session):
     session.commit()
     return course
 
+
 @pytest.fixture
 @factory.register
 def course_term(session, course):
@@ -68,11 +69,12 @@ def course_term(session, course):
         status=models.TermStatus.WAITING,
         start_date=datetime.date(),
         end_date=datetime.date(),
-        course=course
+        course=course,
     )
     session.add(term)
     session.commit()
     return term
+
 
 @pytest.fixture
 @factory.register
@@ -88,9 +90,8 @@ def lesson(session, course_term, user_password, start_date=None):
         duration_min=60,
         description=text.sentence(),
         instructor=user,
-        term=course_term
+        term=course_term,
     )
     session.add(lesson)
     session.commit()
     return lesson
-

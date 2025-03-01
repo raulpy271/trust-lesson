@@ -1,20 +1,15 @@
-
 from datetime import date, datetime
 from uuid import UUID
 from http import HTTPStatus
-from typing import Annotated
 
 from sqlalchemy import select
 from fastapi import APIRouter, HTTPException
 
-from api import dto
 from api.auth import LoggedUserId
 from api.models import Session, Lesson, User, UserRole, LessonUser, LessonStatus
 
-router = APIRouter(
-    prefix="/lesson",
-    tags=["lesson"]
-)
+router = APIRouter(prefix="/lesson", tags=["lesson"])
+
 
 @router.get("/list")
 def lesson_list(start_date: date, end_date: date, user_id: LoggedUserId):
@@ -25,21 +20,13 @@ def lesson_list(start_date: date, end_date: date, user_id: LoggedUserId):
             stmt = (
                 select(Lesson)
                 .join(LessonUser)
-                .where(
-                    date_filter & (LessonUser.user_id == user_id)
-                )
+                .where(date_filter & (LessonUser.user_id == user_id))
             )
         else:
-            stmt = (
-                select(Lesson)
-                .where(
-                    date_filter & (Lesson.instructor_id == user_id)
-                )
-            )
+            stmt = select(Lesson).where(date_filter & (Lesson.instructor_id == user_id))
         lessons = session.scalars(stmt).all()
-    return {
-        "lessons": [lesson.to_dict() for lesson in lessons]
-    }
+    return {"lessons": [lesson.to_dict() for lesson in lessons]}
+
 
 @router.post("/start/{lesson_id}")
 def lesson_start(lesson_id: UUID, user_id: LoggedUserId):
@@ -49,7 +36,7 @@ def lesson_start(lesson_id: UUID, user_id: LoggedUserId):
             if lesson.instructor_id != user_id:
                 raise HTTPException(
                     status_code=HTTPStatus.UNAUTHORIZED,
-                    detail="Only the instructor can start the lesson"
+                    detail="Only the instructor can start the lesson",
                 )
             elif lesson.status.can_start():
                 lesson.status = LessonStatus.RUNNING
@@ -58,21 +45,24 @@ def lesson_start(lesson_id: UUID, user_id: LoggedUserId):
             else:
                 raise HTTPException(
                     status_code=HTTPStatus.BAD_REQUEST,
-                    detail="The selected lesson already started"
+                    detail="The selected lesson already started",
                 )
         else:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
+
 @router.post("/stop/{lesson_id}")
 def lesson_stop(lesson_id: UUID, user_id: LoggedUserId):
     with Session() as session:
-        lesson = session.scalars(select(Lesson).where(Lesson.id == lesson_id)).one_or_none()
+        lesson = session.scalars(
+            select(Lesson).where(Lesson.id == lesson_id)
+        ).one_or_none()
         if lesson:
             pass
             if lesson.instructor_id != user_id:
                 raise HTTPException(
                     status_code=HTTPStatus.UNAUTHORIZED,
-                    detail="Only the instructor can stop the lesson"
+                    detail="Only the instructor can stop the lesson",
                 )
             elif lesson.status.can_stop():
                 lesson.status = LessonStatus.FINISHED
@@ -82,8 +72,7 @@ def lesson_stop(lesson_id: UUID, user_id: LoggedUserId):
             else:
                 raise HTTPException(
                     status_code=HTTPStatus.BAD_REQUEST,
-                    detail="Cannot stop the current lesson."
+                    detail="Cannot stop the current lesson.",
                 )
         else:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-

@@ -1,4 +1,3 @@
-
 import azure.functions as func
 import logging
 
@@ -6,12 +5,14 @@ from api.jobs.update_status_lesson import run
 
 app = func.FunctionApp()
 
-@app.timer_trigger(schedule="0 3 * * *", arg_name="timer", run_on_startup=False, use_monitor=False)
+
+@app.timer_trigger(
+    schedule="0 3 * * *", arg_name="timer", run_on_startup=False, use_monitor=False
+)
 def updateStatusLesson(timer: func.TimerRequest) -> None:
-    logging.info('Python timer trigger function running.')
+    logging.info("Python timer trigger function running.")
     try:
         run()
-        logging.info('Python timer trigger function executed.')
+        logging.info("Python timer trigger function executed.")
     except Exception as e:
         logging.error(str(e))
-

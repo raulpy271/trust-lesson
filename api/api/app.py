@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, APIRouter
 
 from api import public
@@ -23,5 +22,5 @@ def create_app():
     app.add_middleware(auth.CheckAuthMiddleware)
     return app
 
-app = create_app()
 
+app = create_app()
