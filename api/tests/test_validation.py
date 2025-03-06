@@ -25,7 +25,15 @@ def container():
 
 
 def test_create(
-    monkeypatch, session, client, token, image, lesson, user_password, container
+    monkeypatch,
+    session,
+    client,
+    token,
+    image,
+    lesson,
+    user_password,
+    lesson_user,
+    container,
 ):
     monkeypatch.setattr("api.azure.get_container_image", lambda: container)
     data = {
