@@ -2,4 +2,5 @@
 # The Python Worker is managed by the Azure Functions platform
 # Manually managing azure-functions-worker may cause unexpected issues
 
-azure-functions
+azure-functions==1.21.3
+azure-ai-vision-imageanalysis==1.0.0 

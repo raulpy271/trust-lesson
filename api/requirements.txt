@@ -44,6 +44,7 @@ pydantic==2.10.4 ; python_version >= "3.10" and python_version < "4.0"
 pygments==2.18.0 ; python_version >= "3.10" and python_version < "4.0"
 pyjwt==2.10.1 ; python_version >= "3.10" and python_version < "4.0"
 pyjwt[crypto]==2.10.1 ; python_version >= "3.10" and python_version < "4.0"
+python-dateutil==2.9.0.post0 ; python_version >= "3.10" and python_version < "4.0"
 python-dotenv==1.0.1 ; python_version >= "3.10" and python_version < "4.0"
 python-multipart==0.0.20 ; python_version >= "3.10" and python_version < "4.0"
 pywin32==308 ; python_version >= "3.10" and python_version < "4.0" and platform_system == "Windows"
@@ -70,4 +71,5 @@ yarl==1.18.3 ; python_version >= "3.10" and python_version < "4.0"
 # The Python Worker is managed by the Azure Functions platform
 # Manually managing azure-functions-worker may cause unexpected issues
 
-azure-functions
+azure-functions==1.21.3
+azure-ai-vision-imageanalysis==1.0.0 
