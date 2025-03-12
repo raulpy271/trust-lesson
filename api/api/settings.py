@@ -17,6 +17,7 @@ DB_USER = environ.get("DB_USER")
 DB_PASSWORD = environ.get("DB_PASSWORD")
 
 STORAGE_URL = environ.get("STORAGE_URL")
+ACCOUNT_NAME = environ.get("ACCOUNT_NAME")
 CONTAINER_IMAGE_NAME = "lesson-image"
 
 TOKEN_EXP = 10 * 60  # Expiration in seconds
