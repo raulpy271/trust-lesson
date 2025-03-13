@@ -42,7 +42,7 @@ class ValidatorStorage(validate_images.Validator):
 @app.timer_trigger(
     schedule="0 3 * * *", arg_name="timer", run_on_startup=False, use_monitor=False
 )
-def updateStatusLesson(timer: func.TimerRequest) -> None:  # noqa
+def updateStatusLesson(timer: func.TimerRequest) -> None:
     logging.info("Python timer trigger function running.")
     try:
         update_status_lesson.run()
@@ -54,7 +54,7 @@ def updateStatusLesson(timer: func.TimerRequest) -> None:  # noqa
 @app.timer_trigger(
     schedule="0 3 * * *", arg_name="timer", run_on_startup=False, use_monitor=False
 )
-async def validateImages(timer: func.TimerRequest) -> None:  # noqa
+async def validateImages(timer: func.TimerRequest) -> None:
     logging.info("Python timer trigger function running.")
     try:
         validator = ValidatorStorage()

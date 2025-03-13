@@ -12,6 +12,8 @@ locals {
   local_app_settings = {
     SCM_DO_BUILD_DURING_DEPLOYMENT = true
     APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.application_insights.instrumentation_key
+    VISION_APIKEY                  = azurerm_cognitive_account.vision.primary_access_key
+    VISION_ENDPOINT                = azurerm_cognitive_account.vision.endpoint
   }
   app_settings = merge(local.local_app_settings, var.app_envs)
 }
@@ -107,6 +109,12 @@ data "azurerm_subscription" "primary" {
 resource "azurerm_role_assignment" "blob_delegator_role" {
   scope                = data.azurerm_subscription.primary.id
   role_definition_name = "Storage Blob Delegator"
+  principal_id         = azurerm_linux_function_app.schedule_functions.identity[0].principal_id
+}
+
+resource "azurerm_role_assignment" "storage_role" {
+  scope                = data.azurerm_subscription.primary.id
+  role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_linux_function_app.schedule_functions.identity[0].principal_id
 }
 

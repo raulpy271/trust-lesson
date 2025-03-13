@@ -38,14 +38,12 @@ module "schedule" {
   storage_account_name = module.storage.account_name
   storage_access_key   = module.storage.access_key
   app_envs = {
-    DB_HOST         = module.database.db_domain
-    DB_USER         = module.database.db_user
-    DB_NAME         = module.database.db_name
-    DB_PASSWORD     = module.database.db_password
-    VISION_APIKEY   = module.schedule.vision_access_key
-    VISION_ENDPOINT = module.schedule.vision_endpoint
-    STORAGE_URL     = module.storage.endpoint
-    ACCOUNT_NAME    = module.storage.account_name
+    DB_HOST      = module.database.db_domain
+    DB_USER      = module.database.db_user
+    DB_NAME      = module.database.db_name
+    DB_PASSWORD  = module.database.db_password
+    STORAGE_URL  = module.storage.endpoint
+    ACCOUNT_NAME = module.storage.account_name
 
   }
 }
