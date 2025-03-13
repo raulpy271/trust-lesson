@@ -79,15 +79,17 @@ class TermUser(Base):
 class LessonUser(Base):
     __tablename__ = "lesson_user"
 
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     lesson_id: Mapped[UUID] = mapped_column(
-        ForeignKey("lesson.id", ondelete="no action"), primary_key=True
+        ForeignKey("lesson.id", ondelete="no action")
     )
-    user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("user.id", ondelete="no action"), primary_key=True
-    )
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="no action"))
     validated: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
     validated_success: Mapped[bool] = mapped_column(
         default=False, server_default="FALSE"
+    )
+    validations: Mapped[List["LessonValidation"]] = relationship(
+        back_populates="lesson_user"
     )
 
 
@@ -187,8 +189,12 @@ class LessonValidation(TimestempMixin, Base):
     validated_value: Mapped[Optional[float]] = mapped_column()
     media_path: Mapped[str] = mapped_column()
     media_type: Mapped[MediaType] = mapped_column()
+    lesson_user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("lesson_user.id", ondelete="no action")
+    )
     lesson: Mapped[Lesson] = relationship(back_populates="validations")
     user: Mapped[User] = relationship(back_populates="validations")
+    lesson_user: Mapped[LessonUser] = relationship(back_populates="validations")
 
 
 _engine = create_engine(settings.DB_URL)

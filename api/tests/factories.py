@@ -95,3 +95,45 @@ def lesson(session, course_term, user_password, start_date=None):
     session.add(lesson)
     session.commit()
     return lesson
+
+
+@pytest.fixture
+@factory.register
+def lesson_user(
+    session, user_password, lesson, validated=False, validated_success=False
+):
+    user, _ = user_password
+    lesson_user = models.LessonUser(
+        user_id=user.id,
+        lesson_id=lesson.id,
+        validated=validated,
+        validated_success=validated_success,
+    )
+    session.add(lesson_user)
+    session.commit()
+    return lesson_user
+
+
+@pytest.fixture
+@factory.register
+def lesson_validation(
+    session,
+    user_password,
+    lesson,
+    lesson_user,
+    validated=False,
+    validated_success=False,
+):
+    user, _ = user_password
+    validation = models.LessonValidation(
+        validated=validated,
+        validated_success=validated_success,
+        media_path="image.jpg",
+        media_type=models.MediaType.IMAGE,
+        lesson=lesson,
+        user=user,
+        lesson_user=lesson_user,
+    )
+    session.add(validation)
+    session.commit()
+    return validation

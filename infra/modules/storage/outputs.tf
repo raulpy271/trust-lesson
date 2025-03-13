@@ -4,7 +4,7 @@ output "account_name" {
 }
 
 output "access_key" {
-  value = azurerm_storage_account.trust_lesson.primary_access_key
+  value     = azurerm_storage_account.trust_lesson.primary_access_key
   sensitive = true
 }
 
