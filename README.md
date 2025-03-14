@@ -4,6 +4,9 @@
     <a href="https://github.com/raulpy271/trust-lesson/actions/workflows/tests.yml">
         <img src="https://github.com/raulpy271/trust-lesson/actions/workflows/tests.yml/badge.svg">
     </a>
+    <a href="https://python-poetry.org/" target="_blank">
+        <img src="https://img.shields.io/badge/packaging-poetry-cyan.svg">
+    </a>
     <a href="https://github.com/psf/black" target="_blank">
         <img src="https://img.shields.io/badge/code%20style-black-000000.svg">
     </a>
