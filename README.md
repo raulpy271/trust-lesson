@@ -25,6 +25,8 @@ The project was developed considering scenarios when it's needed to prove that a
 
 ## :building_construction: Back-end Stack and Infrastructure
 
+![Infrastructure](./assets/trust-lesson-infra.png)
+
 ## :gear: API Setup
 
 ## :rocket: Back-end Deployment
