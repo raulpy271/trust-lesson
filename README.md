@@ -27,6 +27,22 @@ The project was developed considering scenarios when it's needed to prove that a
 
 ![Infrastructure](./assets/trust-lesson-infra.png)
 
+One of the goals when creating this project was to use the best tools, especially ones that I want to improve my knowledge of. The main tools used are:
+
+ - The web framework FastAPI to develop the API back-end.
+ - PostgreSQL and Redis to store persistent and volatile data, respectively.
+ - The ORM framework SQLAlchemy and the Alembic migration system.
+ - Terraform to automate the infrastructure provisioning.
+ - Azure Cloud to host the application and to provide some cloud services, like Azure App Services, Computer Vision models and Azure Functions.
+
+Besides, the following tools are used in the development process:
+
+ - Docker to build local images.
+ - Poetry to install dependencies and build Python packages.
+ - The Black and Flake8 package to enforce code style and check syntax errors.
+ - Pytest to automatically run unit tests.
+ - Postman to manually test the API.
+
 ## :gear: API Setup
 
 ## :rocket: Back-end Deployment
