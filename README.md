@@ -45,6 +45,31 @@ Besides, the following tools are used in the development process:
 
 ## :gear: API Setup
 
+An easy way to start working in the API is to set up a virtual environment and run the unit tests. The [Poetry](https://python-poetry.org/) package manager is used to install the dependencies and create a virtual environment.
+
+With Poetry installed, the following commands install all dependencies, including the development dependencies:
+
+```
+# The command must be executed inside the api directory
+poetry install with --dev
+```
+
+Now, it's possible to enter in the environment with all dependencies included:
+
+```
+poetry shell
+```
+
+The above command opens a shell inside a virtual environment, which includes the pytest library, the following commands run the unit tests:
+
+```
+# Run fastest tests
+pytest -m "not slow"
+
+# Run all tests
+pytest
+```
+
 ## :rocket: Back-end Deployment
 
 ## :handshake: Contributing
