@@ -70,6 +70,35 @@ pytest -m "not slow"
 pytest
 ```
 
+To make the test execution fast and run only the application code, the test runner uses a lightweight database(In memory SQLite), a fake Redis Client, and even doesn't start a web server.
+
+### Application setup in Docker and Terraform
+
+To run the application locally using a complete environment is used Terraform and Docker to create a collection of containers needed to create this environment. It will use three containers, a PostgreSQL database, a real Redis Server, and an HTTP Server.
+
+The environment setup is made using Terraform, which will read the files `*-dev.tf` and will build the required Docker images, and will run the containers as well.
+
+The below commands will build and run the containers in the local machine, they should be run in the root of the project but before that, verify that your system has Terraform and Docker installed and the latter is running.
+
+```
+# It will install the terraform back-end kreuzwerker/docker. Execute this command only in the first time
+terraform init
+
+# It will show what resources will be created
+terraform plan
+
+# It will create the resources after confirming with 'yes' 
+terraform apply
+```
+
+After the last command, the environment will be created, run `docker ps` to see which containers are running, execute `docker logs api` to see the Web Server logs, and access `localhost:8000/docs/` to see the API routes and how to make requests to them.
+
+To stop the containers run:
+
+```
+terraform destroy
+```
+
 ## :rocket: Back-end Deployment
 
 ## :handshake: Contributing
