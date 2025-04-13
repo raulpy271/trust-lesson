@@ -99,6 +99,8 @@ To stop the containers run:
 terraform destroy
 ```
 
+> Note to Postman users: You can use the Postman Collection [Trust_Lesson_API.postman_collection.json](./Trust_Lesson_API.postman_collection.json) to make requests to the API, import the file in Postman to be able to use the collection.
+
 ## :rocket: Back-end Deployment
 
 ## :handshake: Contributing
