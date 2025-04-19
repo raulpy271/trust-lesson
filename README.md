@@ -103,6 +103,45 @@ terraform destroy
 
 ## :rocket: Back-end Deployment
 
+The application is hosted on Microsoft Azure's cloud. The infrastructure needed to host the application is created using Terraform, which makes it possible to create and destroy resources easily and avoid human effort.
+
+The Terraform files located on the root of the project are used to create the resources locally on docker, the Terraform files located in the directory [./infra](./infra) are used to deploy the application to Azure, so the Terraform commands must be executed inside this folder.
+
+To use Terraform with Azure you need to authenticate in your account using the Azure CLI command `az login`, it will open a browser window, and after authentication succeeds the command will show some information, including your subscription ID. Moreover, to create Azure resources using Azure CLI or Terraform you need to create a Service Principal which is the entity associated with the resources created.
+
+After the Service Principal is created, their credentials need to be set as environment variables to be able to make requests to Azure using Terraform, set the credentials like the below snippet:
+
+```
+export ARM_CLIENT_ID="<APPID_VALUE>"
+export ARM_CLIENT_SECRET="<PASSWORD_VALUE>"
+export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
+export ARM_TENANT_ID="<TENANT_VALUE>"
+```
+
+Now we can create the desired resources using Terraform, to follow the above steps with more details you can read this Terraform tutorial [https://developer.hashicorp.com/terraform/tutorials/azure-get-started/azure-build](Azure get started). The below commands create the resources:
+
+```
+# Run the terraform commands inside the proper folder
+cd infra
+
+# It will install the azure provider and others also needed. Execute this command only in the first time
+terraform init
+
+# It will show what resources will be created
+terraform plan
+
+# It will create the resources after confirming with 'yes' 
+terraform apply
+```
+
+This last command will probably take longer to execute, as a lot of resources will be created, after we finished, it will show in terminal the address and other properties of the created resources.
+
+Don't forgot to destroy the created resources:
+
+```
+terraform destroy
+```
+
 ## :handshake: Contributing
 
 ## :book: References
