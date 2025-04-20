@@ -146,3 +146,11 @@ terraform destroy
 
 ## :book: References
 
+ - :zap: [FastAPI](https://fastapi.tiangolo.com/)
+ - :building_construction: [What is Infrastructure as Code with Terraform?](https://developer.hashicorp.com/terraform/tutorials/azure-get-started/infrastructure-as-code)
+ - :package: [Docker Docs](https://docs.docker.com/)
+ - :cloud: [Microsoft Azure: Cloud Computing Services](https://azure.microsoft.com/en-us/)
+ - :robot: [Azure AI Vision](https://azure.microsoft.com/en-us/products/ai-services/ai-vision)
+ - :test_tube: [SQLAlchemy 2.0 Documentation](https://docs.sqlalchemy.org/en/20/)
+ - :alembic: [Alembic Documentation](https://alembic.sqlalchemy.org/en/latest/)
+
