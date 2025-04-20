@@ -144,6 +144,8 @@ terraform destroy
 
 ## :handshake: Contributing
 
+If you want to contribute to the project you are very welcome, the project is still in development and there is a lot of work to do. The development has been tracked in this [Kanban board](https://github.com/users/raulpy271/projects/2), feel free to pick any task and start developing it.
+
 ## :book: References
 
  - :zap: [FastAPI](https://fastapi.tiangolo.com/)
