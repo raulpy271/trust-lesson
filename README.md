@@ -118,7 +118,7 @@ export ARM_SUBSCRIPTION_ID="<SUBSCRIPTION_ID>"
 export ARM_TENANT_ID="<TENANT_VALUE>"
 ```
 
-Now we can create the desired resources using Terraform, to follow the above steps with more details you can read this Terraform tutorial [https://developer.hashicorp.com/terraform/tutorials/azure-get-started/azure-build](Azure get started). The below commands create the resources:
+Now we can create the desired resources using Terraform, to follow the above steps with more details you can read this Terraform tutorial [Azure get started](https://developer.hashicorp.com/terraform/tutorials/azure-get-started/azure-build). The below commands create the resources:
 
 ```
 # Run the terraform commands inside the proper folder
