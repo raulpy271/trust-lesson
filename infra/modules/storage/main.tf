@@ -13,7 +13,7 @@ resource "azurerm_storage_account" "trust_lesson" {
 
 resource "azurerm_storage_container" "lesson_image" {
   name                  = "lesson-image"
-  storage_account_name  = azurerm_storage_account.trust_lesson.name
+  storage_account_id    = azurerm_storage_account.trust_lesson.id
   container_access_type = "private"
 }
 
