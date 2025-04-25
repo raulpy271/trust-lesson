@@ -1,14 +1,17 @@
+import asyncio
 from http import HTTPStatus
 from uuid import uuid4
+
 
 from fastapi import APIRouter, Response
 from sqlalchemy import select, text
 from sqlalchemy import exc
 from redis.exceptions import RedisError
+from azure.core.exceptions import AzureError
 
 from api import redis
 from api.models import Session, User
-from api.azure import get_container_image
+from api import azure
 from api.dto import HealthOut
 
 router = APIRouter(prefix="/public", tags=["public"])
@@ -30,7 +33,7 @@ def test_redis():
 
 @router.get("/test_storage")
 async def test_storage():
-    container = get_container_image()
+    container = azure.get_container_image()
     filename = f"{uuid4()}.txt"
     await container.upload_blob(filename, "Hello World from storage", encoding="utf-8")
     stream = await container.download_blob(filename, encoding="utf-8")
@@ -39,7 +42,6 @@ async def test_storage():
 
 @router.get("/health", response_model=HealthOut)
 async def health(response: Response):
-    error = False
     result = HealthOut()
     try:
         with Session() as session:
@@ -47,17 +49,26 @@ async def health(response: Response):
     except (exc.DisconnectionError, exc.OperationalError) as e:
         result.database_healthy = False
         result.database_error = str(e)
-        error = True
+        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
     try:
         client = redis.get_default_client()
         client.info()
     except RedisError as e:
         result.redis_healthy = False
         result.redis_error = str(e)
-        error = True
-    response.status_code = (
-        HTTPStatus.OK if not error else HTTPStatus.INTERNAL_SERVER_ERROR
-    )
+        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+    try:
+        async with asyncio.timeout(10):
+            container = azure.get_container_image()
+            await container.exists(timeout=1)
+    except (TimeoutError, AzureError) as e:
+        result.storage_healthy = False
+        result.storage_error = (
+            str(e)
+            if isinstance(e, AzureError)
+            else "Timeout when trying to authenticate to Azure"
+        )
+        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
     return result
 
 
