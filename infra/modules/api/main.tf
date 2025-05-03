@@ -63,7 +63,7 @@ resource "azurerm_service_plan" "api_sp" {
   resource_group_name = var.rg_name
   location            = var.rg_location
   os_type             = "Linux"
-  sku_name            = "F1"
+  sku_name            = "B1"
   tags = {
     "stage" = var.stage
   }
@@ -81,6 +81,8 @@ resource "azurerm_linux_web_app" "api_webapp" {
   }
   site_config {
     always_on = false
+    health_check_path = "/public/health"
+    health_check_eviction_time_in_min = 5
     application_stack {
       docker_image_name        = docker_image.api_img.name
       docker_registry_url      = "https://${azurerm_container_registry.acr.login_server}"

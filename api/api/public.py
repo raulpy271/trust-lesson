@@ -1,16 +1,12 @@
-import asyncio
-from http import HTTPStatus
 from uuid import uuid4
 
 
 from fastapi import APIRouter, Response
-from sqlalchemy import select, text
-from sqlalchemy import exc
-from redis.exceptions import RedisError
-from azure.core.exceptions import AzureError
+from sqlalchemy import text
 
+import api.health
 from api import redis
-from api.models import Session, User
+from api.models import Session
 from api import azure
 from api.dto import HealthOut
 
@@ -42,33 +38,8 @@ async def test_storage():
 
 @router.get("/health", response_model=HealthOut)
 async def health(response: Response):
-    result = HealthOut()
-    try:
-        with Session() as session:
-            session.scalars(select(User)).one_or_none()
-    except (exc.DisconnectionError, exc.OperationalError) as e:
-        result.database_healthy = False
-        result.database_error = str(e)
-        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
-    try:
-        client = redis.get_default_client()
-        client.info()
-    except RedisError as e:
-        result.redis_healthy = False
-        result.redis_error = str(e)
-        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
-    try:
-        async with asyncio.timeout(10):
-            container = azure.get_container_image()
-            await container.exists(timeout=1)
-    except (TimeoutError, AzureError) as e:
-        result.storage_healthy = False
-        result.storage_error = (
-            str(e)
-            if isinstance(e, AzureError)
-            else "Timeout when trying to authenticate to Azure"
-        )
-        response.status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+    result, status_code = await api.health.health()
+    response.status_code = status_code
     return result
 
 
