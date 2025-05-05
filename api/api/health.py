@@ -12,27 +12,39 @@ from api import azure
 from api.dto import HealthOut
 
 
-async def health():
+async def health(checks=["database", "redis", "storage"]):
     result = HealthOut()
     status_code = HTTPStatus.OK
     try:
-        with Session() as session:
-            session.scalars(select(User)).one_or_none()
+        if "database" in checks:
+            with Session() as session:
+                session.scalars(select(User)).one_or_none()
+            result.database_healthy = True
+        else:
+            result.database_error = "Not checked"
     except (exc.DisconnectionError, exc.OperationalError) as e:
         result.database_healthy = False
         result.database_error = str(e)
         status_code = HTTPStatus.INTERNAL_SERVER_ERROR
     try:
-        client = redis.get_default_client()
-        client.info()
+        if "redis" in checks:
+            client = redis.get_default_client()
+            client.info()
+            result.redis_healthy = True
+        else:
+            result.redis_error = "Not checked"
     except RedisError as e:
         result.redis_healthy = False
         result.redis_error = str(e)
         status_code = HTTPStatus.INTERNAL_SERVER_ERROR
     try:
-        async with asyncio.timeout(10):
-            container = azure.get_container_image()
-            await container.exists(timeout=1)
+        if "storage" in checks:
+            async with asyncio.timeout(10):
+                container = azure.get_container_image()
+                await container.exists(timeout=1)
+            result.storage_healthy = True
+        else:
+            result.storage_error = "Not checked"
     except (TimeoutError, AzureError) as e:
         result.storage_healthy = False
         result.storage_error = (

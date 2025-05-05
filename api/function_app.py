@@ -65,8 +65,8 @@ async def validateImages(timer: func.TimerRequest) -> None:
         logging.error(str(e))
 
 
-@app.route(route="health")
+@app.route(route="health", auth_level=func.AuthLevel.ANONYMOUS)
 async def functionsHealth(req: func.HttpRequest) -> func.HttpResponse:
-    response, status_code = await health()
+    response, status_code = await health(checks=["database", "storage"])
     body = json.dumps(response.model_dump())
     return func.HttpResponse(body=body, status_code=status_code)
