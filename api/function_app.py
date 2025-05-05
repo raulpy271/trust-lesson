@@ -1,5 +1,6 @@
 from os import environ
 import logging
+import json
 
 import azure.functions as func
 from azure.core.credentials import AzureKeyCredential
@@ -10,6 +11,7 @@ from api.models import LessonValidation
 from api.azure import generate_sas
 from api.jobs import validate_images
 from api.jobs import update_status_lesson
+from api.health import health
 
 VISION_ENDPOINT = environ["VISION_ENDPOINT"]
 VISION_APIKEY = environ["VISION_APIKEY"]
@@ -61,3 +63,10 @@ async def validateImages(timer: func.TimerRequest) -> None:
         validate_images.run(validator)
     except Exception as e:
         logging.error(str(e))
+
+
+@app.route(route="health", auth_level=func.AuthLevel.ANONYMOUS)
+async def functionsHealth(req: func.HttpRequest) -> func.HttpResponse:
+    response, status_code = await health(checks=["database", "storage"])
+    body = json.dumps(response.model_dump())
+    return func.HttpResponse(body=body, status_code=status_code)

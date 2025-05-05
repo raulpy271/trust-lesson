@@ -89,6 +89,8 @@ resource "azurerm_linux_function_app" "schedule_functions" {
     type = "SystemAssigned"
   }
   site_config {
+    health_check_path = "/api/health"
+    health_check_eviction_time_in_min = 5
     always_on = true
     application_stack {
       python_version = "3.12"
