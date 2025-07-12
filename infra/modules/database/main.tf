@@ -67,7 +67,7 @@ resource "azurerm_postgresql_flexible_server_database" "pg_database" {
     #prevent_destroy = true
   }
   provisioner "local-exec" {
-    command     = "poetry -C api run alembic -x sqlalchemy.url=${local.db_url} upgrade head"
+    command     = "poetry -P api run alembic -x sqlalchemy.url=${local.db_url} upgrade head"
     working_dir = ".."
   }
   depends_on = [

@@ -4,7 +4,7 @@ FROM python:3.12-alpine3.19
 ENV SHELL=sh
 ENV PATH="$PATH:/root/.local/bin"
 RUN apk add 'pipx=~1.4'
-RUN pipx install poetry==1.8.5
+RUN pipx install poetry==2.1
 
 WORKDIR /api/
 COPY . /api/

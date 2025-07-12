@@ -80,7 +80,7 @@ resource "docker_container" "postgres" {
     external = var.db_port_ext
   }
   provisioner "local-exec" {
-    command = "poetry -C api run alembic -x sqlalchemy.url=${local.db_url} upgrade head"
+    command = "poetry -P api run alembic -x sqlalchemy.url=${local.db_url} upgrade head"
   }
 }
 
