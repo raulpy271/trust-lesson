@@ -27,13 +27,13 @@ jobs:
         sudo apt install pipx
         pipx ensurepath
     - name: Install Poetry
-      run: pipx install poetry==2.0.0
+      run: pipx install poetry==2.1.3
     - name: Install dependencies
-      run: poetry -C api install --with=dev
+      run: poetry -P api install --with=dev
     - name: Black code checking
-      run: poetry -C api run black --check ..
+      run: poetry -P api run black --check .
     - name: Flake8 code checking
-      run: poetry -C api run flake8 ..
+      run: poetry -P api run flake8 .
     - name: Run fastest tests
       run: cd api && poetry run pytest -m "not slow"
     - name: Run slow tests

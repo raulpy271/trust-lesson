@@ -2,6 +2,6 @@
 # Avoid incompatibilities with Black
 max-line-length = 88
 extend-ignore = E203,E701
-
+exclude = .git,__pycache__,old,build,dist,.poetry
 per-file-ignores =
   conftest.py: E402
