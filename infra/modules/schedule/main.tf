@@ -11,7 +11,6 @@ terraform {
 locals {
   local_app_settings = {
     SCM_DO_BUILD_DURING_DEPLOYMENT = true
-    APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.application_insights.instrumentation_key
     VISION_APIKEY                  = azurerm_cognitive_account.vision.primary_access_key
     VISION_ENDPOINT                = azurerm_cognitive_account.vision.endpoint
   }
@@ -23,7 +22,7 @@ resource "azurerm_service_plan" "functions_sp" {
   resource_group_name = var.rg_name
   location            = var.rg_location
   os_type             = "Linux"
-  sku_name            = "B1"
+  sku_name            = "B2"
   tags = {
     "stage" = var.stage
   }
@@ -56,24 +55,10 @@ data "archive_file" "api_zip" {
   type        = "zip"
   output_path = "../api/dist/functions-${uuid()}.zip"
   source_dir  = "../api"
-  excludes    = ["Dockerfile*", "*.env", "tests", "dist", "**/__pycache__", ".pytest_cache"]
+  excludes    = ["Dockerfile*", "*.env", "tests", "dist", "**/__pycache__", ".pytest_cache", ".poetry"]
   depends_on = [
     terraform_data.requirements
   ]
-}
-
-resource "azurerm_monitor_action_group" "smart_detector" {
-  name                = "Application Insights Smart Detection"
-  short_name          = "SmartDetect"
-  resource_group_name = var.rg_name
-}
-
-resource "azurerm_application_insights" "application_insights" {
-  name                = "function-application-insights-${var.stage}"
-  resource_group_name = var.rg_name
-  location            = var.rg_location
-  application_type    = "other"
-  depends_on          = [azurerm_monitor_action_group.smart_detector]
 }
 
 resource "azurerm_linux_function_app" "schedule_functions" {
@@ -85,15 +70,21 @@ resource "azurerm_linux_function_app" "schedule_functions" {
   storage_account_access_key = var.storage_access_key
   zip_deploy_file            = data.archive_file.api_zip.output_path
   app_settings               = local.app_settings
+  builtin_logging_enabled    = true
   identity {
     type = "SystemAssigned"
   }
   site_config {
-    health_check_path = "/api/health"
+    health_check_path                 = "/api/health"
     health_check_eviction_time_in_min = 5
-    always_on = true
+    application_insights_key          = var.insights_instrumentation_key
+    always_on                         = true
     application_stack {
       python_version = "3.12"
+    }
+    app_service_logs {
+      disk_quota_mb         = 25
+      retention_period_days = 60
     }
   }
   tags = {

@@ -13,10 +13,11 @@ provider "azurerm" {
 }
 
 module "api" {
-  source      = "./modules/api"
-  stage       = var.stage
-  rg_name     = azurerm_resource_group.rg.name
-  rg_location = azurerm_resource_group.rg.location
+  source                       = "./modules/api"
+  stage                        = var.stage
+  rg_name                      = azurerm_resource_group.rg.name
+  rg_location                  = azurerm_resource_group.rg.location
+  insights_instrumentation_key = module.logging.insights_instrumentation_key
   app_envs = {
     REDIS_HOST     = module.cache.hostname
     REDIS_PORT     = module.cache.ssl_port
@@ -31,12 +32,13 @@ module "api" {
 }
 
 module "schedule" {
-  source               = "./modules/schedule"
-  stage                = var.stage
-  rg_name              = azurerm_resource_group.rg.name
-  rg_location          = azurerm_resource_group.rg.location
-  storage_account_name = module.storage.account_name
-  storage_access_key   = module.storage.access_key
+  source                       = "./modules/schedule"
+  stage                        = var.stage
+  rg_name                      = azurerm_resource_group.rg.name
+  rg_location                  = azurerm_resource_group.rg.location
+  storage_account_name         = module.storage.account_name
+  storage_access_key           = module.storage.access_key
+  insights_instrumentation_key = module.logging.insights_instrumentation_key
   app_envs = {
     DB_HOST      = module.database.db_domain
     DB_USER      = module.database.db_user
@@ -64,6 +66,13 @@ module "cache" {
 
 module "storage" {
   source      = "./modules/storage"
+  stage       = var.stage
+  rg_name     = azurerm_resource_group.rg.name
+  rg_location = azurerm_resource_group.rg.location
+}
+
+module "logging" {
+  source      = "./modules/logging"
   stage       = var.stage
   rg_name     = azurerm_resource_group.rg.name
   rg_location = azurerm_resource_group.rg.location

@@ -22,3 +22,7 @@ variable "storage_access_key" {
 variable "app_envs" {
   type = map(string)
 }
+
+variable "insights_instrumentation_key" {
+  type = string
+}

@@ -28,12 +28,14 @@ resource "azurerm_postgresql_flexible_server" "pg" {
   name                          = "api-postgresql-${var.stage}"
   resource_group_name           = var.rg_name
   location                      = var.rg_location
-  version                       = "16"
+  version                       = "15"
   public_network_access_enabled = true
   administrator_login           = var.db_user
   administrator_password        = random_password.password.result
   storage_mb                    = 32768
+  storage_tier                  = "P4"
   sku_name                      = "B_Standard_B1ms"
+  zone                          = "3"
   tags = {
     "stage" = var.stage
   }

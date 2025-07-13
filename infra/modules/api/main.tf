@@ -19,7 +19,8 @@ provider "docker" {
 locals {
   local_app_settings = {
     # This environment is not actually used in the application. It is setted to force the app service to be deployed when there's a change in the image
-    APP_IMAGE_ID = docker_image.api_img.id
+    APP_IMAGE_ID                   = docker_image.api_img.id
+    APPINSIGHTS_INSTRUMENTATIONKEY = var.insights_instrumentation_key
   }
   app_settings   = merge(local.local_app_settings, var.app_envs)
   image_name     = "trust-lesson/api-img-${var.stage}"
@@ -80,8 +81,8 @@ resource "azurerm_linux_web_app" "api_webapp" {
     type = "SystemAssigned"
   }
   site_config {
-    always_on = false
-    health_check_path = "/public/health"
+    always_on                         = false
+    health_check_path                 = "/public/health"
     health_check_eviction_time_in_min = 5
     application_stack {
       docker_image_name        = docker_image.api_img.name
