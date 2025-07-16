@@ -4,6 +4,11 @@ from pydantic import BaseModel
 from fastapi import UploadFile
 
 
+class CreateCourseIn(BaseModel):
+    name: str
+    description: str
+
+
 class CreateUserIn(BaseModel):
     username: str
     fullname: str
