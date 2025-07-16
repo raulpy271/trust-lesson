@@ -29,7 +29,7 @@ def test_create_course(client, token, session, admin):
     assert course.terms_count == 0
 
 
-def test_list_course(client, token, session, admin):
+def test_list_course(client, token, session):
     courses = factory.list_course(3, session)
     response = client.get("/logged/course/", auth=token)
     assert response.status_code == HTTPStatus.OK
