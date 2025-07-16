@@ -49,6 +49,16 @@ def user_password(session):
 
 @pytest.fixture
 @factory.register
+def admin(user_password, session):
+    user, _ = user_password
+    user.is_admin = True
+    session.add(user)
+    session.commit()
+    return user
+
+
+@pytest.fixture
+@factory.register
 def course(session):
     text = mimesis.Text()
     course = models.Course(

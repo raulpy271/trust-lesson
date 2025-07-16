@@ -10,7 +10,7 @@ from api.auth import create_hash_salt, LoggedUserId
 router = APIRouter(prefix="/user", tags=["user"])
 
 
-@router.post("/create", status_code=HTTPStatus.CREATED)
+@router.post("/", status_code=HTTPStatus.CREATED)
 def create(data: dto.CreateUserIn):
     with Session() as session:
         data = data.model_dump()
