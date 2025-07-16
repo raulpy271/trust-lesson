@@ -22,6 +22,7 @@ def crud_router(
     default_dto = dtos.get("default", dict)
     create_dto = dtos.get("create", default_dto)
     update_dto = dtos.get("update", default_dto)
+    delete_dto = dtos.get("delete", default_dto)
     default_auth = authorizations.get("default")
     create_auth = authorizations.get("create", default_auth)
     list_auth = authorizations.get("list", default_auth)
@@ -80,11 +81,11 @@ def crud_router(
     if "delete" in methods:
 
         @router.delete("/{resource_id}")
-        def delete(resource_id: UUID, user_id: LoggedUserId):
+        def delete(resource_id: UUID, user_id: LoggedUserId, data: delete_dto = None):
             with Session() as session:
                 if delete_auth:
                     user = session.get(User, user_id)
-                    if not delete_auth(None, user, resource_id):
+                    if not delete_auth(data, user, resource_id):
                         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
                 obj = session.get(model, resource_id)
                 if obj:

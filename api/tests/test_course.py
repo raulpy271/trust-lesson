@@ -63,13 +63,14 @@ def test_update_course_not_found(client, token, admin):
 
 def test_delete_course(client, token, admin, course, session):
     course_id = course.id
-    response = client.delete(f"/logged/course/{course.id}", auth=token)
+    response = client.delete(f"/logged/course/{course.id}", auth=token, params={})
     assert response.status_code == HTTPStatus.OK
-    session.expire(course)
+    session.expire_all()
     assert not session.get(models.Course, course_id)
 
 
 def test_delete_course_not_found(client, token, admin):
     crypto = mimesis.Cryptographic()
-    response = client.delete(f"/logged/course/{crypto.uuid()}", auth=token)
+    response = client.delete(f"/logged/course/{crypto.uuid()}", auth=token, params={})
+    print(response.text)
     assert response.status_code == HTTPStatus.NOT_FOUND
