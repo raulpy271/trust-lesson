@@ -1,7 +1,10 @@
+from datetime import date, datetime
+from typing import Annotated, Optional
 from uuid import UUID
 
+from api.models import LessonStatus, TermStatus
 from pydantic import BaseModel
-from fastapi import UploadFile
+from fastapi import UploadFile, Query
 
 
 class CreateCourseIn(BaseModel):
@@ -14,6 +17,39 @@ class CreateUserIn(BaseModel):
     fullname: str
     email: str
     password: str
+
+
+class DeleteUserParams(BaseModel):
+    password: str
+
+
+DeleteUserIn = Annotated[DeleteUserParams, Query()]
+
+
+class CreateCourseTermIn(BaseModel):
+    status: TermStatus
+    start_date: date
+    end_date: date
+    course_id: UUID
+
+
+class CreateLessonIn(BaseModel):
+    status: LessonStatus = LessonStatus.WAITING
+    start_date: datetime
+    duration_min: int
+    description: Optional[str] = None
+    instructor_id: UUID
+    term_id: UUID
+
+
+class UpdateLessonIn(BaseModel):
+    status: LessonStatus = LessonStatus.WAITING
+    start_date: datetime
+    duration_min: int
+    description: Optional[str] = None
+    effective_start_date: Optional[datetime]
+    effective_duration_min: Optional[int]
+    instructor_id: UUID
 
 
 class LoginIn(BaseModel):

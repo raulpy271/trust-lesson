@@ -3,12 +3,24 @@ from uuid import UUID
 from http import HTTPStatus
 
 from sqlalchemy import select
-from fastapi import APIRouter, HTTPException
+from api.dto import CreateLessonIn, UpdateLessonIn
+from fastapi import HTTPException
 
 from api.auth import LoggedUserId
+from api.crud import crud_router
 from api.models import Session, Lesson, User, UserRole, LessonUser, LessonStatus
 
-router = APIRouter(prefix="/lesson", tags=["lesson"])
+
+def auth(_: None | CreateLessonIn, user: User, _resource_id: None | UUID):
+    return user.is_admin or user.role in [UserRole.INSTRUCTOR, UserRole.ADMIN]
+
+
+router = crud_router(
+    Lesson,
+    {"create": CreateLessonIn, "update": UpdateLessonIn, "delete": dict},
+    authorizations={"default": auth},
+    methods=["create", "put", "delete"],
+)
 
 
 @router.get("/list")
