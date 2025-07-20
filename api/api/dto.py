@@ -43,6 +43,7 @@ class CreateCourseTermIn(BaseModel):
 
 
 class CreateLessonIn(BaseModel):
+    title: str
     status: LessonStatus = LessonStatus.WAITING
     start_date: datetime
     duration_min: int
@@ -52,6 +53,7 @@ class CreateLessonIn(BaseModel):
 
 
 class UpdateLessonIn(BaseModel):
+    title: str
     status: LessonStatus = LessonStatus.WAITING
     start_date: datetime
     duration_min: int
