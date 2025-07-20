@@ -2,6 +2,7 @@ from uuid import UUID
 from http import HTTPStatus
 
 from sqlalchemy import select
+from fastapi import APIRouter
 
 from api import dto
 from api.crud import crud_router
@@ -21,12 +22,7 @@ def auth(data, logged_user: User, user_id: UUID):
         return False
 
 
-router = crud_router(
-    User,
-    {"default": dto.CreateUserIn, "delete": dto.DeleteUserIn},
-    authorizations={"put": auth, "delete": auth},
-    methods=["list", "put", "delete"],
-)
+router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post("/", status_code=HTTPStatus.CREATED)
@@ -48,3 +44,12 @@ def me(user_id: LoggedUserId):
     with Session() as session:
         u = session.scalars(select(User).where(User.id == user_id)).one()
     return u.to_dict()
+
+
+crud_router(
+    User,
+    {"default": dto.CreateUserIn, "delete": dto.DeleteUserIn},
+    authorizations={"put": auth, "delete": auth},
+    methods=["list", "put", "delete", "get"],
+    router=router,
+)

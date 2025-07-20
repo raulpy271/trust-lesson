@@ -12,5 +12,5 @@ def auth(_: None | CreateCourseIn, user: User, _resource_id: None | UUID):
 router = crud_router(
     Course,
     {"default": CreateCourseIn, "delete": dict},
-    authorizations={"default": auth, "list": None},
+    authorizations={"default": auth, "get": None, "list": None},
 )

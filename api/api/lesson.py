@@ -4,7 +4,7 @@ from http import HTTPStatus
 
 from sqlalchemy import select
 from api.dto import CreateLessonIn, UpdateLessonIn
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 
 from api.auth import LoggedUserId
 from api.crud import crud_router
@@ -15,12 +15,7 @@ def auth(_: None | CreateLessonIn, user: User, _resource_id: None | UUID):
     return user.is_admin or user.role in [UserRole.INSTRUCTOR, UserRole.ADMIN]
 
 
-router = crud_router(
-    Lesson,
-    {"create": CreateLessonIn, "update": UpdateLessonIn, "delete": dict},
-    authorizations={"default": auth},
-    methods=["create", "put", "delete"],
-)
+router = APIRouter(prefix="/lesson", tags=["lesson"])
 
 
 @router.get("/list")
@@ -88,3 +83,12 @@ def lesson_stop(lesson_id: UUID, user_id: LoggedUserId):
                 )
         else:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+
+
+crud_router(
+    Lesson,
+    {"create": CreateLessonIn, "update": UpdateLessonIn, "delete": dict},
+    authorizations={"default": auth, "get": None},
+    methods=["get", "create", "put", "delete"],
+    router=router,
+)

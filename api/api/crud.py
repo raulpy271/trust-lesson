@@ -1,3 +1,4 @@
+from typing import Optional
 from uuid import UUID
 from http import HTTPStatus
 
@@ -15,15 +16,17 @@ def crud_router(
     name: None | str = None,
     authorizations: dict = {},
     tags: list = [],
-    methods: list = ["create", "list", "put", "delete"],
+    methods: list = ["get", "create", "list", "put", "delete"],
+    router: Optional[APIRouter] = None,
 ):
     name = name or model.__name__.lower()
-    router = APIRouter(prefix="/" + name, tags=(tags or [name]))
+    router = router or APIRouter(prefix="/" + name, tags=(tags or [name]))
     default_dto = dtos.get("default", dict)
     create_dto = dtos.get("create", default_dto)
     update_dto = dtos.get("update", default_dto)
     delete_dto = dtos.get("delete", default_dto)
     default_auth = authorizations.get("default")
+    get_auth = authorizations.get("get", default_auth)
     create_auth = authorizations.get("create", default_auth)
     list_auth = authorizations.get("list", default_auth)
     update_auth = authorizations.get("update", default_auth)
@@ -55,6 +58,22 @@ def crud_router(
                         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
                 objs = session.scalars(select(model)).all()
                 obj_res = [obj.to_dict() for obj in objs]
+            return obj_res
+
+    if "get" in methods:
+
+        @router.get("/{resource_id}")
+        def get(resource_id: UUID, user_id: LoggedUserId):
+            with Session() as session:
+                if get_auth:
+                    user = session.get(User, user_id)
+                    if not get_auth(None, user, resource_id):
+                        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+                obj = session.get(model, resource_id)
+                if obj:
+                    obj_res = obj.to_dict()
+                else:
+                    raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
             return obj_res
 
     if "put" in methods:

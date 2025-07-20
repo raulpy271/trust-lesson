@@ -13,5 +13,5 @@ router = crud_router(
     CourseTerm,
     {"default": CreateCourseTermIn, "delete": dict},
     name="course-term",
-    authorizations={"default": auth, "list": None},
+    authorizations={"default": auth, "list": None, "get": None},
 )
