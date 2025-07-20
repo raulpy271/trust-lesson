@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import Annotated, Optional
 from uuid import UUID
 
-from api.models import LessonStatus, TermStatus
+from api.models import LessonStatus, TermStatus, UserRole
 from pydantic import BaseModel
 from fastapi import UploadFile, Query
 
@@ -17,6 +17,15 @@ class CreateUserIn(BaseModel):
     fullname: str
     email: str
     password: str
+
+
+class UpdateUserIn(BaseModel):
+    username: str
+    fullname: str
+    email: str
+    password: str
+    role: UserRole
+    is_admin: bool
 
 
 class DeleteUserParams(BaseModel):

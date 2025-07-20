@@ -10,16 +10,23 @@ from api.models import Session, User
 from api.auth import create_hash_salt, check_hash, LoggedUserId
 
 
-def auth(data, logged_user: User, user_id: UUID):
-    password = (
-        data
-        if isinstance(data, str)
-        else data.password if hasattr(data, "password") else None
-    )
+def delete_auth(data: dto.DeleteUserIn, logged_user: User, user_id: UUID):
+    password = data.password
     if password and check_hash(logged_user, password):
         return logged_user.is_admin or logged_user.id == user_id
     else:
         return False
+
+
+def update_auth(data: dto.UpdateUserIn, logged_user: User, user_id: UUID):
+    password = data.password
+    if password and check_hash(logged_user, password):
+        if logged_user.is_admin:
+            return True
+        elif logged_user.id == user_id:
+            if not data.is_admin and data.role == logged_user.role:
+                return True
+    return False
 
 
 router = APIRouter(prefix="/user", tags=["user"])
@@ -48,8 +55,8 @@ def me(user_id: LoggedUserId):
 
 crud_router(
     User,
-    {"default": dto.CreateUserIn, "delete": dto.DeleteUserIn},
-    authorizations={"put": auth, "delete": auth},
+    {"update": dto.UpdateUserIn, "delete": dto.DeleteUserIn},
+    authorizations={"update": update_auth, "delete": delete_auth},
     methods=["list", "put", "delete", "get"],
     router=router,
 )

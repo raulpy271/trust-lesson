@@ -45,12 +45,14 @@ def test_list_users(client, token, session, user_password):
         assert user.is_admin == user_res["is_admin"]
 
 
-def test_update_user(client, session, token, user_password):
+def test_update_user(client, session, token, user_password, admin):
     person = mimesis.Person()
     update = {
         "username": user_password[0].username,
         "fullname": person.full_name(),
         "email": user_password[0].email,
+        "is_admin": not user_password[0].is_admin,
+        "role": user_password[0].role,
         "password": user_password[1],
     }
     response = client.put(f"logged/user/{user_password[0].id}", json=update, auth=token)
@@ -60,6 +62,22 @@ def test_update_user(client, session, token, user_password):
     assert user.username == update["username"]
     assert user.fullname == update["fullname"]
     assert user.email == update["email"]
+
+
+def test_user_cannot_promote_himself_to_admin(client, session, token, user_password):
+    person = mimesis.Person()
+    update = {
+        "username": user_password[0].username,
+        "fullname": person.full_name(),
+        "email": user_password[0].email,
+        "is_admin": True,
+        "role": user_password[0].role,
+        "password": user_password[1],
+    }
+    response = client.put(f"logged/user/{user_password[0].id}", json=update, auth=token)
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    user = session.get(User, user_password[0].id)
+    assert not user.is_admin
 
 
 def test_user_cannot_delete_another(client, session, token, user_password):
