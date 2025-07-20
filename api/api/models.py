@@ -150,6 +150,7 @@ class Lesson(TimestempMixin, Base):
     __tablename__ = "lesson"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    title: Mapped[str] = mapped_column(String(100))
     status: Mapped[LessonStatus] = mapped_column(
         default=LessonStatus.WAITING, server_default=LessonStatus.WAITING.value
     )

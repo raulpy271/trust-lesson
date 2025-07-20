@@ -49,6 +49,16 @@ def user_password(session):
 
 @pytest.fixture
 @factory.register
+def admin(user_password, session):
+    user, _ = user_password
+    user.is_admin = True
+    session.add(user)
+    session.commit()
+    return user
+
+
+@pytest.fixture
+@factory.register
 def course(session):
     text = mimesis.Text()
     course = models.Course(
@@ -85,6 +95,7 @@ def lesson(session, course_term, user_password, start_date=None):
     if not start_date:
         start_date = datetime.datetime()
     lesson = models.Lesson(
+        title=text.title(),
         status=models.LessonStatus.WAITING,
         start_date=start_date,
         duration_min=60,
