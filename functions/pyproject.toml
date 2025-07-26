@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "functions"
+version = "0.1.0"
+description = ""
+authors = ["raulpy271 <raulrufino0@gmail.com>"]
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = ">=1.8"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+api = { path = "../api/", develop = false }
+azure-functions= "^1.21.3"
+azure-ai-vision-imageanalysis = "^1.0.0"
+azure-storage-blob = "^12.24.1"
+azure-identity = "^1.19.0"
+
+[tool.black]
+target-version = ["py312"]
