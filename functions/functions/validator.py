@@ -6,7 +6,7 @@ from azure.ai.vision.imageanalysis.models import VisualFeatures
 
 from api.models import LessonValidation
 from api.azure import generate_sas
-from api.validate_images import Validator
+from api.jobs.validate_images import Validator
 from functions.settings import VISION_ENDPOINT, VISION_APIKEY
 
 
