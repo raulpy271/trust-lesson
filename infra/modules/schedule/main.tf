@@ -46,18 +46,34 @@ resource "terraform_data" "requirements" {
     always = uuid()
   }
   provisioner "local-exec" {
-    command     = "poetry export -n --without-hashes --format=requirements.txt > requirements.txt && cat function-requirements.txt >> requirements.txt"
-    working_dir = "../api"
+    command     = <<EOT
+      poetry export -n --without-hashes --format=requirements.txt > requirements.txt
+      sed -i '/api\s*@\s*file:/d' requirements.txt # Remove local package from requirements
+    EOT
+    working_dir = "../functions"
   }
+}
+
+resource "terraform_data" "functions_pkg" {
+  triggers_replace = {
+    always = uuid()
+  }
+  provisioner "local-exec" {
+    command = "./create-zip.sh"
+    working_dir = "../functions"
+  }
+  depends_on = [
+    terraform_data.requirements
+  ]
 }
 
 data "archive_file" "api_zip" {
   type        = "zip"
-  output_path = "../api/dist/functions-${uuid()}.zip"
-  source_dir  = "../api"
-  excludes    = ["Dockerfile*", "*.env", "tests", "dist", "**/__pycache__", ".pytest_cache", ".poetry"]
+  output_path = "../functions/dist/functions-${uuid()}.zip"
+  source_dir  = "../functions/dist"
+  excludes    = ["Dockerfile*", "*.env", "tests", "dist", "**/__pycache__", ".pytest_cache", ".poetry", "functions-*.zip"]
   depends_on = [
-    terraform_data.requirements
+    terraform_data.functions_pkg
   ]
 }
 
@@ -91,7 +107,7 @@ resource "azurerm_linux_function_app" "schedule_functions" {
     "stage" = var.stage
   }
   provisioner "local-exec" {
-    command = "rm ../api/dist/functions-*.zip"
+    command = "rm -r ../functions/dist/*"
     when    = destroy
   }
 }
