@@ -2,9 +2,11 @@ from datetime import date, datetime
 from typing import Annotated, Optional
 from uuid import UUID
 
-from api.models import LessonStatus, TermStatus, UserRole
-from pydantic import BaseModel
+from pydantic import BaseModel, AfterValidator
 from fastapi import UploadFile, Query
+
+from api.models import LessonStatus, TermStatus, UserRole
+from api.utils import check_media_type
 
 
 class CreateCourseIn(BaseModel):
@@ -70,7 +72,10 @@ class LoginIn(BaseModel):
 
 class ValidationIn(BaseModel):
     lesson_id: UUID
-    file: UploadFile
+    file: Annotated[
+        UploadFile,
+        AfterValidator(check_media_type(["png", "jpeg", "jpg"], ["image", "video"])),
+    ]
 
 
 class HealthOut(BaseModel):
@@ -80,3 +85,7 @@ class HealthOut(BaseModel):
     redis_error: str | None = None
     storage_healthy: bool | None = None
     storage_error: str | None = None
+
+
+class UploadSpreadsheetLessons(BaseModel):
+    file: UploadFile

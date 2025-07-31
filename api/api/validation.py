@@ -1,4 +1,3 @@
-import re
 from typing import Annotated
 from http import HTTPStatus
 from uuid import uuid4
@@ -11,22 +10,15 @@ from api.models import Session, Lesson, LessonUser, MediaType, LessonValidation
 from api.dto import ValidationIn
 from api import azure
 from api.auth import LoggedUserId
+from api.utils import parse_content_type
 
 router = APIRouter(prefix="/validation", tags=["validation"])
 
 
 @router.post("/create", status_code=HTTPStatus.CREATED)
 async def create(data: Annotated[ValidationIn, Form()], user_id: LoggedUserId):
-    match = re.fullmatch(r"(\w+)/(\w+)", data.file.content_type.lower())
-    mime_types = {"image": MediaType.IMAGE, "video": MediaType.VIDEO}
-    extensions = ["png", "jpeg", "jpg"]
-    if match:
-        mime_type, media_type = match.groups()
-        if mime_type not in mime_types or media_type not in extensions:
-            raise HTTPException(status_code=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
-        mime_type_enum = MediaType(mime_type.upper())
-    else:
-        raise HTTPException(status_code=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
+    mime_type, media_type = parse_content_type(data.file.content_type)
+    mime_type_enum = MediaType(mime_type.upper())
     with Session() as session:
         lesson = session.get(Lesson, data.lesson_id)
         if lesson:
