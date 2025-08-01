@@ -60,3 +60,12 @@ def client(app):
 def token(client, redis, user_password):
     user, password = user_password
     return authenticate(client, user, password)
+
+
+@pytest.fixture
+def container():
+    class ContainerMock:
+        async def upload_blob(self, key, *args, **kwargs):
+            self.key = key
+
+    return ContainerMock()

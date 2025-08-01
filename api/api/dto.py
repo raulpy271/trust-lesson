@@ -74,7 +74,9 @@ class ValidationIn(BaseModel):
     lesson_id: UUID
     file: Annotated[
         UploadFile,
-        AfterValidator(check_media_type(["png", "jpeg", "jpg"], ["image", "video"])),
+        AfterValidator(
+            check_media_type(["png", "jpeg", "jpg"], mime_types=["image", "video"])
+        ),
     ]
 
 
@@ -88,4 +90,7 @@ class HealthOut(BaseModel):
 
 
 class UploadSpreadsheetLessons(BaseModel):
-    file: UploadFile
+    file: Annotated[
+        UploadFile,
+        AfterValidator(check_media_type(["xlsx"])),
+    ]

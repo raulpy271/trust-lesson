@@ -21,15 +21,6 @@ def spreadsheet():
         yield sp
 
 
-@pytest.fixture
-def container():
-    class ContainerMock:
-        async def upload_blob(self, key, *args, **kwargs):
-            self.key = key
-
-    return ContainerMock()
-
-
 def test_create(
     monkeypatch,
     session,
