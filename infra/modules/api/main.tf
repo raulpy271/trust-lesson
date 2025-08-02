@@ -38,6 +38,16 @@ resource "azurerm_container_registry" "acr" {
   }
 }
 
+resource "terraform_data" "requirements" {
+  triggers_replace = {
+    always = uuid()
+  }
+  provisioner "local-exec" {
+    command     = "poetry export -n --without-hashes --format=requirements.txt > requirements.txt"
+    working_dir = "../api"
+  }
+}
+
 resource "docker_image" "api_img" {
   name         = local.image_name
   force_remove = true
@@ -50,6 +60,9 @@ resource "docker_image" "api_img" {
     # Always build the image locally. TODO: Build only when the code changes
     "random_uuid" : uuid()
   }
+  depends_on = [
+    terraform_data.requirements
+  ]
 }
 
 resource "docker_registry_image" "api_img_registry" {

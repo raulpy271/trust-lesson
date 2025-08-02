@@ -16,6 +16,10 @@ output "db_password" {
   sensitive = true
 }
 
+output "function_url" {
+  value = module.schedule.function_url
+}
+
 output "cache_hostname" {
   value = module.cache.hostname
 }

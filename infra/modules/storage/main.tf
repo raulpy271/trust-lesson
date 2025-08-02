@@ -17,3 +17,9 @@ resource "azurerm_storage_container" "lesson_image" {
   container_access_type = "private"
 }
 
+resource "azurerm_storage_container" "lesson_spreadsheet" {
+  name                  = "lesson-spreadsheet"
+  storage_account_id    = azurerm_storage_account.trust_lesson.id
+  container_access_type = "private"
+}
+

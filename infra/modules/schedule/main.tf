@@ -59,7 +59,7 @@ resource "terraform_data" "functions_pkg" {
     always = uuid()
   }
   provisioner "local-exec" {
-    command = "./create-zip.sh"
+    command     = "./create-zip.sh"
     working_dir = "../functions"
   }
   depends_on = [
@@ -110,6 +110,11 @@ resource "azurerm_linux_function_app" "schedule_functions" {
     command = "rm -r ../functions/dist/*"
     when    = destroy
   }
+}
+
+data "azurerm_function_app_host_keys" "functions" {
+  name                = azurerm_linux_function_app.schedule_functions.name
+  resource_group_name = var.rg_name
 }
 
 data "azurerm_subscription" "primary" {
