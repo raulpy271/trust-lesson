@@ -1,7 +1,10 @@
 import re
 from http import HTTPStatus
 
+from aiohttp import ClientSession
 from fastapi import UploadFile, HTTPException
+
+from api.settings import FUNCTION_URL, FUNCTION_KEY
 
 
 def check_media_type(
@@ -16,8 +19,6 @@ def check_media_type(
             match = re.fullmatch(r".*\.(\w+)$", file.filename.lower())
             if match:
                 ext = match.group(1)
-                print(ext)
-                print(extensions)
                 if ext not in extensions:
                     raise HTTPException(status_code=HTTPStatus.UNSUPPORTED_MEDIA_TYPE)
             else:
@@ -43,3 +44,8 @@ def parse_content_type(ct: str) -> tuple[str, str]:
         return match.groups()
     else:
         raise ValueError("Invalid content type")
+
+
+def function_session():
+    headers = {"x-functions-key": FUNCTION_KEY}
+    return ClientSession(FUNCTION_URL, headers=headers)

@@ -10,10 +10,16 @@ from azure.storage.blob import (
 )
 
 
-from api.settings import ACCOUNT_NAME, STORAGE_URL, CONTAINER_IMAGE_NAME
+from api.settings import (
+    ACCOUNT_NAME,
+    STORAGE_URL,
+    CONTAINER_IMAGE_NAME,
+    CONTAINER_SPREADSHEET_NAME,
+)
 
 _credential = None
 _container_image = None
+_container_spreadsheet = None
 _delegation_key = None
 
 
@@ -32,6 +38,16 @@ def get_container_image():
             STORAGE_URL, CONTAINER_IMAGE_NAME, credential=credential
         )
     return _container_image
+
+
+def get_container_spreadsheet():
+    global _container_spreadsheet
+    credential = get_default_credential()
+    if not _container_spreadsheet:
+        _container_spreadsheet = ContainerClient(
+            STORAGE_URL, CONTAINER_SPREADSHEET_NAME, credential=credential
+        )
+    return _container_spreadsheet
 
 
 def create_delegation_key(duration_min=10):
