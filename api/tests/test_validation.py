@@ -45,7 +45,7 @@ def test_create(
             (LessonValidation.lesson_id == lesson.id)
             & (LessonValidation.user_id == user_password[0].id)
         )
-    ).one_or_none()
+    ).first()
     assert validation
     assert container.key == validation.media_path
 
