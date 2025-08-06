@@ -137,10 +137,14 @@ async def upload_spreadsheet(data: Annotated[UploadSpreadsheetLessons, Form()]):
                 )
                 raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
         else:
-            logging.error("function error: " + res_json["error"])
+            logging.error("function error: " + res_json["message"])
             raise HTTPException(
                 status_code=res.status,
-                detail=res_json["error"],
+                detail={
+                    "message": res_json["message"],
+                    "errors": res_json.get("errors", []),
+                    "state_error": res_json.get("state_error"),
+                },
             )
     except Exception as e:
         logging.error(str(e))
