@@ -101,7 +101,9 @@ def lesson_stop(lesson_id: UUID, user_id: LoggedUserId):
 
 
 @router.post("/upload-spreadsheet", status_code=HTTPStatus.CREATED)
-async def upload_spreadsheet(data: Annotated[UploadSpreadsheetLessons, Form()]):
+async def upload_spreadsheet(
+    data: Annotated[UploadSpreadsheetLessons, Form()], user_id: LoggedUserId
+):
     try:
         container = azure.get_container_spreadsheet()
         await container.upload_blob(
@@ -112,7 +114,8 @@ async def upload_spreadsheet(data: Annotated[UploadSpreadsheetLessons, Form()]):
         session = function_session()
         async with session as client:
             res = await client.post(
-                "/api/lesson/upload-spreadsheet", data={"filename": data.file.filename}
+                "/api/lesson/upload-spreadsheet",
+                data={"filename": data.file.filename, "instructor_id": user_id},
             )
             res_json = await res.json()
         if res.ok:

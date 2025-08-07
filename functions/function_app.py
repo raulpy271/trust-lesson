@@ -1,3 +1,4 @@
+from uuid import UUID
 from http import HTTPStatus
 import logging
 import json
@@ -50,13 +51,15 @@ async def uploadSpreadsheet(req: func.HttpRequest) -> func.HttpResponse:
     status = HTTPStatus.OK
     try:
         data = req.get_json()
-        if data["filename"]:
+        if data["filename"] and data["instructor_id"]:
             logging.info("processing upload of file" + data["filename"])
             df = await read_df_from_storage(data["filename"])
             logging.info(f"Shape of the spreadsheet readed {df.shape}")
             parse_result = parse(df)
             if not parse_result.errors:
-                course_id, term_id = create_lessons(parse_result)
+                course_id, term_id = create_lessons(
+                    parse_result, UUID(data["instructor_id"])
+                )
                 res = {"course_id": course_id, "term_id": term_id}
             else:
                 status = HTTPStatus.BAD_REQUEST
