@@ -106,8 +106,9 @@ async def upload_spreadsheet(
 ):
     try:
         container = azure.get_container_spreadsheet()
+        filename = f"lessons_{user_id}_{datetime.now().strftime('%d-%m-%Y_%H:%M')}.xlsx"
         await container.upload_blob(
-            data.file.filename,
+            filename,
             data.file,
             content_settings=ContentSettings(content_type=data.file.content_type),
         )
@@ -115,7 +116,7 @@ async def upload_spreadsheet(
         async with session as client:
             res = await client.post(
                 "/api/lesson/upload-spreadsheet",
-                data={"filename": data.file.filename, "instructor_id": user_id},
+                json={"filename": filename, "instructor_id": str(user_id)},
             )
             res_json = await res.json()
         if res.ok:

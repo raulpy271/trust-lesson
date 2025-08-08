@@ -60,7 +60,7 @@ async def uploadSpreadsheet(req: func.HttpRequest) -> func.HttpResponse:
                 course_id, term_id = create_lessons(
                     parse_result, UUID(data["instructor_id"])
                 )
-                res = {"course_id": course_id, "term_id": term_id}
+                res = {"course_id": str(course_id), "term_id": str(term_id)}
             else:
                 status = HTTPStatus.BAD_REQUEST
                 res = {
@@ -74,11 +74,15 @@ async def uploadSpreadsheet(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         res = {"error": str(e), "errors": [], "state_error": None}
         status = HTTPStatus.INTERNAL_SERVER_ERROR
-    return func.HttpResponse(body=json.dumps(res), status_code=status)
+    return func.HttpResponse(
+        body=json.dumps(res), status_code=status, mimetype="application/json"
+    )
 
 
 @app.route(route="health", auth_level=func.AuthLevel.ANONYMOUS)
 async def functionsHealth(req: func.HttpRequest) -> func.HttpResponse:
     response, status_code = await health(checks=["database", "storage"])
     body = json.dumps(response.model_dump())
-    return func.HttpResponse(body=body, status_code=status_code)
+    return func.HttpResponse(
+        body=body, status_code=status_code, mimetype="application/json"
+    )
