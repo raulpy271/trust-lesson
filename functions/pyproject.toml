@@ -22,4 +22,5 @@ openpyxl = "^3.1.5"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
+mimesis = "^18.0.0"
 

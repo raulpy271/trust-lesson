@@ -1181,6 +1181,22 @@ files = [
 ]
 
 [[package]]
+name = "mimesis"
+version = "18.0.0"
+description = "Mimesis: Fake Data Generator."
+optional = false
+python-versions = "<4.0,>=3.10"
+groups = ["dev"]
+files = [
+    {file = "mimesis-18.0.0-py3-none-any.whl", hash = "sha256:a51854a5ce63ebf2bd6a98e8841412e04cede38593be7e16d1d712848e6273df"},
+    {file = "mimesis-18.0.0.tar.gz", hash = "sha256:7d7c76ecd680ae48afe8dc4413ef1ef1ee7ef20e16f9f9cb42892add642fc1b2"},
+]
+
+[package.extras]
+factory = ["factory-boy (>=3.3.0,<4.0.0)"]
+pytest = ["pytest (>=7.2,<8.0)"]
+
+[[package]]
 name = "msal"
 version = "1.33.0"
 description = "The Microsoft Authentication Library (MSAL) for Python library enables your app to access the Microsoft Cloud by supporting authentication of users with Microsoft Azure Active Directory accounts (AAD) and Microsoft Accounts (MSA) using industry standard OAuth2 and OpenID Connect."
@@ -2989,4 +3005,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "31d8019ab6bd84a4bc50612b06f41458fda8b76e1c3da1857b9322ce5a20e785"
+content-hash = "64fbf536a4e8f232a0fe0232d8e79d136e77b58bdf909653c22f41bdca2c4645"

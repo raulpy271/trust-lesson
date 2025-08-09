@@ -18,6 +18,7 @@ import pytest
                         "start_date": date(day=10, month=12, year=2025),
                         "start_time": time(hour=10, minute=0, second=0),
                         "duration_min": 60,
+                        "instructor": None,
                         "description": "description of the first lesson",
                     }
                 ],
@@ -34,6 +35,7 @@ import pytest
                         "start_date": date(day=10, month=12, year=2025),
                         "start_time": time(hour=10, minute=0, second=0),
                         "duration_min": 60,
+                        "instructor": None,
                         "description": "Lesson about variables and basic math",
                     },
                     {
@@ -41,6 +43,7 @@ import pytest
                         "start_date": date(day=11, month=12, year=2025),
                         "start_time": time(hour=12, minute=0, second=0),
                         "duration_min": 60,
+                        "instructor": "Smith",
                         "description": "Conditional and loop statements",
                     },
                 ],
@@ -77,8 +80,8 @@ def test_parser_error_no_number():
     result = parse(df)
     assert result.state_error == ParserState.READING_TERM_NUMBER
     assert len(result.errors) == 1
-    assert result.errors[0][0] == 4, "Validate the line of the error"
-    assert "was not found" in result.errors[0][1]
+    assert result.errors[0][0] == 1, "Validate the line of the error"
+    assert "term number of the course is empty" in result.errors[0][1]
 
 
 def test_parser_error_no_lesson_header():
@@ -86,7 +89,7 @@ def test_parser_error_no_lesson_header():
     result = parse(df)
     assert result.state_error == ParserState.READING_LESSONS_COLS
     assert len(result.errors) == 1
-    assert result.errors[0][0] == 4, "Validate the line of the error"
+    assert result.errors[0][0] == 5, "Validate the line of the error"
     assert "is invalid" in result.errors[0][1]
 
 

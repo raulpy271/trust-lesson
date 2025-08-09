@@ -3,7 +3,7 @@ from datetime import date, time
 from typing import Optional
 from pydantic import BaseModel, ValidationError
 
-from pandas import DataFrame
+from pandas import DataFrame, isna
 
 
 class ParserState(Enum):
@@ -15,7 +15,14 @@ class ParserState(Enum):
 
 NAME_TAG = "Course name:"
 TERM_NUMBER_TAG = "Term number:"
-LESSONS_COLS = ["Title", "Date", "Time", "Duration", "Description"]
+LESSONS_COLS = [
+    "Title",
+    "Date",
+    "Time",
+    "Duration",
+    "Instructor (optional)",
+    "Description",
+]
 
 
 class LessonItem(BaseModel):
@@ -23,6 +30,7 @@ class LessonItem(BaseModel):
     start_date: date
     start_time: time
     duration_min: int
+    instructor: Optional[str] = None
     description: str
 
 
@@ -81,6 +89,8 @@ def parse(df: DataFrame) -> LessonParserResult:
             if len(row.index) == len(LessonItem.model_fields.keys()):
                 row.index = LessonItem.model_fields.keys()
                 try:
+                    if isna(row["instructor"]):
+                        row["instructor"] = None
                     lesson = LessonItem.model_validate(row.to_dict())
                     lessons.append(lesson)
                 except ValidationError as exc:
