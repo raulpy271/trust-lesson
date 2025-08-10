@@ -38,3 +38,7 @@ jobs:
       run: cd api && poetry run pytest -m "not slow"
     - name: Run slow tests
       run: cd api && poetry run pytest -m slow
+    - name: Install functions dependencies
+      run: poetry -P functions install --with=dev
+    - name: Run functions tests
+      run: cd functions && poetry run pytest
