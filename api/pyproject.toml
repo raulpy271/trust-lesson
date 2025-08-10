@@ -12,7 +12,7 @@ poetry-plugin-export = ">=1.8"
 optional = true
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.12"
 redis = "^5.2.1"
 sqlalchemy = "^2.0.36"
 psycopg = {extras = ["binary"], version = "^3.2.3"}

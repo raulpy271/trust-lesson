@@ -28,6 +28,8 @@ module "api" {
     DB_NAME        = module.database.db_name
     DB_PASSWORD    = module.database.db_password
     STORAGE_URL    = module.storage.endpoint
+    FUNCTION_URL   = module.schedule.function_url
+    FUNCTION_KEY   = module.schedule.function_key
   }
 }
 

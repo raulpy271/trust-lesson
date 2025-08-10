@@ -18,7 +18,7 @@ async def health(checks=["database", "redis", "storage"]):
     try:
         if "database" in checks:
             with Session() as session:
-                session.scalars(select(User)).one_or_none()
+                session.scalars(select(User)).first()
             result.database_healthy = True
         else:
             result.database_error = "Not checked"

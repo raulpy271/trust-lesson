@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 from datetime import date, datetime
 
 from sqlalchemy import ForeignKey, String, create_engine
+from sqlalchemy.inspection import inspect
 from sqlalchemy.orm import (
     DeclarativeBase,
     Mapped,
@@ -20,11 +21,18 @@ class Base(DeclarativeBase):
     __exclude__ = ()
 
     def to_dict(self):
-        return {
-            c.name: getattr(self, c.name)
-            for c in self.__table__.columns
-            if c not in self.__exclude__
-        }
+        instance = inspect(self)
+        mapper = instance.mapper
+        cols = mapper.column_attrs
+        d = {c.key: getattr(self, c.key) for c in cols if c not in self.__exclude__}
+        for key in mapper.relationships.keys():
+            if key not in instance.unloaded:
+                relation = getattr(self, key)
+                if isinstance(relation, list):
+                    d[key] = [r.to_dict() for r in relation]
+                elif isinstance(relation, DeclarativeBase):
+                    d[key] = relation.to_dict()
+        return d
 
 
 class UserRole(str, enum.Enum):

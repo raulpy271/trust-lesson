@@ -17,8 +17,11 @@ DB_USER = environ.get("DB_USER")
 DB_PASSWORD = environ.get("DB_PASSWORD")
 
 STORAGE_URL = environ.get("STORAGE_URL")
+FUNCTION_URL = environ.get("FUNCTION_URL")
+FUNCTION_KEY = environ.get("FUNCTION_KEY")
 ACCOUNT_NAME = environ.get("ACCOUNT_NAME")
 CONTAINER_IMAGE_NAME = "lesson-image"
+CONTAINER_SPREADSHEET_NAME = "lesson-spreadsheet"
 
 TOKEN_EXP = 10 * 60  # Expiration in seconds
 TOKEN_REGENERATE = 2 * 60  # Remaining seconds to regenerate new token

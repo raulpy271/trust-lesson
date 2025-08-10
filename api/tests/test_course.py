@@ -72,5 +72,4 @@ def test_delete_course(client, token, admin, course, session):
 def test_delete_course_not_found(client, token, admin):
     crypto = mimesis.Cryptographic()
     response = client.delete(f"/logged/course/{crypto.uuid()}", auth=token, params={})
-    print(response.text)
     assert response.status_code == HTTPStatus.NOT_FOUND

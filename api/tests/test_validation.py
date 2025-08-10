@@ -16,12 +16,9 @@ def image():
 
 
 @pytest.fixture
-def container():
-    class ContainerMock:
-        async def upload_blob(self, key, *args, **kwargs):
-            self.key = key
-
-    return ContainerMock()
+def spreadsheet():
+    with open("tests/mock/lessons1.xlsx", "rb") as sp:
+        yield sp
 
 
 def test_create(
@@ -48,7 +45,7 @@ def test_create(
             (LessonValidation.lesson_id == lesson.id)
             & (LessonValidation.user_id == user_password[0].id)
         )
-    ).one_or_none()
+    ).first()
     assert validation
     assert container.key == validation.media_path
 
@@ -70,5 +67,15 @@ def test_create_invalid_media(client, token, lesson):
     image = BytesIO(randbytes(100))
     resp = client.post(
         "logged/validation/create", auth=token, data=data, files={"file": image}
+    )
+    assert resp.status_code == HTTPStatus.UNSUPPORTED_MEDIA_TYPE
+
+
+def test_create_wrong_media(client, token, lesson, spreadsheet):
+    data = {
+        "lesson_id": str(lesson.id),
+    }
+    resp = client.post(
+        "logged/validation/create", auth=token, data=data, files={"file": spreadsheet}
     )
     assert resp.status_code == HTTPStatus.UNSUPPORTED_MEDIA_TYPE
