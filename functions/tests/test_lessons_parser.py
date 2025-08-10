@@ -20,6 +20,7 @@ import pytest
                         "duration_min": 60,
                         "instructor": None,
                         "description": "description of the first lesson",
+                        "line_number": 4,
                     }
                 ],
             },
@@ -37,6 +38,7 @@ import pytest
                         "duration_min": 60,
                         "instructor": None,
                         "description": "Lesson about variables and basic math",
+                        "line_number": 4,
                     },
                     {
                         "title": "Python Basics 2",
@@ -45,6 +47,7 @@ import pytest
                         "duration_min": 60,
                         "instructor": "Smith",
                         "description": "Conditional and loop statements",
+                        "line_number": 5,
                     },
                 ],
             },
@@ -64,6 +67,7 @@ def test_parser(df, expected):
         assert result.lessons[i].start_time == expected["lessons"][i]["start_time"]
         assert result.lessons[i].duration_min == expected["lessons"][i]["duration_min"]
         assert result.lessons[i].description == expected["lessons"][i]["description"]
+        assert result.lessons[i].line_number == expected["lessons"][i]["line_number"]
 
 
 def test_parser_error_no_name():

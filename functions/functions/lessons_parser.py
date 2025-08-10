@@ -1,4 +1,4 @@
-from enum import Enum, auto
+from enum import StrEnum, auto
 from datetime import date, time
 from typing import Optional
 from pydantic import BaseModel, ValidationError
@@ -6,7 +6,7 @@ from pydantic import BaseModel, ValidationError
 from pandas import DataFrame, isna
 
 
-class ParserState(Enum):
+class ParserState(StrEnum):
     READING_COURSE_NAME = auto()
     READING_TERM_NUMBER = auto()
     READING_LESSONS_COLS = auto()
@@ -32,6 +32,13 @@ class LessonItem(BaseModel):
     duration_min: int
     instructor: Optional[str] = None
     description: str
+    line_number: int
+
+    @classmethod
+    def col_keys(cls):
+        keys = list(cls.model_fields.keys())
+        keys.remove("line_number")
+        return keys
 
 
 class LessonParserResult(BaseModel):
@@ -86,11 +93,12 @@ def parse(df: DataFrame) -> LessonParserResult:
             if LESSONS_COLS == row.to_list():
                 state = ParserState.READING_LESSONS
         elif state == ParserState.READING_LESSONS:
-            if len(row.index) == len(LessonItem.model_fields.keys()):
-                row.index = LessonItem.model_fields.keys()
+            if len(row.index) == len(LessonItem.col_keys()):
+                row.index = LessonItem.col_keys()
                 try:
                     if isna(row["instructor"]):
                         row["instructor"] = None
+                    row["line_number"] = i
                     lesson = LessonItem.model_validate(row.to_dict())
                     lessons.append(lesson)
                 except ValidationError as exc:

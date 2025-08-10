@@ -58,6 +58,34 @@ def test_create(
         assert result_lessons[i]["description"] == expected_lesson.description
 
 
+def test_function_error(
+    monkeypatch,
+    client,
+    token,
+    lessons1,
+    container,
+):
+    mock = MagicMock()
+    res = AsyncMock()
+    res.ok = False
+    res.status = HTTPStatus.INTERNAL_SERVER_ERROR
+    res.json.return_value = {
+        "message": "function error",
+        "errors": [],
+        "state_error": None,
+    }
+    mock.__aenter__.return_value = AsyncMock()
+    mock.__aenter__.return_value.post.return_value = res
+    monkeypatch.setattr("api.azure.get_container_spreadsheet", lambda: container)
+    monkeypatch.setattr("api.lesson.function_session", lambda: mock)
+    resp = client.post(
+        "logged/lesson/upload-spreadsheet", auth=token, files={"file": lessons1}
+    )
+    assert resp.status_code == res.status
+    course_resp = resp.json()
+    assert course_resp["detail"] == res.json.return_value
+
+
 def test_create_wrong_media(client, token, image):
     resp = client.post(
         "logged/lesson/upload-spreadsheet", auth=token, files={"file": image}

@@ -57,22 +57,33 @@ async def uploadSpreadsheet(req: func.HttpRequest) -> func.HttpResponse:
             logging.info(f"Shape of the spreadsheet readed {df.shape}")
             parse_result = parse(df)
             if not parse_result.errors:
-                course_id, term_id = create_lessons(
-                    parse_result, UUID(data["instructor_id"])
-                )
-                res = {"course_id": str(course_id), "term_id": str(term_id)}
+                logging.info(f"Creating lessons {len(parse_result.lessons)}")
+                result = create_lessons(parse_result, UUID(data["instructor_id"]))
+                if not result.errors:
+                    res = {
+                        "course_id": str(result.course_id),
+                        "term_id": str(result.term_id),
+                    }
+                else:
+                    status = HTTPStatus.BAD_REQUEST
+                    res = {
+                        "message": "Error when creating lessons",
+                        "errors": result.errors,
+                        "state_error": None,
+                    }
             else:
                 status = HTTPStatus.BAD_REQUEST
                 res = {
                     "message": "The spreadsheet sent was some errors",
                     "errors": parse_result.errors,
-                    "state_error": parse_result.state_error,
+                    "state_error": parse_result.state_error.value,
                 }
         else:
             res = {"message": "filename was not set", "errors": [], "state_error": None}
             status = HTTPStatus.INTERNAL_SERVER_ERROR
     except Exception as e:
-        res = {"error": str(e), "errors": [], "state_error": None}
+        logging.error(str(e))
+        res = {"message": str(e), "errors": [], "state_error": None}
         status = HTTPStatus.INTERNAL_SERVER_ERROR
     return func.HttpResponse(
         body=json.dumps(res), status_code=status, mimetype="application/json"

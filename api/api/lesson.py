@@ -9,6 +9,7 @@ from sqlalchemy.orm import selectinload
 from api.dto import CreateLessonIn, UpdateLessonIn, UploadSpreadsheetLessons
 from api.utils import function_session
 from fastapi import APIRouter, HTTPException, Form
+from fastapi.responses import JSONResponse
 from azure.storage.blob import ContentSettings
 
 from api.auth import LoggedUserId
@@ -142,12 +143,14 @@ async def upload_spreadsheet(
                 raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
         else:
             logging.error("function error: " + res_json["message"])
-            raise HTTPException(
+            return JSONResponse(
                 status_code=res.status,
-                detail={
-                    "message": res_json["message"],
-                    "errors": res_json.get("errors", []),
-                    "state_error": res_json.get("state_error"),
+                content={
+                    "detail": {
+                        "message": res_json["message"],
+                        "errors": res_json.get("errors", []),
+                        "state_error": res_json.get("state_error"),
+                    }
                 },
             )
     except Exception as e:
