@@ -6,7 +6,8 @@ from sqlalchemy import select
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 
-from api.models import Base, Session
+from api.models import Session
+from api.models.base import Base
 from api.auth import LoggedUserId, User
 
 
