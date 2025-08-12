@@ -7,6 +7,7 @@ from api import lesson
 from api import validation
 from api import course
 from api import course_term
+from api.middleware import middlewares
 
 
 def create_app():
@@ -23,7 +24,7 @@ def create_app():
     app.include_router(public.router)
     app.include_router(auth.router)
     app.include_router(logged_router)
-    app.add_middleware(auth.CheckAuthMiddleware)
+    [app.add_middleware(m) for m in middlewares]
     return app
 
 

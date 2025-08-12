@@ -46,6 +46,12 @@ def parse_content_type(ct: str) -> tuple[str, str]:
         raise ValueError("Invalid content type")
 
 
+def parse_bearer(token: str) -> str | None:
+    match = re.fullmatch(r"Bearer\s+(\w+\.\w+\.\S+)", token)
+    if match:
+        return match.group(1)
+
+
 def function_session():
     headers = {"x-functions-key": FUNCTION_KEY}
     return ClientSession(FUNCTION_URL, headers=headers)
