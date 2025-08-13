@@ -3,16 +3,15 @@ from datetime import datetime
 from hashlib import scrypt
 from secrets import token_hex
 from http import HTTPStatus
-from uuid import UUID
 
 import jwt
 from sqlalchemy import select
-from fastapi import APIRouter, Response, Header, HTTPException, Request, Depends
+from fastapi import APIRouter, Response, Header
 
 from api import settings
 from api import dto
 from api.models import Session, User
-from api.redis import get_default_client, hgetall_str
+from api.redis import get_default_client
 from api.utils import parse_bearer
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -56,18 +55,6 @@ def create_token(user):
     pipe.expire(token, settings.TOKEN_EXP)
     pipe.execute()
     return token, exp
-
-
-def get_user_id(request: Request):
-    if request.state.logged:
-        redis = get_default_client()
-        mapping = hgetall_str(redis, request.state.token)
-        if mapping and mapping.get("id"):
-            return UUID(mapping["id"])
-    raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-
-
-LoggedUserId = Annotated[str, Depends(get_user_id)]
 
 
 @router.post("/login")

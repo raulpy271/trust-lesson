@@ -12,7 +12,7 @@ from fastapi import APIRouter, HTTPException, Form
 from fastapi.responses import JSONResponse
 from azure.storage.blob import ContentSettings
 
-from api.auth import LoggedUserId
+from api.depends import LoggedUserId
 from api.crud import crud_router
 from api import azure
 from api.models import (

@@ -9,7 +9,7 @@ from azure.storage.blob import ContentSettings
 from api.models import Session, Lesson, LessonUser, MediaType, LessonValidation
 from api.dto import ValidationIn
 from api import azure
-from api.auth import LoggedUserId
+from api.depends import LoggedUserId
 from api.utils import parse_content_type
 
 router = APIRouter(prefix="/validation", tags=["validation"])

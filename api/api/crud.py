@@ -6,9 +6,9 @@ from sqlalchemy import select
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 
-from api.models import Session
+from api.models import Session, User
 from api.models.base import Base
-from api.auth import LoggedUserId, User
+from api.depends import LoggedUserId
 
 
 def crud_router(
