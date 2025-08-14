@@ -7,14 +7,14 @@ import logging
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from api.dto import CreateLessonIn, UpdateLessonIn, UploadSpreadsheetLessons
-from api.utils import function_session
+from api.azure.functions import function_session
 from fastapi import APIRouter, HTTPException, Form
 from fastapi.responses import JSONResponse
 from azure.storage.blob import ContentSettings
 
 from api.depends import LoggedUserId
 from api.crud import crud_router
-from api import azure
+from api.azure.storage import get_container_spreadsheet
 from api.models import (
     Session,
     Lesson,
@@ -106,7 +106,7 @@ async def upload_spreadsheet(
     data: Annotated[UploadSpreadsheetLessons, Form()], user_id: LoggedUserId
 ):
     try:
-        container = azure.get_container_spreadsheet()
+        container = get_container_spreadsheet()
         filename = f"lessons_{user_id}_{datetime.now().strftime('%d-%m-%Y_%H:%M')}.xlsx"
         await container.upload_blob(
             filename,

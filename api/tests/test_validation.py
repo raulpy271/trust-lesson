@@ -32,7 +32,7 @@ def test_create(
     lesson_user,
     container,
 ):
-    monkeypatch.setattr("api.azure.get_container_image", lambda: container)
+    monkeypatch.setattr("api.validation.get_container_image", lambda: container)
     data = {
         "lesson_id": str(lesson.id),
     }

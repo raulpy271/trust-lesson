@@ -39,7 +39,7 @@ def test_create(
     mock.__aenter__.return_value = AsyncMock()
     mock.__aenter__.return_value.post.return_value = res
 
-    monkeypatch.setattr("api.azure.get_container_spreadsheet", lambda: container)
+    monkeypatch.setattr("api.lesson.get_container_spreadsheet", lambda: container)
     monkeypatch.setattr("api.lesson.function_session", lambda: mock)
 
     resp = client.post(
@@ -76,7 +76,7 @@ def test_function_error(
     }
     mock.__aenter__.return_value = AsyncMock()
     mock.__aenter__.return_value.post.return_value = res
-    monkeypatch.setattr("api.azure.get_container_spreadsheet", lambda: container)
+    monkeypatch.setattr("api.lesson.get_container_spreadsheet", lambda: container)
     monkeypatch.setattr("api.lesson.function_session", lambda: mock)
     resp = client.post(
         "logged/lesson/upload-spreadsheet", auth=token, files={"file": lessons1}

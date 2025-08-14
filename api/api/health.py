@@ -8,7 +8,7 @@ from azure.core.exceptions import AzureError
 
 from api import redis
 from api.models import Session, User
-from api import azure
+from api.azure.storage import get_container_image
 from api.dto import HealthOut
 
 
@@ -40,7 +40,7 @@ async def health(checks=["database", "redis", "storage"]):
     try:
         if "storage" in checks:
             async with asyncio.timeout(10):
-                container = azure.get_container_image()
+                container = get_container_image()
                 await container.exists(timeout=1)
             result.storage_healthy = True
         else:
