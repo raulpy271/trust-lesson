@@ -1,4 +1,12 @@
-from api.routes import health, auth, course, course_term
+from api.routes import (
+    health,
+    auth,
+    course,
+    course_term,
+    lesson,
+    validation,
+    user,
+)
 
 
 routes = [
@@ -10,4 +18,7 @@ routes = [
 logged = [
     course.router,
     course_term.router,
+    lesson.router,
+    validation.router,
+    user.router,
 ]
