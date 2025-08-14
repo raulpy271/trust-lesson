@@ -11,8 +11,3 @@ async def health(response: Response):
     result, status_code = await api.health.health()
     response.status_code = status_code
     return result
-
-
-@router.get("/")
-def hello_world():
-    return "<p>Hello, World!</p>"

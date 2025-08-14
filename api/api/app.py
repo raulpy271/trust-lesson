@@ -1,12 +1,7 @@
 from fastapi import FastAPI, APIRouter
 
-from api import public
-from api import user
-from api import auth
-from api import lesson
-from api import validation
-from api import course
-from api import course_term
+from api.routes import routes, logged
+from api.middleware import middlewares
 
 
 def create_app():
@@ -15,15 +10,10 @@ def create_app():
         prefix="/logged",
         tags=["logged"],
     )
-    logged_router.include_router(user.router)
-    logged_router.include_router(lesson.router)
-    logged_router.include_router(validation.router)
-    logged_router.include_router(course.router)
-    logged_router.include_router(course_term.router)
-    app.include_router(public.router)
-    app.include_router(auth.router)
+    [logged_router.include_router(r) for r in logged]
     app.include_router(logged_router)
-    app.add_middleware(auth.CheckAuthMiddleware)
+    [app.include_router(r) for r in routes]
+    [app.add_middleware(m) for m in middlewares]
     return app
 
 

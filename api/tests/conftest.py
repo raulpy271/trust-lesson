@@ -11,6 +11,7 @@ from sqlalchemy.pool import StaticPool
 
 import api.redis
 from api import models, settings
+from api.models import base
 from api.app import create_app
 from tests.utils import authenticate
 
@@ -32,7 +33,7 @@ def session():
         settings.DB_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
     models._session = sessionmaker(models._engine)
-    models.Base.metadata.create_all(models._engine)
+    base.Base.metadata.create_all(models._engine)
     with models.Session() as s:
         yield s
 

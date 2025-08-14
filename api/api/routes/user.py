@@ -7,7 +7,8 @@ from fastapi import APIRouter
 from api import dto
 from api.crud import crud_router
 from api.models import Session, User
-from api.auth import create_hash_salt, check_hash, LoggedUserId
+from api.auth import create_hash_salt, check_hash
+from api.depends import LoggedUserId
 
 
 def delete_auth(data: dto.DeleteUserIn, logged_user: User, user_id: UUID):

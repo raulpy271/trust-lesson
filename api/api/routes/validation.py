@@ -8,8 +8,8 @@ from azure.storage.blob import ContentSettings
 
 from api.models import Session, Lesson, LessonUser, MediaType, LessonValidation
 from api.dto import ValidationIn
-from api import azure
-from api.auth import LoggedUserId
+from api.azure.storage import get_container_image
+from api.depends import LoggedUserId
 from api.utils import parse_content_type
 
 router = APIRouter(prefix="/validation", tags=["validation"])
@@ -30,7 +30,7 @@ async def create(data: Annotated[ValidationIn, Form()], user_id: LoggedUserId):
             if lesson_user:
                 validation_id = uuid4()
                 key = f"{validation_id}.{media_type}"
-                container = azure.get_container_image()
+                container = get_container_image()
                 await container.upload_blob(
                     key,
                     data.file,

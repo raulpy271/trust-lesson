@@ -9,7 +9,7 @@ from sqlalchemy import select
 from pydantic import BaseModel
 
 from api.models import Session, User, UserRole, TermUser, Course, CourseTerm, Lesson
-from api.azure import get_container_spreadsheet
+from api.azure.storage import get_container_spreadsheet
 from functions.lessons_parser import LessonParserResult
 
 
