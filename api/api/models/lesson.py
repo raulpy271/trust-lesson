@@ -1,17 +1,12 @@
 import enum
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID, uuid4
 from datetime import datetime
 
-from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import (
-    Mapped,
-    mapped_column,
-    relationship,
-)
+from sqlmodel import Field, Relationship
 
 from api.models.base import Base, TimestempMixin
-from api.models.user import User, LessonUser
+from api.models.lesson_user import LessonUser
 
 
 class MediaType(enum.Enum):
@@ -32,53 +27,35 @@ class LessonStatus(enum.Enum):
         return self in (self.RUNNING, self.LATE)
 
 
-class Lesson(TimestempMixin, Base):
-    __tablename__ = "lesson"
-
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    title: Mapped[str] = mapped_column(String(100))
-    status: Mapped[LessonStatus] = mapped_column(
-        default=LessonStatus.WAITING, server_default=LessonStatus.WAITING.value
-    )
-    effective_start_date: Mapped[Optional[datetime]] = mapped_column()
-    start_date: Mapped[datetime] = mapped_column()
-    effective_duration_min: Mapped[Optional[int]] = mapped_column()
-    duration_min: Mapped[int] = mapped_column()
-    description: Mapped[Optional[str]] = mapped_column(String(255))
-    instructor_id: Mapped[UUID] = mapped_column(
-        ForeignKey("user.id", ondelete="no action")
-    )
-    term_id: Mapped[UUID] = mapped_column(
-        ForeignKey("course_term.id", ondelete="no action")
-    )
-    instructor: Mapped["User"] = relationship(back_populates="ministrate_lessons")
-    term: Mapped["CourseTerm"] = relationship(back_populates="lessons")
-    users: Mapped[List["User"]] = relationship(
-        secondary="lesson_user", back_populates="lessons"
-    )
-    validations: Mapped[List["LessonValidation"]] = relationship(
-        back_populates="lesson"
-    )
+class Lesson(TimestempMixin, Base, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    title: str
+    status: LessonStatus = Field(default=LessonStatus.WAITING)
+    effective_start_date: Optional[datetime]
+    start_date: datetime
+    effective_duration_min: Optional[int]
+    duration_min: int
+    description: str
+    instructor_id: UUID = Field(foreign_key="user.id")
+    term_id: UUID = Field(foreign_key="course_term.id")
+    instructor: "User" = Relationship(back_populates="ministrate_lessons")
+    term: "CourseTerm" = Relationship(back_populates="lessons")
+    users: list["User"] = Relationship(back_populates="lessons", link_model=LessonUser)
+    validations: list["LessonValidation"] = Relationship(back_populates="lesson")
 
 
-class LessonValidation(TimestempMixin, Base):
+class LessonValidation(TimestempMixin, Base, table=True):
     __tablename__ = "lesson_validation"
 
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    lesson_id: Mapped[UUID] = mapped_column(
-        ForeignKey("lesson.id", ondelete="no action")
-    )
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="no action"))
-    validated: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
-    validated_success: Mapped[bool] = mapped_column(
-        default=False, server_default="FALSE"
-    )
-    validated_value: Mapped[Optional[float]] = mapped_column()
-    media_path: Mapped[str] = mapped_column()
-    media_type: Mapped[MediaType] = mapped_column()
-    lesson_user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("lesson_user.id", ondelete="no action")
-    )
-    lesson: Mapped[Lesson] = relationship(back_populates="validations")
-    user: Mapped[User] = relationship(back_populates="validations")
-    lesson_user: Mapped[LessonUser] = relationship(back_populates="validations")
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    lesson_id: UUID = Field(foreign_key="lesson.id")
+    user_id: UUID = Field(foreign_key="user.id")
+    validated: bool = Field(default=False)
+    validated_success: bool = Field(default=False)
+    validated_value: Optional[float]
+    media_path: str
+    media_type: MediaType
+    lesson_user_id: UUID = Field(foreign_key="lesson_user.id")
+    lesson: Lesson = Relationship(back_populates="validations")
+    user: "User" = Relationship(back_populates="validations")
+    lesson_user: LessonUser = Relationship(back_populates="validations")
