@@ -1,14 +1,12 @@
 from datetime import datetime
 
+from sqlmodel import SQLModel, Field
 from sqlalchemy.inspection import inspect
-from sqlalchemy.orm import (
-    DeclarativeBase,
-    Mapped,
-    mapped_column,
-)
+from sqlalchemy import event
+from sqlalchemy.orm import DeclarativeBase
 
 
-class Base(DeclarativeBase):
+class Base(SQLModel):
     __exclude__ = ()
 
     def to_dict(self):
@@ -27,7 +25,10 @@ class Base(DeclarativeBase):
 
 
 class TimestempMixin:
-    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
-    updated_at: Mapped[datetime] = mapped_column(
-        default=datetime.now, onupdate=datetime.now
-    )
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+    def __init_subclass__(cls):
+        @event.listens_for(cls, "before_update")
+        def update_updated_at(_mapper, connection, instance):
+            instance.updated_at = datetime.now()

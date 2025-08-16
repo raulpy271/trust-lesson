@@ -1,4 +1,5 @@
-from sqlalchemy import create_engine
+from sqlmodel import create_engine
+from sqlmodel import Session as _Session
 from sqlalchemy.orm import sessionmaker
 
 from api import settings
@@ -22,8 +23,7 @@ from api.models.user import (
 
 
 _engine = create_engine(settings.DB_URL)
-_session = sessionmaker(_engine)
 
 
 def Session():
-    return _session()
+    return _Session(_engine)
