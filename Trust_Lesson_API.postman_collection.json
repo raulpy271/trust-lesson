@@ -130,6 +130,35 @@
 							"response": []
 						},
 						{
+							"name": "upload-spreadsheet",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/home/raul/Programming/trust-lesson/lessons.xlsx"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/logged/lesson/upload-spreadsheet",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"lesson",
+										"upload-spreadsheet"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "update",
 							"request": {
 								"method": "PUT",
@@ -388,6 +417,25 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "list",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/course-term/",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"course-term",
+										""
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
@@ -398,6 +446,94 @@
 					{
 						"key": "token",
 						"value": "{{api-token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "functions",
+			"item": [
+				{
+					"name": "health",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{func_url}}/api/health",
+							"host": [
+								"{{func_url}}"
+							],
+							"path": [
+								"api",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "upload-spreadsheet",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"filename\": \"lessons_099702b5-afb9-484e-b668-b380e95e2168_09-08-2025_23:45.xlsx\",\n    \"instructor_id\": \"099702b5-afb9-484e-b668-b380e95e2168\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{func_url}}/api/lesson/upload-spreadsheet",
+							"host": [
+								"{{func_url}}"
+							],
+							"path": [
+								"api",
+								"lesson",
+								"upload-spreadsheet"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "apikey",
+				"apikey": [
+					{
+						"key": "key",
+						"value": "x-functions-key",
+						"type": "string"
+					},
+					{
+						"key": "value",
+						"value": "{{func_key}}",
 						"type": "string"
 					}
 				]
@@ -458,6 +594,16 @@
 		},
 		{
 			"key": "api-token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "func_url",
+			"value": "https://schedule-functions-test.azurewebsites.net",
+			"type": "string"
+		},
+		{
+			"key": "func_key",
 			"value": "",
 			"type": "string"
 		}
