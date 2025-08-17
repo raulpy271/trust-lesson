@@ -3,14 +3,12 @@ from dotenv import load_dotenv
 load_dotenv("testing.env")
 
 import mimesis
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+from sqlmodel import create_engine, SQLModel
 
 import pytest
 
 from api import models, settings
-from api.models import base
 from api.auth import create_hash_salt
 
 
@@ -19,8 +17,7 @@ def session():
     models._engine = create_engine(
         settings.DB_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
     )
-    models._session = sessionmaker(models._engine)
-    base.Base.metadata.create_all(models._engine)
+    SQLModel.metadata.create_all(models._engine)
     with models.Session() as s:
         yield s
 

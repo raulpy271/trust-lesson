@@ -2,7 +2,7 @@ from typing import Optional
 from uuid import UUID
 from http import HTTPStatus
 
-from sqlalchemy import select
+from sqlmodel import select
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 
@@ -57,7 +57,7 @@ def crud_router(
                     user = session.get(User, user_id)
                     if not list_auth(None, user, None):
                         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-                objs = session.scalars(select(model)).all()
+                objs = session.exec(select(model)).all()
                 obj_res = [obj.to_dict() for obj in objs]
             return obj_res
 
@@ -89,7 +89,8 @@ def crud_router(
                 obj = session.get(model, resource_id)
                 if obj:
                     for key, value in data.model_dump().items():
-                        setattr(obj, key, value)
+                        if hasattr(obj, key):
+                            setattr(obj, key, value)
                     session.add(obj)
                     session.commit()
                     session.refresh(obj)
