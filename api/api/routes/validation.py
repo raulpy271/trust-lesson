@@ -2,7 +2,7 @@ from typing import Annotated
 from http import HTTPStatus
 from uuid import uuid4
 
-from sqlalchemy import select
+from sqlmodel import select
 from fastapi import APIRouter, Form, HTTPException
 from azure.storage.blob import ContentSettings
 
@@ -22,9 +22,9 @@ async def create(data: Annotated[ValidationIn, Form()], user_id: LoggedUserId):
     with Session() as session:
         lesson = session.get(Lesson, data.lesson_id)
         if lesson:
-            lesson_user = session.scalars(
+            lesson_user = session.exec(
                 select(LessonUser).where(
-                    LessonUser.lesson_id == lesson.id and LessonUser.user_id == user_id
+                    LessonUser.lesson_id == lesson.id, LessonUser.user_id == user_id
                 )
             ).one_or_none()
             if lesson_user:

@@ -5,7 +5,7 @@ from typing import Optional
 from uuid import UUID
 
 import pandas
-from sqlalchemy import select
+from sqlmodel import select
 from pydantic import BaseModel
 
 from api.models import Session, User, UserRole, TermUser, Course, CourseTerm, Lesson
@@ -33,7 +33,7 @@ def create_lessons(
 ) -> CreateLessonsResult:
     errors = []
     with Session() as session:
-        course = session.execute(
+        course = session.exec(
             select(
                 Course.id,
                 Course.name,
@@ -42,17 +42,14 @@ def create_lessons(
             )
             .join(Course.terms)
             .where(
-                (Course.name == lessons.course_name)
-                & (CourseTerm.term_number == lessons.term_number)
+                Course.name == lessons.course_name,
+                CourseTerm.term_number == lessons.term_number,
             )
         ).one()
-        instructors = session.execute(
+        instructors = session.exec(
             select(User.id, User.username)
             .join(TermUser)
-            .where(
-                (User.role == UserRole.INSTRUCTOR)
-                & (TermUser.term_id == course.term_id)
-            )
+            .where(User.role == UserRole.INSTRUCTOR, TermUser.term_id == course.term_id)
         ).all()
     try:
         with Session() as session, session.begin():

@@ -1,8 +1,7 @@
 from uuid import UUID
 from http import HTTPStatus
 
-from sqlalchemy import select
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from api import dto
 from api.crud import crud_router
@@ -50,7 +49,9 @@ def create(data: dto.CreateUserIn):
 @router.get("/me")
 def me(user_id: LoggedUserId):
     with Session() as session:
-        u = session.scalars(select(User).where(User.id == user_id)).one()
+        u = session.get(User, user_id)
+        if not u:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     return u.to_dict()
 
 

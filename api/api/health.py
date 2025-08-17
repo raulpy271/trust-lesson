@@ -1,7 +1,7 @@
 import asyncio
 from http import HTTPStatus
 
-from sqlalchemy import select
+from sqlmodel import select
 from sqlalchemy import exc
 from redis.exceptions import RedisError
 from azure.core.exceptions import AzureError
@@ -18,7 +18,7 @@ async def health(checks=["database", "redis", "storage"]):
     try:
         if "database" in checks:
             with Session() as session:
-                session.scalars(select(User)).first()
+                session.exec(select(User)).first()
             result.database_healthy = True
         else:
             result.database_error = "Not checked"

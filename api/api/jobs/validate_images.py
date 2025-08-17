@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlmodel import select, not_
 from sqlalchemy.orm import selectinload
 
 from api.models import Session, LessonUser, LessonValidation
@@ -11,10 +11,10 @@ class Validator:
 
 def run(validator: Validator):
     with Session() as session:
-        lesson_users = session.scalars(
+        lesson_users = session.exec(
             select(LessonUser)
             .options(selectinload(LessonUser.validations))
-            .where(~LessonUser.validated)
+            .where(not_(LessonUser.validated))
         )
         for lesson_user in lesson_users:
             validated_count = 0

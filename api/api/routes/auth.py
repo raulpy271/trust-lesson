@@ -1,7 +1,7 @@
 from typing import Annotated
 from http import HTTPStatus
 
-from sqlalchemy import select
+from sqlmodel import select
 from fastapi import APIRouter, Response, Header
 
 from api import dto
@@ -17,9 +17,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/login")
 def login(response: Response, data: dto.LoginIn):
     with Session() as session:
-        user = session.scalars(
-            select(User).where(User.email == data.email)
-        ).one_or_none()
+        user = session.exec(select(User).where(User.email == data.email)).one_or_none()
         if user and check_hash(user, data.password):
             token, expiration = create_token(user)
             response.headers.update(

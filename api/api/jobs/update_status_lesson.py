@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from sqlalchemy import update
+from sqlmodel import update
 
 from api.models import Session, Lesson, LessonStatus
 
@@ -10,10 +10,8 @@ def run():
         cut_date = datetime.now() - timedelta(days=1)
         stmt = (
             update(Lesson)
-            .where(
-                (Lesson.status == LessonStatus.WAITING) & (Lesson.start_date < cut_date)
-            )
+            .where(Lesson.status == LessonStatus.WAITING, Lesson.start_date < cut_date)
             .values(status=LessonStatus.LATE)
         )
-        session.execute(stmt)
+        session.exec(stmt)
         session.commit()

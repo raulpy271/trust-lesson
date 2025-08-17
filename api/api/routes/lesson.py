@@ -4,7 +4,7 @@ from uuid import UUID
 from http import HTTPStatus
 
 import logging
-from sqlalchemy import select
+from sqlmodel import select
 from sqlalchemy.orm import selectinload
 from api.dto import CreateLessonIn, UpdateLessonIn, UploadSpreadsheetLessons
 from api.azure.functions import function_session
@@ -38,7 +38,7 @@ router = APIRouter(prefix="/lesson", tags=["lesson"])
 def lesson_list(start_date: date, end_date: date, user_id: LoggedUserId):
     date_filter = (start_date <= Lesson.start_date) & (end_date >= Lesson.start_date)
     with Session() as session:
-        role = session.scalars(select(User.role).filter_by(id=user_id)).one()
+        role = session.exec(select(User.role).filter_by(id=user_id)).one()
         if role == UserRole.STUDANT:
             stmt = (
                 select(Lesson)
@@ -47,7 +47,7 @@ def lesson_list(start_date: date, end_date: date, user_id: LoggedUserId):
             )
         else:
             stmt = select(Lesson).where(date_filter & (Lesson.instructor_id == user_id))
-        lessons = session.scalars(stmt).all()
+        lessons = session.exec(stmt).all()
     return {"lessons": [lesson.to_dict() for lesson in lessons]}
 
 
@@ -77,9 +77,7 @@ def lesson_start(lesson_id: UUID, user_id: LoggedUserId):
 @router.post("/stop/{lesson_id}")
 def lesson_stop(lesson_id: UUID, user_id: LoggedUserId):
     with Session() as session:
-        lesson = session.scalars(
-            select(Lesson).where(Lesson.id == lesson_id)
-        ).one_or_none()
+        lesson = session.get(Lesson, lesson_id)
         if lesson:
             pass
             if lesson.instructor_id != user_id:
@@ -124,7 +122,7 @@ async def upload_spreadsheet(
             if res_json.get("course_id") and res_json.get("term_id"):
                 with Session() as session:
                     course = session.get(Course, UUID(res_json["course_id"]))
-                    term = session.scalars(
+                    term = session.exec(
                         select(CourseTerm)
                         .options(selectinload(CourseTerm.lessons))
                         .where(CourseTerm.id == UUID(res_json["term_id"]))
