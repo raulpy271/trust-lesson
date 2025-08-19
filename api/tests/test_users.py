@@ -2,7 +2,7 @@ from hashlib import scrypt
 from http import HTTPStatus
 
 import mimesis
-from sqlalchemy import select
+from sqlmodel import select
 
 from api import settings
 from api.models import User
@@ -19,7 +19,7 @@ def test_create(session, client, token):
     }
     resp = client.post("logged/user/", json=user, auth=token)
     assert resp.status_code == HTTPStatus.CREATED
-    u = session.scalars(select(User).where(User.username == user["username"])).one()
+    u = session.exec(select(User).where(User.username == user["username"])).one()
     assert u.fullname == user["fullname"]
     assert u.email == user["email"]
     phash = scrypt(

@@ -17,7 +17,7 @@ def test_list_one_lesson(client, user_password, token, session, lesson):
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson.id)
 
@@ -48,7 +48,7 @@ def test_filter_by_date(client, user_password, token, session, course_term):
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == len(lessons_to_include)
     to_include_ids = [str(lesson.id) for lesson in lessons_to_include]
     for lesson in lessons:
@@ -75,7 +75,7 @@ def test_filter_by_logged_user(client, session, course_term):
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson_user1.id)
     # authenticate with user 2
@@ -87,7 +87,7 @@ def test_filter_by_logged_user(client, session, course_term):
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson_user2.id)
 
@@ -115,6 +115,6 @@ def test_list_lessons_of_instructor(
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson.id)

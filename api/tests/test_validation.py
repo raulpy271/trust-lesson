@@ -4,7 +4,7 @@ from io import BytesIO
 from http import HTTPStatus
 
 import pytest
-from sqlalchemy import select
+from sqlmodel import select
 
 from api.models import LessonValidation
 
@@ -40,10 +40,10 @@ def test_create(
         "logged/validation/create", auth=token, data=data, files={"file": image}
     )
     assert resp.status_code == HTTPStatus.CREATED
-    validation = session.scalars(
+    validation = session.exec(
         select(LessonValidation).where(
-            (LessonValidation.lesson_id == lesson.id)
-            & (LessonValidation.user_id == user_password[0].id)
+            LessonValidation.lesson_id == lesson.id,
+            LessonValidation.user_id == user_password[0].id,
         )
     ).first()
     assert validation

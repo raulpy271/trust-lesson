@@ -20,6 +20,7 @@ def test_create_course(client, token, session, admin):
     response = client.post("/logged/course/", auth=token, json=create)
     assert response.status_code == HTTPStatus.CREATED
     created = response.json()
+    print(created)
     assert create["name"] == created["name"]
     assert create["description"] == created["description"]
     assert created.get("id")
