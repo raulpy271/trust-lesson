@@ -39,6 +39,7 @@ def test_create(
     resp = client.post(
         "logged/validation/create", auth=token, data=data, files={"file": image}
     )
+    validation_res = resp.json()
     assert resp.status_code == HTTPStatus.CREATED
     validation = session.exec(
         select(LessonValidation).where(
@@ -47,6 +48,7 @@ def test_create(
         )
     ).first()
     assert validation
+    assert str(validation.id) == validation_res["id"]
     assert container.key == validation.media_path
 
 

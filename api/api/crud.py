@@ -45,8 +45,8 @@ def crud_router(
                 obj = model(**data.model_dump())
                 session.add(obj)
                 session.commit()
-                obj_res = obj.to_dict()
-            return obj_res
+                session.refresh(obj)
+            return obj
 
     if "list" in methods:
 
@@ -58,8 +58,7 @@ def crud_router(
                     if not list_auth(None, user, None):
                         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
                 objs = session.exec(select(model)).all()
-                obj_res = [obj.to_dict() for obj in objs]
-            return obj_res
+            return objs
 
     if "get" in methods:
 
@@ -72,10 +71,9 @@ def crud_router(
                         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
                 obj = session.get(model, resource_id)
                 if obj:
-                    obj_res = obj.to_dict()
+                    return obj
                 else:
                     raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-            return obj_res
 
     if "put" in methods:
 
@@ -94,10 +92,9 @@ def crud_router(
                     session.add(obj)
                     session.commit()
                     session.refresh(obj)
-                    obj_res = obj.to_dict()
                 else:
                     raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-            return obj_res
+            return obj
 
     if "delete" in methods:
 

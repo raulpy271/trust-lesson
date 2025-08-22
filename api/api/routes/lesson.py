@@ -48,7 +48,7 @@ def lesson_list(start_date: date, end_date: date, user_id: LoggedUserId):
         else:
             stmt = select(Lesson).where(date_filter & (Lesson.instructor_id == user_id))
         lessons = session.exec(stmt).all()
-    return {"lessons": [lesson.to_dict() for lesson in lessons]}
+    return lessons
 
 
 @router.post("/start/{lesson_id}")
@@ -128,8 +128,10 @@ async def upload_spreadsheet(
                         .where(CourseTerm.id == UUID(res_json["term_id"]))
                     ).first()
                 if course and term:
-                    course_dict = course.to_dict()
-                    course_dict["terms"] = [term.to_dict()]
+                    course_dict = course.model_dump()
+                    course_dict["terms"] = [term.model_dump()]
+                    course_dict["terms"][0]["lessons"] = term.lessons
+
                     return course_dict
                 else:
                     logging.error("The term lesson was not created")

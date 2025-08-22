@@ -9,6 +9,8 @@ from api.models.term_user import UserRole, TermUser
 
 
 class User(TimestempMixin, Base, table=True):
+    __exclude__ = ("password_hash", "password_salt")
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     username: str
     fullname: str

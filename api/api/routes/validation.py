@@ -47,6 +47,8 @@ async def create(data: Annotated[ValidationIn, Form()], user_id: LoggedUserId):
                 )
                 session.add(validation)
                 session.commit()
+                session.refresh(validation)
+                return validation
             else:
                 raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
         else:
