@@ -17,7 +17,7 @@ class TermStatus(enum.Enum):
 class Course(TimestempMixin, Base, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str
-    description: int
+    description: str
     terms_count: int = Field(default=0)
     terms: list["CourseTerm"] = Relationship(back_populates="course")
 
