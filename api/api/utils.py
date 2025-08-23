@@ -47,3 +47,15 @@ def parse_bearer(token: str) -> str | None:
     match = re.fullmatch(r"Bearer\s+(\w+\.\w+\.\S+)", token)
     if match:
         return match.group(1)
+
+
+def set_dict_to_tuple(value: set | dict) -> tuple:
+    if isinstance(value, set):
+        return tuple(value)
+    elif isinstance(value, dict):
+        values = []
+        for k, v in value.items():
+            values.append((k, set_dict_to_tuple(v)))
+        return tuple(values)
+    else:
+        raise TypeError(f"Value should be set or dict, got: {type(value)}")
