@@ -6,9 +6,9 @@ from sqlmodel import select
 from pydantic import BaseModel
 from fastapi import APIRouter, HTTPException
 
-from api.models import Session, User
+from api.models import User
 from api.models.base import Base
-from api.depends import LoggedUserId
+from api.depends import LoggedUserId, SessionDep
 
 
 def crud_router(
@@ -36,80 +36,85 @@ def crud_router(
     if "create" in methods:
 
         @router.post("/", status_code=HTTPStatus.CREATED)
-        def create(data: create_dto, user_id: LoggedUserId):
-            with Session() as session:
-                if create_auth:
-                    user = session.get(User, user_id)
-                    if not create_auth(data, user, None):
-                        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-                obj = model(**data.model_dump())
-                session.add(obj)
-                session.commit()
-                session.refresh(obj)
+        def create(data: create_dto, user_id: LoggedUserId, session: SessionDep):
+            if create_auth:
+                user = session.get(User, user_id)
+                if not create_auth(data, user, None):
+                    raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+            obj = model(**data.model_dump())
+            session.add(obj)
+            session.commit()
+            session.refresh(obj)
             return obj
 
     if "list" in methods:
 
         @router.get("/")
-        def _list(user_id: LoggedUserId):
-            with Session() as session:
-                if list_auth:
-                    user = session.get(User, user_id)
-                    if not list_auth(None, user, None):
-                        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-                objs = session.exec(select(model)).all()
+        def _list(user_id: LoggedUserId, session: SessionDep):
+            if list_auth:
+                user = session.get(User, user_id)
+                if not list_auth(None, user, None):
+                    raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+            objs = session.exec(select(model)).all()
             return objs
 
     if "get" in methods:
 
         @router.get("/{resource_id}")
-        def get(resource_id: UUID, user_id: LoggedUserId):
-            with Session() as session:
-                if get_auth:
-                    user = session.get(User, user_id)
-                    if not get_auth(None, user, resource_id):
-                        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-                obj = session.get(model, resource_id)
-                if obj:
-                    return obj
-                else:
-                    raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+        def get(resource_id: UUID, user_id: LoggedUserId, session: SessionDep):
+            if get_auth:
+                user = session.get(User, user_id)
+                if not get_auth(None, user, resource_id):
+                    raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+            obj = session.get(model, resource_id)
+            if obj:
+                return obj
+            else:
+                raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     if "put" in methods:
 
         @router.put("/{resource_id}")
-        def put(data: update_dto, resource_id: UUID, user_id: LoggedUserId):
-            with Session() as session:
-                if update_auth:
-                    user = session.get(User, user_id)
-                    if not update_auth(data, user, resource_id):
-                        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-                obj = session.get(model, resource_id)
-                if obj:
-                    for key, value in data.model_dump().items():
-                        if hasattr(obj, key):
-                            setattr(obj, key, value)
-                    session.add(obj)
-                    session.commit()
-                    session.refresh(obj)
-                else:
-                    raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+        def put(
+            data: update_dto,
+            resource_id: UUID,
+            user_id: LoggedUserId,
+            session: SessionDep,
+        ):
+            if update_auth:
+                user = session.get(User, user_id)
+                if not update_auth(data, user, resource_id):
+                    raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+            obj = session.get(model, resource_id)
+            if obj:
+                for key, value in data.model_dump().items():
+                    if hasattr(obj, key):
+                        setattr(obj, key, value)
+                session.add(obj)
+                session.commit()
+                session.refresh(obj)
+            else:
+                raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
             return obj
 
     if "delete" in methods:
 
         @router.delete("/{resource_id}")
-        def delete(resource_id: UUID, user_id: LoggedUserId, data: delete_dto = None):
-            with Session() as session:
-                if delete_auth:
-                    user = session.get(User, user_id)
-                    if not delete_auth(data, user, resource_id):
-                        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-                obj = session.get(model, resource_id)
-                if obj:
-                    session.delete(obj)
-                    session.commit()
-                else:
-                    raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+        def delete(
+            resource_id: UUID,
+            user_id: LoggedUserId,
+            session: SessionDep,
+            data: delete_dto = None,
+        ):
+            if delete_auth:
+                user = session.get(User, user_id)
+                if not delete_auth(data, user, resource_id):
+                    raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
+            obj = session.get(model, resource_id)
+            if obj:
+                session.delete(obj)
+                session.commit()
+            else:
+                raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
     return router

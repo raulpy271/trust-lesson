@@ -5,9 +5,9 @@ from fastapi import APIRouter, HTTPException
 
 from api import dto
 from api.crud import crud_router
-from api.models import Session, User
+from api.models import User
 from api.auth import create_hash_salt, check_hash
-from api.depends import LoggedUserId
+from api.depends import LoggedUserId, SessionDep
 
 
 def delete_auth(data: dto.DeleteUserIn, logged_user: User, user_id: UUID):
@@ -33,26 +33,25 @@ router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post("/", status_code=HTTPStatus.CREATED)
-def create(data: dto.CreateUserIn):
-    with Session() as session:
-        data = data.model_dump()
-        password = data.pop("password")
-        phash, salt = create_hash_salt(password)
-        data["password_hash"] = phash
-        data["password_salt"] = salt
-        user = User(**data)
-        session.add(user)
-        session.commit()
-    return {}
+def create(data: dto.CreateUserIn, session: SessionDep):
+    data = data.model_dump()
+    password = data.pop("password")
+    phash, salt = create_hash_salt(password)
+    data["password_hash"] = phash
+    data["password_salt"] = salt
+    user = User(**data)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
 
 
 @router.get("/me")
-def me(user_id: LoggedUserId):
-    with Session() as session:
-        u = session.get(User, user_id)
-        if not u:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-    return u.to_dict()
+def me(user_id: LoggedUserId, session: SessionDep):
+    u = session.get(User, user_id)
+    if not u:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+    return u
 
 
 crud_router(

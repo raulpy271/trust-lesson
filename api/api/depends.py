@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import HTTPException, Request, Depends
 
 from api.redis import get_default_client, hgetall_str
+from api.models import Session
 
 
 def get_user_id(request: Request):
@@ -16,4 +17,10 @@ def get_user_id(request: Request):
     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
 
 
+def create_session_dep(request: Request):
+    with Session() as session:
+        yield session
+
+
 LoggedUserId = Annotated[str, Depends(get_user_id)]
+SessionDep = Annotated[Session, Depends(create_session_dep)]

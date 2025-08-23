@@ -12,11 +12,10 @@ from fastapi import APIRouter, HTTPException, Form
 from fastapi.responses import JSONResponse
 from azure.storage.blob import ContentSettings
 
-from api.depends import LoggedUserId
+from api.depends import LoggedUserId, SessionDep
 from api.crud import crud_router
 from api.azure.storage import get_container_spreadsheet
 from api.models import (
-    Session,
     Lesson,
     User,
     CourseTerm,
@@ -35,73 +34,73 @@ router = APIRouter(prefix="/lesson", tags=["lesson"])
 
 
 @router.get("/list")
-def lesson_list(start_date: date, end_date: date, user_id: LoggedUserId):
+def lesson_list(
+    start_date: date, end_date: date, user_id: LoggedUserId, session: SessionDep
+):
     date_filter = (start_date <= Lesson.start_date) & (end_date >= Lesson.start_date)
-    with Session() as session:
-        role = session.exec(select(User.role).filter_by(id=user_id)).one()
-        if role == UserRole.STUDANT:
-            stmt = (
-                select(Lesson)
-                .join(LessonUser)
-                .where(date_filter & (LessonUser.user_id == user_id))
-            )
-        else:
-            stmt = select(Lesson).where(date_filter & (Lesson.instructor_id == user_id))
-        lessons = session.exec(stmt).all()
+    role = session.exec(select(User.role).filter_by(id=user_id)).one()
+    if role == UserRole.STUDANT:
+        stmt = (
+            select(Lesson)
+            .join(LessonUser)
+            .where(date_filter & (LessonUser.user_id == user_id))
+        )
+    else:
+        stmt = select(Lesson).where(date_filter & (Lesson.instructor_id == user_id))
+    lessons = session.exec(stmt).all()
     return lessons
 
 
 @router.post("/start/{lesson_id}")
-def lesson_start(lesson_id: UUID, user_id: LoggedUserId):
-    with Session() as session:
-        lesson = session.get(Lesson, lesson_id)
-        if lesson:
-            if lesson.instructor_id != user_id:
-                raise HTTPException(
-                    status_code=HTTPStatus.UNAUTHORIZED,
-                    detail="Only the instructor can start the lesson",
-                )
-            elif lesson.status.can_start():
-                lesson.status = LessonStatus.RUNNING
-                lesson.effective_start_date = datetime.now()
-                session.commit()
-            else:
-                raise HTTPException(
-                    status_code=HTTPStatus.BAD_REQUEST,
-                    detail="The selected lesson already started",
-                )
+def lesson_start(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
+    lesson = session.get(Lesson, lesson_id)
+    if lesson:
+        if lesson.instructor_id != user_id:
+            raise HTTPException(
+                status_code=HTTPStatus.UNAUTHORIZED,
+                detail="Only the instructor can start the lesson",
+            )
+        elif lesson.status.can_start():
+            lesson.status = LessonStatus.RUNNING
+            lesson.effective_start_date = datetime.now()
+            session.commit()
         else:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail="The selected lesson already started",
+            )
+    else:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
 
 @router.post("/stop/{lesson_id}")
-def lesson_stop(lesson_id: UUID, user_id: LoggedUserId):
-    with Session() as session:
-        lesson = session.get(Lesson, lesson_id)
-        if lesson:
-            pass
-            if lesson.instructor_id != user_id:
-                raise HTTPException(
-                    status_code=HTTPStatus.UNAUTHORIZED,
-                    detail="Only the instructor can stop the lesson",
-                )
-            elif lesson.status.can_stop():
-                lesson.status = LessonStatus.FINISHED
-                duration = datetime.now() - lesson.effective_start_date
-                lesson.effective_duration_min = int(duration.total_seconds() / 60)
-                session.commit()
-            else:
-                raise HTTPException(
-                    status_code=HTTPStatus.BAD_REQUEST,
-                    detail="Cannot stop the current lesson.",
-                )
+def lesson_stop(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
+    lesson = session.get(Lesson, lesson_id)
+    if lesson:
+        if lesson.instructor_id != user_id:
+            raise HTTPException(
+                status_code=HTTPStatus.UNAUTHORIZED,
+                detail="Only the instructor can stop the lesson",
+            )
+        elif lesson.status.can_stop():
+            lesson.status = LessonStatus.FINISHED
+            duration = datetime.now() - lesson.effective_start_date
+            lesson.effective_duration_min = int(duration.total_seconds() / 60)
+            session.commit()
         else:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+            raise HTTPException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                detail="Cannot stop the current lesson.",
+            )
+    else:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
 
 @router.post("/upload-spreadsheet", status_code=HTTPStatus.CREATED)
 async def upload_spreadsheet(
-    data: Annotated[UploadSpreadsheetLessons, Form()], user_id: LoggedUserId
+    data: Annotated[UploadSpreadsheetLessons, Form()],
+    user_id: LoggedUserId,
+    session: SessionDep,
 ):
     try:
         container = get_container_spreadsheet()
@@ -111,8 +110,7 @@ async def upload_spreadsheet(
             data.file,
             content_settings=ContentSettings(content_type=data.file.content_type),
         )
-        session = function_session()
-        async with session as client:
+        async with function_session() as client:
             res = await client.post(
                 "/api/lesson/upload-spreadsheet",
                 json={"filename": filename, "instructor_id": str(user_id)},
@@ -120,13 +118,12 @@ async def upload_spreadsheet(
             res_json = await res.json()
         if res.ok:
             if res_json.get("course_id") and res_json.get("term_id"):
-                with Session() as session:
-                    course = session.get(Course, UUID(res_json["course_id"]))
-                    term = session.exec(
-                        select(CourseTerm)
-                        .options(selectinload(CourseTerm.lessons))
-                        .where(CourseTerm.id == UUID(res_json["term_id"]))
-                    ).first()
+                course = session.get(Course, UUID(res_json["course_id"]))
+                term = session.exec(
+                    select(CourseTerm)
+                    .options(selectinload(CourseTerm.lessons))
+                    .where(CourseTerm.id == UUID(res_json["term_id"]))
+                ).first()
                 if course and term:
                     course_dict = course.model_dump()
                     course_dict["terms"] = [term.model_dump()]
