@@ -15,7 +15,11 @@ from api.utils import parse_content_type
 router = APIRouter(prefix="/validation", tags=["validation"])
 
 
-@router.post("/create", status_code=HTTPStatus.CREATED)
+@router.post(
+    "/create",
+    status_code=HTTPStatus.CREATED,
+    response_model=LessonValidation.response_model(),
+)
 async def create(
     data: Annotated[ValidationIn, Form()], user_id: LoggedUserId, session: SessionDep
 ):

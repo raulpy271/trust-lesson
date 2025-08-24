@@ -33,7 +33,10 @@ def auth(_: None | CreateLessonIn, user: User, _resource_id: None | UUID):
 router = APIRouter(prefix="/lesson", tags=["lesson"])
 
 
-@router.get("/list")
+@router.get(
+    "/list",
+    response_model=list[Lesson.response_model({"term", "instructor"})],
+)
 def lesson_list(
     start_date: date, end_date: date, user_id: LoggedUserId, session: SessionDep
 ):
@@ -51,7 +54,7 @@ def lesson_list(
     return lessons
 
 
-@router.post("/start/{lesson_id}")
+@router.post("/start/{lesson_id}", response_model=Lesson.response_model())
 def lesson_start(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
     lesson = session.get(Lesson, lesson_id)
     if lesson:
@@ -64,6 +67,7 @@ def lesson_start(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
             lesson.status = LessonStatus.RUNNING
             lesson.effective_start_date = datetime.now()
             session.commit()
+            return lesson
         else:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
@@ -73,7 +77,7 @@ def lesson_start(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
 
-@router.post("/stop/{lesson_id}")
+@router.post("/stop/{lesson_id}", response_model=Lesson.response_model())
 def lesson_stop(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
     lesson = session.get(Lesson, lesson_id)
     if lesson:
@@ -87,6 +91,7 @@ def lesson_stop(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
             duration = datetime.now() - lesson.effective_start_date
             lesson.effective_duration_min = int(duration.total_seconds() / 60)
             session.commit()
+            return lesson
         else:
             raise HTTPException(
                 status_code=HTTPStatus.BAD_REQUEST,
@@ -96,7 +101,11 @@ def lesson_stop(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
 
-@router.post("/upload-spreadsheet", status_code=HTTPStatus.CREATED)
+@router.post(
+    "/upload-spreadsheet",
+    status_code=HTTPStatus.CREATED,
+    response_model=CourseTerm.response_model({"course", "lessons"}),
+)
 async def upload_spreadsheet(
     data: Annotated[UploadSpreadsheetLessons, Form()],
     user_id: LoggedUserId,
@@ -125,11 +134,7 @@ async def upload_spreadsheet(
                     .where(CourseTerm.id == UUID(res_json["term_id"]))
                 ).first()
                 if course and term:
-                    course_dict = course.model_dump()
-                    course_dict["terms"] = [term.model_dump()]
-                    course_dict["terms"][0]["lessons"] = term.lessons
-
-                    return course_dict
+                    return term
                 else:
                     logging.error("The term lesson was not created")
                     raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR)
