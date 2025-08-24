@@ -51,10 +51,10 @@ def parse_bearer(token: str) -> str | None:
 
 def set_dict_to_tuple(value: set | dict) -> tuple:
     if isinstance(value, set):
-        return tuple(value)
+        return tuple(sorted(value))
     elif isinstance(value, dict):
         values = []
-        for k, v in value.items():
+        for k, v in sorted(value.items(), key=lambda kv: kv[0]):
             values.append((k, set_dict_to_tuple(v)))
         return tuple(values)
     else:
