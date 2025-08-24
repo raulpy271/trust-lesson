@@ -30,6 +30,20 @@ def test_create(session, client, token):
     assert u.password_hash == phash.hex()
 
 
+def test_exlude_columns(client, token, user_password):
+    user = user_password[0]
+    response = client.get("/logged/user/me", auth=token)
+    result = response.json()
+    assert isinstance(result, dict)
+    assert str(user.id) == result["id"]
+    assert user.username == result["username"]
+    assert user.fullname == result["fullname"]
+    assert user.email == result["email"]
+    assert not result.get("password")
+    assert not result.get("password_hash")
+    assert not result.get("password_salt")
+
+
 def test_list_users(client, token, session, user_password):
     logged_user, _ = user_password
     users = [logged_user] + [

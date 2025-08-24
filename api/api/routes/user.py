@@ -32,7 +32,11 @@ def update_auth(data: dto.UpdateUserIn, logged_user: User, user_id: UUID):
 router = APIRouter(prefix="/user", tags=["user"])
 
 
-@router.post("/", status_code=HTTPStatus.CREATED)
+@router.post(
+    "/",
+    status_code=HTTPStatus.CREATED,
+    response_model=User.response_model(),
+)
 def create(data: dto.CreateUserIn, session: SessionDep):
     data = data.model_dump()
     password = data.pop("password")
@@ -46,7 +50,7 @@ def create(data: dto.CreateUserIn, session: SessionDep):
     return user
 
 
-@router.get("/me")
+@router.get("/me", response_model=User.response_model())
 def me(user_id: LoggedUserId, session: SessionDep):
     u = session.get(User, user_id)
     if not u:

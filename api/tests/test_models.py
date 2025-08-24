@@ -119,16 +119,3 @@ def test_update_column(session):
     assert c.created_at == before_created_at
     assert before_updated_at < c.updated_at
     assert c.updated_at < datetime.now()
-
-
-def test_exlude_columns(user_password):
-    user = user_password[0]
-    result = user.to_dict()
-    assert isinstance(result, dict)
-    assert user.id == result["id"]
-    assert user.username == result["username"]
-    assert user.fullname == result["fullname"]
-    assert user.email == result["email"]
-    assert not result.get("password")
-    assert not result.get("password_hash")
-    assert not result.get("password_salt")
