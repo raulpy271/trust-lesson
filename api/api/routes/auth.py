@@ -15,17 +15,15 @@ from api.depends import SessionDep
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/login")
+@router.post("/login", summary="Do login and return token in response headers")
 def login(response: Response, data: dto.LoginIn, session: SessionDep):
     user = session.exec(select(User).where(User.email == data.email)).one_or_none()
     if user and check_hash(user, data.password):
         token, expiration = create_token(user)
         response.headers.update({"Token": token, "Token-Expiration": str(expiration)})
         response.status_code = HTTPStatus.NO_CONTENT
-        return {}
     else:
         response.status_code = HTTPStatus.UNAUTHORIZED
-        return {}
 
 
 @router.post("/logout")

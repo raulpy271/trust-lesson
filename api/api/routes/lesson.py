@@ -168,5 +168,9 @@ crud_router(
     {"create": CreateLessonIn, "update": UpdateLessonIn, "delete": dict},
     authorizations={"default": auth, "get": None},
     methods=["get", "create", "put", "delete"],
+    response_model_relationship={
+        "get": {"instructor", "term"},
+        "update": {"instructor", "term"},
+    },
     router=router,
 )

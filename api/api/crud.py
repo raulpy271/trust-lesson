@@ -19,9 +19,10 @@ def crud_router(
     tags: list = [],
     methods: list = ["get", "create", "list", "put", "delete"],
     router: Optional[APIRouter] = None,
+    response_model_relationship: dict[str, dict | set] = {},
 ):
     name = name or model.__name__.lower()
-    router = router or APIRouter(prefix="/" + name, tags=(tags or [name]))
+    router: APIRouter = router or APIRouter(prefix="/" + name, tags=(tags or [name]))
     default_dto = dtos.get("default", dict)
     create_dto = dtos.get("create", default_dto)
     update_dto = dtos.get("update", default_dto)
@@ -32,10 +33,23 @@ def crud_router(
     list_auth = authorizations.get("list", default_auth)
     update_auth = authorizations.get("update", default_auth)
     delete_auth = authorizations.get("delete", default_auth)
+    default_relationship = response_model_relationship.get("default", {})
+    get_relationship = response_model_relationship.get("get", default_relationship)
+    create_relationship = response_model_relationship.get(
+        "create", default_relationship
+    )
+    list_relationship = response_model_relationship.get("list", default_relationship)
+    update_relationship = response_model_relationship.get(
+        "update", default_relationship
+    )
 
     if "create" in methods:
 
-        @router.post("/", status_code=HTTPStatus.CREATED)
+        @router.post(
+            "/",
+            status_code=HTTPStatus.CREATED,
+            response_model=model.response_model(create_relationship),
+        )
         def create(data: create_dto, user_id: LoggedUserId, session: SessionDep):
             if create_auth:
                 user = session.get(User, user_id)
@@ -49,7 +63,7 @@ def crud_router(
 
     if "list" in methods:
 
-        @router.get("/")
+        @router.get("/", response_model=list[model.response_model(list_relationship)])
         def _list(user_id: LoggedUserId, session: SessionDep):
             if list_auth:
                 user = session.get(User, user_id)
@@ -60,7 +74,9 @@ def crud_router(
 
     if "get" in methods:
 
-        @router.get("/{resource_id}")
+        @router.get(
+            "/{resource_id}", response_model=model.response_model(get_relationship)
+        )
         def get(resource_id: UUID, user_id: LoggedUserId, session: SessionDep):
             if get_auth:
                 user = session.get(User, user_id)
@@ -74,10 +90,12 @@ def crud_router(
 
     if "put" in methods:
 
-        @router.put("/{resource_id}")
+        @router.put(
+            "/{resource_id}", response_model=model.response_model(update_relationship)
+        )
         def put(
-            data: update_dto,
             resource_id: UUID,
+            data: update_dto,
             user_id: LoggedUserId,
             session: SessionDep,
         ):

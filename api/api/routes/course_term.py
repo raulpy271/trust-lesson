@@ -14,4 +14,5 @@ router = crud_router(
     {"default": CreateCourseTermIn, "delete": dict},
     name="course-term",
     authorizations={"default": auth, "list": None, "get": None},
+    response_model_relationship={"get": {"lessons"}, "update": {"lessons"}},
 )
