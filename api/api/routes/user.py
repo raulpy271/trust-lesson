@@ -5,9 +5,13 @@ from fastapi import APIRouter, HTTPException
 
 from api import dto
 from api.crud import crud_router
-from api.models import User
+from api.models import User, UserRole
 from api.auth import create_hash_salt, check_hash
 from api.depends import LoggedUserId, SessionDep
+
+
+def is_admin_or_instructor(_data, logged_user: User, _resource_id):
+    return logged_user.is_admin or logged_user.role == UserRole.INSTRUCTOR
 
 
 def delete_auth(data: dto.DeleteUserIn, logged_user: User, user_id: UUID):
@@ -50,7 +54,7 @@ def create(data: dto.CreateUserIn, session: SessionDep):
     return user
 
 
-@router.get("/me", response_model=User.response_model())
+@router.get("/me", response_model=User.response_model({"validations"}))
 def me(user_id: LoggedUserId, session: SessionDep):
     u = session.get(User, user_id)
     if not u:
@@ -61,7 +65,15 @@ def me(user_id: LoggedUserId, session: SessionDep):
 crud_router(
     User,
     {"update": dto.UpdateUserIn, "delete": dto.DeleteUserIn},
-    authorizations={"update": update_auth, "delete": delete_auth},
+    authorizations={
+        "list": is_admin_or_instructor,
+        "update": update_auth,
+        "delete": delete_auth,
+    },
     methods=["list", "put", "delete", "get"],
     router=router,
+    response_model_relationship={
+        "get": {"validations"},
+        "update": {"validations"},
+    },
 )

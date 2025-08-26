@@ -44,7 +44,7 @@ def test_exlude_columns(client, token, user_password):
     assert not result.get("password_salt")
 
 
-def test_list_users(client, token, session, user_password):
+def test_list_users(client, token, session, user_password, admin):
     logged_user, _ = user_password
     users = [logged_user] + [
         users_password[0] for users_password in factory.list_user_password(3, session)
