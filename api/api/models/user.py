@@ -19,9 +19,7 @@ class User(TimestempMixin, Base, table=True):
     is_admin: bool = Field(default=False)
     password_hash: str
     password_salt: str
-    terms: list["CourseTerm"] = Relationship(
-        back_populates="users", link_model=TermUser
-    )
+    term_users: list["TermUser"] = Relationship(back_populates="user")
     ministrate_lessons: list["Lesson"] = Relationship(back_populates="instructor")
     lessons: list["Lesson"] = Relationship(
         back_populates="users", link_model=LessonUser
