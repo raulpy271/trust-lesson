@@ -35,6 +35,6 @@ class CourseTerm(TimestempMixin, Base, table=True):
     start_date: date
     end_date: date
     course_id: UUID = Field(foreign_key="course.id")
-    course: Course = Relationship(back_populates="terms")
+    course: "Course" = Relationship(back_populates="terms")
     lessons: list["Lesson"] = Relationship(back_populates="term")
     term_users: list["TermUser"] = Relationship(back_populates="term")
