@@ -1,11 +1,15 @@
 import enum
 from uuid import UUID, uuid4
 from datetime import date
+from typing import TYPE_CHECKING
 
 from sqlmodel import Field, Relationship
 
 from api.models.base import Base, TimestempMixin
-from api.models.term_user import TermUser
+
+if TYPE_CHECKING:
+    from api.models.term_user import TermUser
+    from api.models.lesson import Lesson
 
 
 class TermStatus(enum.Enum):

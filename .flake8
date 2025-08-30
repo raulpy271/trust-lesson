@@ -7,4 +7,3 @@ per-file-ignores =
   conftest.py: E402
   /*/dto/__init__.py: F401
   /*/models/__init__.py: F401
-  /*/models/*.py: F821

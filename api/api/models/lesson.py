@@ -1,12 +1,16 @@
 import enum
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 from datetime import datetime
 
 from sqlmodel import Field, Relationship
 
 from api.models.base import Base, TimestempMixin
-from api.models.lesson_user import LessonUser
+
+if TYPE_CHECKING:
+    from api.models.lesson_user import LessonUser
+    from api.models.user import User
+    from api.models.course import CourseTerm
 
 
 class MediaType(enum.Enum):
@@ -56,6 +60,6 @@ class LessonValidation(TimestempMixin, Base, table=True):
     media_path: str
     media_type: MediaType
     lesson_user_id: UUID = Field(foreign_key="lesson_user.id")
-    lesson: Lesson = Relationship(back_populates="validations")
+    lesson: "Lesson" = Relationship(back_populates="validations")
     user: "User" = Relationship(back_populates="validations")
-    lesson_user: LessonUser = Relationship(back_populates="validations")
+    lesson_user: "LessonUser" = Relationship(back_populates="validations")

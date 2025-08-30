@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship
 
 from api.models.base import Base
+
+if TYPE_CHECKING:
+    from api.models.lesson import Lesson, LessonValidation
+    from api.models.user import User
 
 
 class LessonUser(Base, table=True):
