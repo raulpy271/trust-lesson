@@ -1,15 +1,14 @@
-import enum
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from sqlmodel import Field, Relationship
 
 from api.models.base import Base
+from api.models.user import UserRole
 
-
-class UserRole(str, enum.Enum):
-    STUDANT = "STUDANT"
-    INSTRUCTOR = "INSTRUCTOR"
-    ADMIN = "ADMIN"
+if TYPE_CHECKING:
+    from api.models.course import CourseTerm
+    from api.models.user import User
 
 
 class TermUser(Base, table=True):

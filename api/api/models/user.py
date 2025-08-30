@@ -1,11 +1,21 @@
+import enum
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from api.models.lesson import LessonValidation
 from sqlmodel import Field, Relationship
 
 from api.models.base import Base, TimestempMixin
-from api.models.lesson_user import LessonUser
-from api.models.term_user import UserRole, TermUser
+
+if TYPE_CHECKING:
+    from api.models.term_user import TermUser
+    from api.models.lesson_user import LessonUser
+    from api.models.lesson import Lesson, LessonValidation
+
+
+class UserRole(str, enum.Enum):
+    STUDANT = "STUDANT"
+    INSTRUCTOR = "INSTRUCTOR"
+    ADMIN = "ADMIN"
 
 
 class User(TimestempMixin, Base, table=True):

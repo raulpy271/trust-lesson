@@ -1,8 +1,9 @@
 from sqlmodel import create_engine
 from sqlmodel import Session as _Session
-from sqlalchemy.orm import sessionmaker
 
 from api import settings
+from api.models.term_user import TermUser
+from api.models.lesson_user import LessonUser
 from api.models.course import (
     TermStatus,
     Course,
@@ -16,8 +17,6 @@ from api.models.lesson import (
 )
 from api.models.user import (
     UserRole,
-    TermUser,
-    LessonUser,
     User,
 )
 
