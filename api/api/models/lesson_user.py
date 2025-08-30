@@ -14,3 +14,5 @@ class LessonUser(Base, table=True):
     validated: bool = Field(default=False)
     validated_success: bool = Field(default=False)
     validations: list["LessonValidation"] = Relationship(back_populates="lesson_user")
+    user: "User" = Relationship(back_populates="lesson_users")
+    lesson: "Lesson" = Relationship(back_populates="lesson_users")

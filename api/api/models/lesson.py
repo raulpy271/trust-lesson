@@ -40,7 +40,7 @@ class Lesson(TimestempMixin, Base, table=True):
     term_id: UUID = Field(foreign_key="course_term.id")
     instructor: "User" = Relationship(back_populates="ministrate_lessons")
     term: "CourseTerm" = Relationship(back_populates="lessons")
-    users: list["User"] = Relationship(back_populates="lessons", link_model=LessonUser)
+    lesson_users: list["LessonUser"] = Relationship(back_populates="lesson")
     validations: list["LessonValidation"] = Relationship(back_populates="lesson")
 
 

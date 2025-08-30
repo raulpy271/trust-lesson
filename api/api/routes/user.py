@@ -57,7 +57,12 @@ def create(data: dto.CreateUserIn, session: SessionDep):
 @router.get(
     "/me",
     response_model=User.response_model(
-        {"validations": {}, "ministrate_lessons": {}, "term_users": {"term"}}
+        {
+            "validations": {},
+            "ministrate_lessons": {},
+            "term_users": {"term"},
+            "lesson_users": {"lesson"},
+        }
     ),
 )
 def me(user_id: LoggedUserId, session: SessionDep):
@@ -78,7 +83,17 @@ crud_router(
     methods=["list", "put", "delete", "get"],
     router=router,
     response_model_relationship={
-        "get": {"validations": {}, "ministrate_lessons": {}, "term_users": {"term"}},
-        "update": {"validations": {}, "ministrate_lessons": {}, "term_users": {"term"}},
+        "get": {
+            "validations": {},
+            "ministrate_lessons": {},
+            "term_users": {"term"},
+            "lesson_users": {"lesson"},
+        },
+        "update": {
+            "validations": {},
+            "ministrate_lessons": {},
+            "term_users": {"term"},
+            "lesson_users": {"lesson"},
+        },
     },
 )

@@ -21,7 +21,5 @@ class User(TimestempMixin, Base, table=True):
     password_salt: str
     term_users: list["TermUser"] = Relationship(back_populates="user")
     ministrate_lessons: list["Lesson"] = Relationship(back_populates="instructor")
-    lessons: list["Lesson"] = Relationship(
-        back_populates="users", link_model=LessonUser
-    )
+    lesson_users: list["LessonUser"] = Relationship(back_populates="user")
     validations: list["LessonValidation"] = Relationship(back_populates="user")
