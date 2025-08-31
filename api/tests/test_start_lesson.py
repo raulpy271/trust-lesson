@@ -7,13 +7,13 @@ from tests.factories import factory
 from tests.utils import authenticate
 
 
-def test_lesson_start(client, token, session, lesson):
+async def test_lesson_start(client, token, session, lesson):
     lesson.status = models.LessonStatus.WAITING
     lesson.effective_start_date = None
-    session.commit()
+    await session.commit()
     response = client.post(f"/logged/lesson/start/{lesson.id}", auth=token)
     assert response.status_code == HTTPStatus.OK
-    session.refresh(lesson)
+    await session.refresh(lesson)
     assert lesson.status == models.LessonStatus.RUNNING
     assert isinstance(lesson.effective_start_date, datetime)
     assert (datetime.now() - lesson.effective_start_date) < timedelta(minutes=1)
@@ -26,21 +26,21 @@ def test_start_undefined_lesson(client, token):
     assert response.status_code >= 400
 
 
-def test_cannot_start_a_running_lesson(client, token, session, lesson):
+async def test_cannot_start_a_running_lesson(client, token, session, lesson):
     lesson.status = models.LessonStatus.RUNNING
     lesson.effective_start_date = datetime.now()
-    session.commit()
+    await session.commit()
     response = client.post(f"/logged/lesson/start/{lesson.id}", auth=token)
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-def test_only_instructor_can_start_lesson(client, session, lesson):
-    u_password = factory.user_password(session)
+async def test_only_instructor_can_start_lesson(client, session, lesson):
+    u_password = await factory.user_password(session)
     t = authenticate(client, u_password[0], u_password[1])
     assert lesson.instructor_id != u_password[0].id
     response = client.post(f"/logged/lesson/start/{lesson.id}", auth=t)
     assert response.status_code == HTTPStatus.UNAUTHORIZED
     lesson.instructor = u_password[0]
-    session.commit()
+    await session.commit()
     response = client.post(f"/logged/lesson/start/{lesson.id}", auth=t)
     assert response.status_code == HTTPStatus.OK

@@ -5,7 +5,6 @@ from http import HTTPStatus
 
 import logging
 from sqlmodel import select
-from sqlalchemy.orm import selectinload
 from api.dto import CreateLessonIn, UpdateLessonIn, UploadSpreadsheetLessons
 from api.azure.functions import function_session
 from fastapi import APIRouter, HTTPException, Form
@@ -37,26 +36,32 @@ router = APIRouter(prefix="/lesson", tags=["lesson"])
     "/list",
     response_model=list[Lesson.response_model({"term", "instructor"})],
 )
-def lesson_list(
+async def lesson_list(
     start_date: date, end_date: date, user_id: LoggedUserId, session: SessionDep
 ):
     date_filter = (start_date <= Lesson.start_date) & (end_date >= Lesson.start_date)
-    role = session.exec(select(User.role).filter_by(id=user_id)).one()
+    role = (await session.exec(select(User.role).filter_by(id=user_id))).one()
+    loads = Lesson.selectload({"term", "instructor"})
     if role == UserRole.STUDANT:
         stmt = (
             select(Lesson)
+            .options(*loads)
             .join(LessonUser)
             .where(date_filter & (LessonUser.user_id == user_id))
         )
     else:
-        stmt = select(Lesson).where(date_filter & (Lesson.instructor_id == user_id))
-    lessons = session.exec(stmt).all()
+        stmt = (
+            select(Lesson)
+            .options(*loads)
+            .where(date_filter & (Lesson.instructor_id == user_id))
+        )
+    lessons = (await session.exec(stmt)).all()
     return lessons
 
 
 @router.post("/start/{lesson_id}", response_model=Lesson.response_model())
-def lesson_start(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
-    lesson = session.get(Lesson, lesson_id)
+async def lesson_start(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
+    lesson = await session.get(Lesson, lesson_id)
     if lesson:
         if lesson.instructor_id != user_id:
             raise HTTPException(
@@ -66,7 +71,7 @@ def lesson_start(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
         elif lesson.status.can_start():
             lesson.status = LessonStatus.RUNNING
             lesson.effective_start_date = datetime.now()
-            session.commit()
+            await session.commit()
             return lesson
         else:
             raise HTTPException(
@@ -78,8 +83,8 @@ def lesson_start(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
 
 
 @router.post("/stop/{lesson_id}", response_model=Lesson.response_model())
-def lesson_stop(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
-    lesson = session.get(Lesson, lesson_id)
+async def lesson_stop(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
+    lesson = await session.get(Lesson, lesson_id)
     if lesson:
         if lesson.instructor_id != user_id:
             raise HTTPException(
@@ -90,7 +95,7 @@ def lesson_stop(lesson_id: UUID, user_id: LoggedUserId, session: SessionDep):
             lesson.status = LessonStatus.FINISHED
             duration = datetime.now() - lesson.effective_start_date
             lesson.effective_duration_min = int(duration.total_seconds() / 60)
-            session.commit()
+            await session.commit()
             return lesson
         else:
             raise HTTPException(
@@ -127,12 +132,13 @@ async def upload_spreadsheet(
             res_json = await res.json()
         if res.ok:
             if res_json.get("course_id") and res_json.get("term_id"):
-                course = session.get(Course, UUID(res_json["course_id"]))
-                term = session.exec(
+                course = await session.get(Course, UUID(res_json["course_id"]))
+                result = await session.exec(
                     select(CourseTerm)
-                    .options(selectinload(CourseTerm.lessons))
+                    .options(*CourseTerm.selectload({"course", "lessons"}))
                     .where(CourseTerm.id == UUID(res_json["term_id"]))
-                ).first()
+                )
+                term = result.first()
                 if course and term:
                     return term
                 else:

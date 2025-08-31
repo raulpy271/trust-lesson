@@ -16,8 +16,9 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/login", summary="Do login and return token in response headers")
-def login(response: Response, data: dto.LoginIn, session: SessionDep):
-    user = session.exec(select(User).where(User.email == data.email)).one_or_none()
+async def login(response: Response, data: dto.LoginIn, session: SessionDep):
+    result = await session.exec(select(User).where(User.email == data.email))
+    user = result.one_or_none()
     if user and check_hash(user, data.password):
         token, expiration = create_token(user)
         response.headers.update({"Token": token, "Token-Expiration": str(expiration)})
