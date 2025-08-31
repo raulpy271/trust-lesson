@@ -2,8 +2,7 @@ from datetime import datetime, date, time
 
 import pytest
 import mimesis
-from sqlalchemy import select
-
+from sqlmodel import select
 
 from api import models
 from functions.lessons_parser import LessonParserResult, LessonItem
@@ -97,4 +96,4 @@ def test_instructor_not_found(session, user_password, course_term, parser_result
     assert len(result.errors) == 1
     assert result.errors[0][0] == lesson.line_number
     assert "not found" in result.errors[0][1]
-    assert not len(session.execute(select(models.Lesson)).all())
+    assert not len(session.exec(select(models.Lesson)).all())

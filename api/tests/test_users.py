@@ -2,7 +2,7 @@ from hashlib import scrypt
 from http import HTTPStatus
 
 import mimesis
-from sqlalchemy import select
+from sqlmodel import select
 
 from api import settings
 from api.models import User
@@ -19,7 +19,7 @@ def test_create(session, client, token):
     }
     resp = client.post("logged/user/", json=user, auth=token)
     assert resp.status_code == HTTPStatus.CREATED
-    u = session.scalars(select(User).where(User.username == user["username"])).one()
+    u = session.exec(select(User).where(User.username == user["username"])).one()
     assert u.fullname == user["fullname"]
     assert u.email == user["email"]
     phash = scrypt(
@@ -30,7 +30,21 @@ def test_create(session, client, token):
     assert u.password_hash == phash.hex()
 
 
-def test_list_users(client, token, session, user_password):
+def test_exlude_columns(client, token, user_password):
+    user = user_password[0]
+    response = client.get("/logged/user/me", auth=token)
+    result = response.json()
+    assert isinstance(result, dict)
+    assert str(user.id) == result["id"]
+    assert user.username == result["username"]
+    assert user.fullname == result["fullname"]
+    assert user.email == result["email"]
+    assert not result.get("password")
+    assert not result.get("password_hash")
+    assert not result.get("password_salt")
+
+
+def test_list_users(client, token, session, user_password, admin):
     logged_user, _ = user_password
     users = [logged_user] + [
         users_password[0] for users_password in factory.list_user_password(3, session)

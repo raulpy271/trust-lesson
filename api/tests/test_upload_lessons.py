@@ -47,13 +47,13 @@ def test_create(
     resp = client.post(
         "logged/lesson/upload-spreadsheet", auth=token, files={"file": lessons1}
     )
-    course_resp = resp.json()
+    term_resp = resp.json()
     assert resp.status_code == HTTPStatus.CREATED
-    assert course_resp["id"] == str(course.id)
-    assert len(course_resp["terms"]) == 1
-    assert course_resp["terms"][0]["term_number"] == course_term.term_number
-    assert len(course_resp["terms"][0]["lessons"]) == len(lessons)
-    result_lessons = course_resp["terms"][0]["lessons"]
+    assert term_resp["id"] == str(course_term.id)
+    assert term_resp["course"]["id"] == str(course.id)
+    assert term_resp["term_number"] == course_term.term_number
+    assert len(term_resp["lessons"]) == len(lessons)
+    result_lessons = term_resp["lessons"]
     for i, expected_lesson in enumerate(lessons):
         assert result_lessons[i]["id"] == str(expected_lesson.id)
         assert result_lessons[i]["title"] == expected_lesson.title

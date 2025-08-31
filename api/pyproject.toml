@@ -17,12 +17,14 @@ redis = "^5.2.1"
 sqlalchemy = "^2.0.36"
 psycopg = {extras = ["binary"], version = "^3.2.3"}
 pyjwt = "^2.10.1"
-fastapi = {extras = ["standard"], version = "^0.115.6"}
+fastapi = {extras = ["standard"], version = "^0.116.1"}
 azure-storage-blob = "^12.24.1"
 azure-identity = "^1.19.0"
 python-multipart = "^0.0.20"
 aiohttp = "^3.11.12"
 python-dateutil = "^2.9.0.post0"
+sqlmodel = "^0.0.24"
+pydantic = "^2.11.7"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"

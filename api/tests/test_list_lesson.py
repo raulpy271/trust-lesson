@@ -6,18 +6,16 @@ from tests.factories import factory
 from tests.utils import authenticate
 
 
-def test_list_one_lesson(client, user_password, token, session, lesson):
+def test_list_one_lesson(client, user_password, token, session, lesson, lesson_user):
     start_date = lesson.start_date.date()
     end_date = (lesson.start_date + timedelta(days=1)).date()
-    lesson.users.append(user_password[0])
-    session.commit()
     response = client.get(
         "/logged/lesson/list",
         auth=token,
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson.id)
 
@@ -38,7 +36,7 @@ def test_filter_by_date(client, user_password, token, session, course_term):
         start_date=datetime(year=2022, month=2, day=1),
     )
     [
-        lesson.users.append(user_password[0])
+        factory.lesson_user(session, user_password, lesson)
         for lesson in lessons_to_include + lessons_to_exclude
     ]
     session.commit()
@@ -48,7 +46,7 @@ def test_filter_by_date(client, user_password, token, session, course_term):
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == len(lessons_to_include)
     to_include_ids = [str(lesson.id) for lesson in lessons_to_include]
     for lesson in lessons:
@@ -63,9 +61,8 @@ def test_filter_by_logged_user(client, session, course_term):
     (lesson_user1, lesson_user2) = factory.list_lesson(
         2, session, course_term, user_password1, start_date=datetime.now()
     )
-    lesson_user1.users.append(user_password1[0])
-    lesson_user2.users.append(user_password2[0])
-    session.commit()
+    factory.lesson_user(session, user_password1, lesson_user1)
+    factory.lesson_user(session, user_password2, lesson_user2)
     # authenticate with user 1
     t = authenticate(client, user_password1[0], user_password1[1])
     # Request lessons of user 1
@@ -75,7 +72,7 @@ def test_filter_by_logged_user(client, session, course_term):
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson_user1.id)
     # authenticate with user 2
@@ -87,7 +84,7 @@ def test_filter_by_logged_user(client, session, course_term):
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson_user2.id)
 
@@ -105,8 +102,7 @@ def test_list_lessons_of_instructor(
     lesson2 = factory.lesson(
         session, course_term, user_password2, start_date=datetime.now()
     )
-    lesson2.users.append(user_password2[0])
-    session.commit()
+    factory.lesson_user(session, user_password2, lesson2)
     start_date = datetime.now().date()
     end_date = (datetime.now() + timedelta(days=1)).date()
     response = client.get(
@@ -115,6 +111,6 @@ def test_list_lessons_of_instructor(
         params={"start_date": start_date, "end_date": end_date},
     )
     assert response.status_code == HTTPStatus.OK
-    lessons = response.json().get("lessons", [])
+    lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson.id)

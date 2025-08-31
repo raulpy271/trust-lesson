@@ -1,7 +1,8 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from sqlalchemy import select, text
+from sqlmodel import select
+from sqlalchemy import text
 
 from api import models
 
@@ -31,12 +32,12 @@ def test_insert(session):
     )
     session.add_all([u1, u2])
     session.commit()
-    us = session.scalars(select(models.User)).all()
+    us = session.exec(select(models.User)).all()
     assert len(us) == 2
 
 
 def test_clean_db(session):
-    us = session.scalars(select(models.User)).all()
+    us = session.exec(select(models.User)).all()
     assert len(us) == 0
 
 
@@ -60,7 +61,7 @@ def test_uuid_and_default(session):
     )
     session.add_all([c1, c2])
     session.commit()
-    [c1, c2] = session.scalars(select(models.Course)).all()
+    [c1, c2] = session.exec(select(models.Course)).all()
     assert isinstance(c1.id, UUID)
     assert isinstance(c2.id, UUID)
     assert c1.id != c2.id
@@ -86,7 +87,7 @@ def test_timestemp_column(session):
     session.add(m2)
     session.commit()
     after_create = datetime.now()
-    [c1, c2] = session.scalars(
+    [c1, c2] = session.exec(
         select(models.Course).order_by(models.Course.created_at)
     ).all()
     assert isinstance(c1.updated_at, datetime)
@@ -108,12 +109,12 @@ def test_update_column(session):
     )
     session.add(m)
     session.commit()
-    c = session.scalars(select(models.Course)).one()
+    c = session.exec(select(models.Course)).one()
     before_created_at = c.created_at
     before_updated_at = c.updated_at
     c.description = new_desc
     session.commit()
-    c = session.scalars(select(models.Course)).one()
+    c = session.exec(select(models.Course)).one()
     assert c.description == new_desc
     assert c.created_at == before_created_at
     assert before_updated_at < c.updated_at

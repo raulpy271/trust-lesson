@@ -1,15 +1,15 @@
 import enum
-from typing import List
+from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import (
-    Mapped,
-    mapped_column,
-    relationship,
-)
+from sqlmodel import Field, Relationship
 
 from api.models.base import Base, TimestempMixin
+
+if TYPE_CHECKING:
+    from api.models.term_user import TermUser
+    from api.models.lesson_user import LessonUser
+    from api.models.lesson import Lesson, LessonValidation
 
 
 class UserRole(str, enum.Enum):
@@ -18,55 +18,18 @@ class UserRole(str, enum.Enum):
     ADMIN = "ADMIN"
 
 
-class TermUser(Base):
-    __tablename__ = "term_user"
+class User(TimestempMixin, Base, table=True):
+    __exclude__ = ("password_hash", "password_salt")
 
-    term_id: Mapped[UUID] = mapped_column(
-        ForeignKey("course_term.id", ondelete="no action"), primary_key=True
-    )
-    user_id: Mapped[UUID] = mapped_column(
-        ForeignKey("user.id", ondelete="no action"), primary_key=True
-    )
-    role: Mapped[UserRole] = mapped_column()
-
-
-class LessonUser(Base):
-    __tablename__ = "lesson_user"
-
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    lesson_id: Mapped[UUID] = mapped_column(
-        ForeignKey("lesson.id", ondelete="no action")
-    )
-    user_id: Mapped[UUID] = mapped_column(ForeignKey("user.id", ondelete="no action"))
-    validated: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
-    validated_success: Mapped[bool] = mapped_column(
-        default=False, server_default="FALSE"
-    )
-    validations: Mapped[List["LessonValidation"]] = relationship(
-        back_populates="lesson_user"
-    )
-
-
-class User(TimestempMixin, Base):
-    __tablename__ = "user"
-
-    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    username: Mapped[str] = mapped_column(String(50))
-    fullname: Mapped[str] = mapped_column(String(100))
-    email: Mapped[str] = mapped_column(String(100), unique=True)
-    role: Mapped[UserRole] = mapped_column(
-        default=UserRole.STUDANT, server_default=UserRole.STUDANT.value
-    )
-    is_admin: Mapped[bool] = mapped_column(default=False, server_default="FALSE")
-    password_hash: Mapped[str] = mapped_column(String(255))
-    password_salt: Mapped[str] = mapped_column(String(255))
-    terms: Mapped[List["CourseTerm"]] = relationship(
-        secondary="term_user", back_populates="users"
-    )
-    ministrate_lessons: Mapped[List["Lesson"]] = relationship(
-        back_populates="instructor"
-    )
-    lessons: Mapped[List["Lesson"]] = relationship(
-        secondary="lesson_user", back_populates="users"
-    )
-    validations: Mapped[List["LessonValidation"]] = relationship(back_populates="user")
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    username: str
+    fullname: str
+    email: str = Field(unique=True)
+    role: UserRole = Field(default=UserRole.STUDANT)
+    is_admin: bool = Field(default=False)
+    password_hash: str
+    password_salt: str
+    term_users: list["TermUser"] = Relationship(back_populates="user")
+    ministrate_lessons: list["Lesson"] = Relationship(back_populates="instructor")
+    lesson_users: list["LessonUser"] = Relationship(back_populates="user")
+    validations: list["LessonValidation"] = Relationship(back_populates="user")

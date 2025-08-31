@@ -1,35 +1,29 @@
 from typing import Annotated
 from http import HTTPStatus
 
-from sqlalchemy import select
+from sqlmodel import select
 from fastapi import APIRouter, Response, Header
 
 from api import dto
-from api.models import Session, User
+from api.models import User
 from api.auth import check_hash, create_token
 from api.redis import get_default_client
 from api.utils import parse_bearer
+from api.depends import SessionDep
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
-@router.post("/login")
-def login(response: Response, data: dto.LoginIn):
-    with Session() as session:
-        user = session.scalars(
-            select(User).where(User.email == data.email)
-        ).one_or_none()
-        if user and check_hash(user, data.password):
-            token, expiration = create_token(user)
-            response.headers.update(
-                {"Token": token, "Token-Expiration": str(expiration)}
-            )
-            response.status_code = HTTPStatus.NO_CONTENT
-            return {}
-        else:
-            response.status_code = HTTPStatus.UNAUTHORIZED
-            return {}
+@router.post("/login", summary="Do login and return token in response headers")
+def login(response: Response, data: dto.LoginIn, session: SessionDep):
+    user = session.exec(select(User).where(User.email == data.email)).one_or_none()
+    if user and check_hash(user, data.password):
+        token, expiration = create_token(user)
+        response.headers.update({"Token": token, "Token-Expiration": str(expiration)})
+        response.status_code = HTTPStatus.NO_CONTENT
+    else:
+        response.status_code = HTTPStatus.UNAUTHORIZED
 
 
 @router.post("/logout")
