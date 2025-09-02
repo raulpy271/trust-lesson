@@ -1,7 +1,7 @@
 from sqlmodel import select, not_
 from sqlalchemy.orm import selectinload
 
-from api.models import Session, LessonUser, LessonValidation
+from api.models import AsyncSession, LessonUser, LessonValidation
 
 
 class Validator:
@@ -9,9 +9,9 @@ class Validator:
         raise NotImplementedError
 
 
-def run(validator: Validator):
-    with Session() as session:
-        lesson_users = session.exec(
+async def run(validator: Validator):
+    async with AsyncSession() as session:
+        lesson_users = await session.exec(
             select(LessonUser)
             .options(selectinload(LessonUser.validations))
             .where(not_(LessonUser.validated))
@@ -39,4 +39,4 @@ def run(validator: Validator):
             lesson_user.validated_success = validated_success_count == len(
                 lesson_user.validations
             )
-        session.commit()
+        await session.commit()

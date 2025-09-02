@@ -20,10 +20,10 @@ app = func.FunctionApp()
 @app.timer_trigger(
     schedule="0 3 * * *", arg_name="timer", run_on_startup=False, use_monitor=False
 )
-def updateStatusLesson(timer: func.TimerRequest) -> None:
+async def updateStatusLesson(timer: func.TimerRequest) -> None:
     logging.info("Python timer trigger function running.")
     try:
-        update_status_lesson.run()
+        await update_status_lesson.run()
         logging.info("Python timer trigger function executed.")
     except Exception as e:
         logging.error(str(e))
@@ -36,7 +36,7 @@ async def validateImages(timer: func.TimerRequest) -> None:
     logging.info("Python timer trigger function running.")
     try:
         validator = ValidatorStorage()
-        validate_images.run(validator)
+        await validate_images.run(validator)
     except Exception as e:
         logging.error(str(e))
 
