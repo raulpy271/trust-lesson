@@ -14,7 +14,7 @@ def test_only_admin_can_create_course(client, token):
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-def test_create_course(client, token, session, admin):
+async def test_create_course(client, token, session, admin):
     text = mimesis.Text()
     create = {"name": text.title(), "description": text.sentence()}
     response = client.post("/logged/course/", auth=token, json=create)
@@ -23,14 +23,14 @@ def test_create_course(client, token, session, admin):
     assert create["name"] == created["name"]
     assert create["description"] == created["description"]
     assert created.get("id")
-    course = session.get(models.Course, UUID(created["id"]))
+    course = await session.get(models.Course, UUID(created["id"]))
     assert course.name == create["name"]
     assert course.description == create["description"]
     assert course.terms_count == 0
 
 
-def test_list_course(client, token, session):
-    courses = factory.list_course(3, session)
+async def test_list_course(client, token, session):
+    courses = await factory.list_course(3, session)
     response = client.get("/logged/course/", auth=token)
     assert response.status_code == HTTPStatus.OK
     courses_res = response.json()
@@ -40,7 +40,7 @@ def test_list_course(client, token, session):
         assert course.description == course_res["description"]
 
 
-def test_update_course(client, token, session, admin, course):
+async def test_update_course(client, token, session, admin, course):
     text = mimesis.Text()
     update = {"name": course.name, "description": text.sentence()}
     response = client.put(f"/logged/course/{course.id}", auth=token, json=update)
@@ -48,7 +48,7 @@ def test_update_course(client, token, session, admin, course):
     updated = response.json()
     assert course.name == updated["name"]
     assert course.description != updated["description"]
-    session.refresh(course)
+    await session.refresh(course)
     assert course.description == updated["description"]
     assert course.description == update["description"]
 
@@ -61,12 +61,12 @@ def test_update_course_not_found(client, token, admin):
     assert response.status_code == HTTPStatus.NOT_FOUND
 
 
-def test_delete_course(client, token, admin, course, session):
+async def test_delete_course(client, token, admin, course, session):
     course_id = course.id
     response = client.delete(f"/logged/course/{course.id}", auth=token, params={})
     assert response.status_code == HTTPStatus.OK
     session.expire_all()
-    assert not session.get(models.Course, course_id)
+    assert not await session.get(models.Course, course_id)
 
 
 def test_delete_course_not_found(client, token, admin):
