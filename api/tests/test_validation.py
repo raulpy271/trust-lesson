@@ -21,7 +21,7 @@ def spreadsheet():
         yield sp
 
 
-def test_create(
+async def test_create(
     monkeypatch,
     session,
     client,
@@ -41,10 +41,12 @@ def test_create(
     )
     validation_res = resp.json()
     assert resp.status_code == HTTPStatus.CREATED
-    validation = session.exec(
-        select(LessonValidation).where(
-            LessonValidation.lesson_id == lesson.id,
-            LessonValidation.user_id == user_password[0].id,
+    validation = (
+        await session.exec(
+            select(LessonValidation).where(
+                LessonValidation.lesson_id == lesson.id,
+                LessonValidation.user_id == user_password[0].id,
+            )
         )
     ).first()
     assert validation
