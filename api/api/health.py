@@ -7,7 +7,7 @@ from redis.exceptions import RedisError
 from azure.core.exceptions import AzureError
 
 from api import redis
-from api.models import Session, User
+from api.models import AsyncSession, User
 from api.azure.storage import get_container_image
 from api.dto import HealthOut
 
@@ -17,8 +17,8 @@ async def health(checks=["database", "redis", "storage"]):
     status_code = HTTPStatus.OK
     try:
         if "database" in checks:
-            with Session() as session:
-                session.exec(select(User)).first()
+            async with AsyncSession() as session:
+                (await session.exec(select(User))).first()
             result.database_healthy = True
         else:
             result.database_error = "Not checked"

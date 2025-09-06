@@ -125,3 +125,27 @@ async def test_admin_can_delete_anyone(client, token, session, user_password, ad
     assert response.status_code == HTTPStatus.OK
     session.expire_all()
     assert not await session.get(User, user_id)
+
+
+async def test_user_me(
+    client, token, session, user_password, lesson, lesson_user, course_term, term_user
+):
+    user, _ = user_password
+    response = client.get(
+        "/logged/user/me", auth=token, params={"password": user_password[1]}
+    )
+    assert response.status_code == HTTPStatus.OK
+    result = response.json()
+    assert str(user.id) == result["id"]
+    assert user.username == result["username"]
+    assert user.fullname == result["fullname"]
+    assert user.email == result["email"]
+    assert len(result["lesson_users"]) == 1
+    assert str(lesson.id) == result["lesson_users"][0]["lesson_id"]
+    assert str(user.id) == result["lesson_users"][0]["user_id"]
+    assert str(lesson.id) == result["lesson_users"][0]["lesson"]["id"]
+    assert lesson.title == result["lesson_users"][0]["lesson"]["title"]
+    assert len(result["term_users"]) == 1
+    assert str(course_term.id) == result["term_users"][0]["term_id"]
+    assert str(user.id) == result["term_users"][0]["user_id"]
+    assert str(course_term.id) == result["term_users"][0]["term"]["id"]

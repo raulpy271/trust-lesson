@@ -1,3 +1,4 @@
+from api.models.user import UserRole
 import mimesis
 import pytest
 
@@ -92,6 +93,19 @@ async def course_term(session, course):
     session.add(term)
     await session.commit()
     return term
+
+
+@pytest.fixture
+@factory.register
+async def term_user(session, course_term, user_password, role=UserRole.STUDANT):
+    tu = models.TermUser(
+        term_id=course_term.id,
+        user_id=user_password[0].id,
+        role=role,
+    )
+    session.add(tu)
+    await session.commit()
+    return tu
 
 
 @pytest.fixture
