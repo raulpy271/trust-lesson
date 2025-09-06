@@ -18,7 +18,7 @@ def image():
         yield img
 
 
-def test_create(
+async def test_create(
     monkeypatch,
     session,
     client,
@@ -29,7 +29,7 @@ def test_create(
     course_term,
     user_password,
 ):
-    lessons = factory.list_lesson(10, session, course_term, user_password)
+    lessons = await factory.list_lesson(10, session, course_term, user_password)
     mock = MagicMock()
     res = AsyncMock()
     res.json.return_value = {
