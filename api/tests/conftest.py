@@ -4,7 +4,8 @@ load_dotenv("testing.env")
 
 import pytest
 import fakeredis
-from sqlmodel import SQLModel, create_engine
+from sqlmodel import SQLModel
+from sqlalchemy.ext.asyncio import create_async_engine
 from fastapi.testclient import TestClient
 from sqlalchemy.pool import StaticPool
 
@@ -26,12 +27,21 @@ def general(monkeypatch):
 
 
 @pytest.fixture
-def session():
-    models._engine = create_engine(
-        settings.DB_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
+def anyio_backend():
+    return "asyncio"
+
+
+@pytest.fixture
+async def session(anyio_backend):
+    models._async_engine = create_async_engine(
+        settings.DB_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+        echo=False,
     )
-    SQLModel.metadata.create_all(models._engine)
-    with models.Session() as s:
+    async with models._async_engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+    async with models.AsyncSession() as s:
         yield s
 
 
