@@ -58,7 +58,7 @@ async def uploadSpreadsheet(req: func.HttpRequest) -> func.HttpResponse:
             parse_result = parse(df)
             if not parse_result.errors:
                 logging.info(f"Creating lessons {len(parse_result.lessons)}")
-                result = create_lessons(parse_result, UUID(data["instructor_id"]))
+                result = await create_lessons(parse_result, UUID(data["instructor_id"]))
                 if not result.errors:
                     res = {
                         "course_id": str(result.course_id),
