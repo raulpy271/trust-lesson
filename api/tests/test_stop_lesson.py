@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 
 from api import models
-from tests.factories import factory
 from tests.utils import authenticate
 
 
@@ -34,7 +33,7 @@ async def test_cannot_stop_already_stopped_lesson(client, token, session, lesson
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-async def test_only_instructor_can_stop_lesson(client, session, lesson):
+async def test_only_instructor_can_stop_lesson(client, session, lesson, factory):
     lesson.status = models.LessonStatus.RUNNING
     lesson.effective_start_date = datetime.now()
     await session.commit()

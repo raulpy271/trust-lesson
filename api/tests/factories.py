@@ -33,11 +33,16 @@ class Factory:
         return func
 
 
-factory = Factory()
+_factory = Factory()
 
 
 @pytest.fixture
-@factory.register
+def factory():
+    return _factory
+
+
+@pytest.fixture
+@_factory.register
 async def user_password(session):
     person = mimesis.Person()
     password = person.password()
@@ -57,7 +62,7 @@ async def user_password(session):
 
 
 @pytest.fixture
-@factory.register
+@_factory.register
 async def admin(user_password, session):
     user, _ = user_password
     user.is_admin = True
@@ -67,7 +72,7 @@ async def admin(user_password, session):
 
 
 @pytest.fixture
-@factory.register
+@_factory.register
 async def course(session):
     text = mimesis.Text()
     course = models.Course(
@@ -80,7 +85,7 @@ async def course(session):
 
 
 @pytest.fixture
-@factory.register
+@_factory.register
 async def course_term(session, course):
     datetime = mimesis.Datetime()
     term = models.CourseTerm(
@@ -96,7 +101,7 @@ async def course_term(session, course):
 
 
 @pytest.fixture
-@factory.register
+@_factory.register
 async def term_user(session, course_term, user_password, role=UserRole.STUDANT):
     tu = models.TermUser(
         term_id=course_term.id,
@@ -109,7 +114,7 @@ async def term_user(session, course_term, user_password, role=UserRole.STUDANT):
 
 
 @pytest.fixture
-@factory.register
+@_factory.register
 async def lesson(session, course_term, user_password, start_date=None):
     user, _ = user_password
     text = mimesis.Text()
@@ -131,7 +136,7 @@ async def lesson(session, course_term, user_password, start_date=None):
 
 
 @pytest.fixture
-@factory.register
+@_factory.register
 async def lesson_user(
     session, user_password, lesson, validated=False, validated_success=False
 ):
@@ -148,7 +153,7 @@ async def lesson_user(
 
 
 @pytest.fixture
-@factory.register
+@_factory.register
 async def lesson_validation(
     session,
     user_password,

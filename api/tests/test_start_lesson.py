@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 
 from api import models
-from tests.factories import factory
 from tests.utils import authenticate
 
 
@@ -34,7 +33,7 @@ async def test_cannot_start_a_running_lesson(client, token, session, lesson):
     assert response.status_code == HTTPStatus.BAD_REQUEST
 
 
-async def test_only_instructor_can_start_lesson(client, session, lesson):
+async def test_only_instructor_can_start_lesson(client, session, lesson, factory):
     u_password = await factory.user_password(session)
     t = authenticate(client, u_password[0], u_password[1])
     assert lesson.instructor_id != u_password[0].id

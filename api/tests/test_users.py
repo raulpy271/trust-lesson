@@ -6,7 +6,6 @@ from sqlmodel import select
 
 from api import settings
 from api.models import User
-from tests.factories import factory
 
 
 async def test_create(session, client, token):
@@ -46,7 +45,7 @@ def test_exclude_columns(client, token, user_password):
     assert not result.get("password_salt")
 
 
-async def test_list_users(client, token, session, user_password, admin):
+async def test_list_users(client, token, session, user_password, admin, factory):
     logged_user, _ = user_password
     users = [logged_user] + [
         users_password[0]
@@ -99,7 +98,9 @@ async def test_user_cannot_promote_himself_to_admin(
     assert not user.is_admin
 
 
-async def test_user_cannot_delete_another(client, session, token, user_password):
+async def test_user_cannot_delete_another(
+    client, session, token, user_password, factory
+):
     user_id = (await factory.user_password(session))[0].id
     response = client.delete(
         f"/logged/user/{user_id}", auth=token, params={"password": user_password[1]}
@@ -117,7 +118,9 @@ async def test_user_can_delete_itself(client, token, session, user_password):
     assert not await session.get(User, user_id)
 
 
-async def test_admin_can_delete_anyone(client, token, session, user_password, admin):
+async def test_admin_can_delete_anyone(
+    client, token, session, user_password, admin, factory
+):
     user_id = (await factory.user_password(session))[0].id
     response = client.delete(
         f"/logged/user/{user_id}", auth=token, params={"password": user_password[1]}

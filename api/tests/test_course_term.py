@@ -2,7 +2,6 @@ from uuid import UUID
 from http import HTTPStatus
 
 from api import models
-from tests.factories import factory
 
 
 def test_get_course_term(client, token, course_term):
@@ -33,7 +32,9 @@ async def test_create_course_term(client, token, session, course, admin):
     assert term.course.id == course.id
 
 
-async def test_create_course_term_number(client, token, session, course, admin):
+async def test_create_course_term_number(
+    client, token, session, course, admin, factory
+):
     i = 0
     for i in range(4):
         create = {
@@ -65,7 +66,9 @@ async def test_create_course_term_number(client, token, session, course, admin):
     assert course2.terms_count == 1
 
 
-async def test_delete_course_term_number(client, token, session, course, admin):
+async def test_delete_course_term_number(
+    client, token, session, course, admin, factory
+):
     count = 5
     terms = await factory.list_course_term(count, session, course)
     id_delete = terms[0].id

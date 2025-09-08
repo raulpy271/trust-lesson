@@ -3,8 +3,6 @@ from unittest.mock import MagicMock, AsyncMock
 
 import pytest
 
-from tests.factories import factory
-
 
 @pytest.fixture
 def lessons1():
@@ -28,6 +26,7 @@ async def test_create(
     course,
     course_term,
     user_password,
+    factory,
 ):
     lessons = await factory.list_lesson(10, session, course_term, user_password)
     mock = MagicMock()

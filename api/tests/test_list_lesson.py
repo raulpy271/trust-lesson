@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 
 from api import models
-from tests.factories import factory
 from tests.utils import authenticate
 
 
@@ -20,7 +19,9 @@ def test_list_one_lesson(client, user_password, token, session, lesson, lesson_u
     assert lessons[0]["id"] == str(lesson.id)
 
 
-async def test_filter_by_date(client, user_password, token, session, course_term):
+async def test_filter_by_date(
+    client, user_password, token, session, course_term, factory
+):
     start_date = datetime.now().date()
     end_date = (datetime.now() + timedelta(days=1)).date()
     # lessons inside filter
@@ -52,7 +53,7 @@ async def test_filter_by_date(client, user_password, token, session, course_term
         assert lesson["id"] in to_include_ids
 
 
-async def test_filter_by_logged_user(client, session, course_term):
+async def test_filter_by_logged_user(client, session, course_term, factory):
     user_password1 = await factory.user_password(session)
     user_password2 = await factory.user_password(session)
     start_date = datetime.now().date()
@@ -89,7 +90,7 @@ async def test_filter_by_logged_user(client, session, course_term):
 
 
 async def test_list_lessons_of_instructor(
-    client, user_password, token, session, course_term, lesson
+    client, user_password, token, session, course_term, lesson, factory
 ):
     user, _ = user_password
     # Register user as instructor of the lesson

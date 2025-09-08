@@ -3,7 +3,6 @@ from random import random
 import pytest
 
 from api.jobs.validate_images import Validator, run
-from tests.factories import factory
 
 
 @pytest.fixture
@@ -22,7 +21,9 @@ def validator():
     return DummyValidator()
 
 
-async def test_validation(session, validator, user_password, lesson, lesson_user):
+async def test_validation(
+    session, validator, user_password, lesson, lesson_user, factory
+):
     validations = await factory.list_lesson_validation(
         10, session, user_password, lesson, lesson_user
     )
@@ -58,7 +59,7 @@ async def test_validation(session, validator, user_password, lesson, lesson_user
 
 
 async def test_validate_only_one(
-    session, validator, user_password, lesson, lesson_user, lesson_validation
+    session, validator, user_password, lesson, lesson_user, lesson_validation, factory
 ):
     validations_validated = await factory.list_lesson_validation(
         10,
