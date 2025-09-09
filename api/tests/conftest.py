@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 load_dotenv("testing.env")
 
 import pytest
-import fakeredis
+from fakeredis import FakeAsyncRedis
 from sqlmodel import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine
 from fastapi.testclient import TestClient
@@ -47,7 +47,7 @@ async def session(anyio_backend):
 
 @pytest.fixture
 def redis():
-    api.redis._redis = fakeredis.FakeRedis()
+    api.redis._redis = FakeAsyncRedis()
     return api.redis._redis
 
 

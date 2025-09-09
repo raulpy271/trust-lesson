@@ -20,7 +20,7 @@ async def login(response: Response, data: dto.LoginIn, session: SessionDep):
     result = await session.exec(select(User).where(User.email == data.email))
     user = result.one_or_none()
     if user and check_hash(user, data.password):
-        token, expiration = create_token(user)
+        token, expiration = await create_token(user)
         response.headers.update({"Token": token, "Token-Expiration": str(expiration)})
         response.status_code = HTTPStatus.NO_CONTENT
     else:
@@ -28,12 +28,14 @@ async def login(response: Response, data: dto.LoginIn, session: SessionDep):
 
 
 @router.post("/logout")
-def logout(response: Response, authorization: Annotated[str | None, Header()] = None):
+async def logout(
+    response: Response, authorization: Annotated[str | None, Header()] = None
+):
     if authorization:
         token = parse_bearer(authorization)
         if token:
             redis = get_default_client()
-            deleted = redis.delete(token)
+            deleted = await redis.delete(token)
             if deleted:
                 response.status_code = HTTPStatus.OK
                 return response

@@ -29,7 +29,7 @@ async def health(checks=["database", "redis", "storage"]):
     try:
         if "redis" in checks:
             client = redis.get_default_client()
-            client.info()
+            await client.info()
             result.redis_healthy = True
         else:
             result.redis_error = "Not checked"
