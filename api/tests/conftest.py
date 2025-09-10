@@ -52,7 +52,7 @@ def redis():
 
 
 @pytest.fixture
-def app():
+def app(redis):
     """Create and configure a new app instance for each test."""
     app = create_app()
     return app
@@ -61,7 +61,8 @@ def app():
 @pytest.fixture
 def client(app):
     """A test client for the app."""
-    return TestClient(app)
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture
