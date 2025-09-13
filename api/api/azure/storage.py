@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from dateutil.parser import isoparse
 
-from azure.identity import DefaultAzureCredential
+from azure.identity.aio import DefaultAzureCredential
 from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob import (
     generate_blob_sas,
@@ -20,6 +20,15 @@ _credential = None
 _container_image = None
 _container_spreadsheet = None
 _delegation_key = None
+
+
+async def close_resources():
+    if _container_spreadsheet:
+        await _container_spreadsheet.close()
+    if _container_image:
+        await _container_image.close()
+    if _credential:
+        await _credential.close()
 
 
 def get_default_credential():
