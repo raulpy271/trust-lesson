@@ -5,12 +5,18 @@ from api.models import AsyncSession, LessonUser, LessonValidation
 
 
 class Validator:
-    def __call__(self, validation: LessonValidation) -> float:
+    async def __aenter__(self):
+        raise NotImplementedError
+
+    async def __aexit__(self, exc_type, exc, tb):
+        raise NotImplementedError
+
+    async def get_confidence(self, validation: LessonValidation) -> float:
         raise NotImplementedError
 
 
 async def run(validator: Validator):
-    async with AsyncSession() as session:
+    async with AsyncSession() as session, validator:
         lesson_users = await session.exec(
             select(LessonUser)
             .options(selectinload(LessonUser.validations))
@@ -22,7 +28,7 @@ async def run(validator: Validator):
             for validation in lesson_user.validations:
                 if not validation.validated:
                     try:
-                        confidence = validator(validation)
+                        confidence = await validator.get_confidence(validation)
                         validation.validated_success = True
                         validation.validated_value = confidence
                         validated_success_count += 1

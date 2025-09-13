@@ -6,7 +6,6 @@ from azure.storage.blob.aio import ContainerClient
 from azure.storage.blob import (
     generate_blob_sas,
     BlobSasPermissions,
-    BlobServiceClient,
 )
 
 
@@ -50,31 +49,29 @@ def get_container_spreadsheet():
     return _container_spreadsheet
 
 
-def create_delegation_key(duration_min=10):
-    credential = get_default_credential()
-    blob_service = BlobServiceClient(STORAGE_URL, credential)
-    return blob_service.get_user_delegation_key(
+async def create_delegation_key(blob_service, duration_min=10):
+    return await blob_service.get_user_delegation_key(
         datetime.now(),
         datetime.now() + timedelta(minutes=duration_min),
     )
 
 
-def get_delegation_key():
+async def get_delegation_key(blob_service):
     global _delegation_key
     if not _delegation_key:
-        _delegation_key = create_delegation_key()
+        _delegation_key = await create_delegation_key(blob_service)
     else:
         expiry = isoparse(_delegation_key.signed_expiry)
         is_about_to_expiry = expiry < (
             datetime.now(expiry.tzinfo) + timedelta(minutes=1)
         )
         if is_about_to_expiry:
-            _delegation_key = create_delegation_key()
+            _delegation_key = await create_delegation_key(blob_service)
     return _delegation_key
 
 
-def generate_sas(blob_name, duration_min=10):
-    delegation_key = get_delegation_key()
+async def generate_sas(blob_service, blob_name, duration_min=10):
+    delegation_key = await get_delegation_key(blob_service)
     token = generate_blob_sas(
         ACCOUNT_NAME,
         CONTAINER_IMAGE_NAME,

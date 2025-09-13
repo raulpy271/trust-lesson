@@ -11,11 +11,17 @@ def validator():
         def __init__(self):
             self.values = {}
 
-        def __call__(self, validation):
+        async def __aenter__(self):
+            pass
+
+        async def __aexit__(self, exc_type, exc, tb):
+            pass
+
+        async def get_confidence(self, validation):
             self.values[validation.id] = random()
             return self.values[validation.id]
 
-        def get_confidence(self, validation):
+        def get_real_confidence(self, validation):
             return self.values[validation.id]
 
     return DummyValidator()
@@ -48,7 +54,7 @@ async def test_validation(
         await session.refresh(validation)
         assert validation.validated
         assert validation.validated_success
-        assert validation.validated_value == validator.get_confidence(validation)
+        assert validation.validated_value == validator.get_real_confidence(validation)
     assert lesson_user_validated.validated
     assert not lesson_user_validated.validated_success
     for validation in validations_validated:
@@ -77,7 +83,7 @@ async def test_validate_only_one(
     assert not lesson_user.validated_success
     assert lesson_validation.validated
     assert lesson_validation.validated_success
-    assert lesson_validation.validated_value == validator.get_confidence(
+    assert lesson_validation.validated_value == validator.get_real_confidence(
         lesson_validation
     )
     for validation in validations_validated:
