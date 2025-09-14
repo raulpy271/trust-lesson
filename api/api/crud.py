@@ -91,9 +91,12 @@ def crud_router(
                 if not get_auth(None, user, resource_id):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
             if get_relationship:
-                obj = await session.get(
-                    model, resource_id, options=model.selectload(get_relationship)
+                rel = await session.exec(
+                    select(model)
+                    .options(*model.selectload(get_relationship))
+                    .where(model.id == resource_id)
                 )
+                obj = rel.first()
             else:
                 obj = await session.get(model, resource_id)
             if obj:
