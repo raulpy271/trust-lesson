@@ -1,4 +1,4 @@
-from redis import Redis
+from redis.asyncio import Redis
 
 from api import settings
 
@@ -18,8 +18,8 @@ def get_default_client():
     return _redis
 
 
-def hgetall_str(client, key):
-    mapping = client.hgetall(key)
+async def hgetall_str(client, key):
+    mapping = await client.hgetall(key)
     if isinstance(mapping, dict):
         new_mapping = {}
         for k, v in mapping.items():

@@ -25,13 +25,14 @@ async def create(
 ):
     mime_type, media_type = parse_content_type(data.file.content_type)
     mime_type_enum = MediaType(mime_type.upper())
-    lesson = session.get(Lesson, data.lesson_id)
+    lesson = await session.get(Lesson, data.lesson_id)
     if lesson:
-        lesson_user = session.exec(
+        result = await session.exec(
             select(LessonUser).where(
                 LessonUser.lesson_id == lesson.id, LessonUser.user_id == user_id
             )
-        ).one_or_none()
+        )
+        lesson_user = result.one_or_none()
         if lesson_user:
             validation_id = uuid4()
             key = f"{validation_id}.{media_type}"
@@ -49,8 +50,8 @@ async def create(
                 lesson_user=lesson_user,
             )
             session.add(validation)
-            session.commit()
-            session.refresh(validation)
+            await session.commit()
+            await session.refresh(validation)
             return validation
         else:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND)

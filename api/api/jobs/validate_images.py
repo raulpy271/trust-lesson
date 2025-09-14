@@ -1,17 +1,23 @@
 from sqlmodel import select, not_
 from sqlalchemy.orm import selectinload
 
-from api.models import Session, LessonUser, LessonValidation
+from api.models import AsyncSession, LessonUser, LessonValidation
 
 
 class Validator:
-    def __call__(self, validation: LessonValidation) -> float:
+    async def __aenter__(self):
+        raise NotImplementedError
+
+    async def __aexit__(self, exc_type, exc, tb):
+        raise NotImplementedError
+
+    async def get_confidence(self, validation: LessonValidation) -> float:
         raise NotImplementedError
 
 
-def run(validator: Validator):
-    with Session() as session:
-        lesson_users = session.exec(
+async def run(validator: Validator):
+    async with AsyncSession() as session, validator:
+        lesson_users = await session.exec(
             select(LessonUser)
             .options(selectinload(LessonUser.validations))
             .where(not_(LessonUser.validated))
@@ -22,7 +28,7 @@ def run(validator: Validator):
             for validation in lesson_user.validations:
                 if not validation.validated:
                     try:
-                        confidence = validator(validation)
+                        confidence = await validator.get_confidence(validation)
                         validation.validated_success = True
                         validation.validated_value = confidence
                         validated_success_count += 1
@@ -39,4 +45,4 @@ def run(validator: Validator):
             lesson_user.validated_success = validated_success_count == len(
                 lesson_user.validations
             )
-        session.commit()
+        await session.commit()

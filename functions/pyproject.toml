@@ -24,4 +24,5 @@ sqlmodel = "^0.0.24"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 mimesis = "^18.0.0"
+aiosqlite = "^0.21.0"
 

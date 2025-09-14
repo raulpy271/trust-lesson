@@ -2,7 +2,6 @@ from datetime import datetime, timedelta
 from http import HTTPStatus
 
 from api import models
-from tests.factories import factory
 from tests.utils import authenticate
 
 
@@ -20,15 +19,17 @@ def test_list_one_lesson(client, user_password, token, session, lesson, lesson_u
     assert lessons[0]["id"] == str(lesson.id)
 
 
-def test_filter_by_date(client, user_password, token, session, course_term):
+async def test_filter_by_date(
+    client, user_password, token, session, course_term, factory
+):
     start_date = datetime.now().date()
     end_date = (datetime.now() + timedelta(days=1)).date()
     # lessons inside filter
-    lessons_to_include = factory.list_lesson(
+    lessons_to_include = await factory.list_lesson(
         3, session, course_term, user_password, start_date=datetime.now()
     )
     # lessons outside filter
-    lessons_to_exclude = factory.list_lesson(
+    lessons_to_exclude = await factory.list_lesson(
         3,
         session,
         course_term,
@@ -36,10 +37,9 @@ def test_filter_by_date(client, user_password, token, session, course_term):
         start_date=datetime(year=2022, month=2, day=1),
     )
     [
-        factory.lesson_user(session, user_password, lesson)
+        await factory.lesson_user(session, user_password, lesson)
         for lesson in lessons_to_include + lessons_to_exclude
     ]
-    session.commit()
     response = client.get(
         "/logged/lesson/list",
         auth=token,
@@ -53,16 +53,16 @@ def test_filter_by_date(client, user_password, token, session, course_term):
         assert lesson["id"] in to_include_ids
 
 
-def test_filter_by_logged_user(client, session, course_term):
-    user_password1 = factory.user_password(session)
-    user_password2 = factory.user_password(session)
+async def test_filter_by_logged_user(client, session, course_term, factory):
+    user_password1 = await factory.user_password(session)
+    user_password2 = await factory.user_password(session)
     start_date = datetime.now().date()
     end_date = (datetime.now() + timedelta(days=1)).date()
-    (lesson_user1, lesson_user2) = factory.list_lesson(
+    (lesson_user1, lesson_user2) = await factory.list_lesson(
         2, session, course_term, user_password1, start_date=datetime.now()
     )
-    factory.lesson_user(session, user_password1, lesson_user1)
-    factory.lesson_user(session, user_password2, lesson_user2)
+    await factory.lesson_user(session, user_password1, lesson_user1)
+    await factory.lesson_user(session, user_password2, lesson_user2)
     # authenticate with user 1
     t = authenticate(client, user_password1[0], user_password1[1])
     # Request lessons of user 1
@@ -89,8 +89,8 @@ def test_filter_by_logged_user(client, session, course_term):
     assert lessons[0]["id"] == str(lesson_user2.id)
 
 
-def test_list_lessons_of_instructor(
-    client, user_password, token, session, course_term, lesson
+async def test_list_lessons_of_instructor(
+    client, user_password, token, session, course_term, lesson, factory
 ):
     user, _ = user_password
     # Register user as instructor of the lesson
@@ -98,11 +98,11 @@ def test_list_lessons_of_instructor(
     lesson.instructor = user
     lesson.start_date = datetime.now()
     # Create lesson when the user is not the instructor
-    user_password2 = factory.user_password(session)
-    lesson2 = factory.lesson(
+    user_password2 = await factory.user_password(session)
+    lesson2 = await factory.lesson(
         session, course_term, user_password2, start_date=datetime.now()
     )
-    factory.lesson_user(session, user_password2, lesson2)
+    await factory.lesson_user(session, user_password2, lesson2)
     start_date = datetime.now().date()
     end_date = (datetime.now() + timedelta(days=1)).date()
     response = client.get(

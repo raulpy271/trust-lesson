@@ -1,4 +1,6 @@
 import httpx
+import inspect
+import asyncio
 
 
 def authenticate(client, user, password):
@@ -15,3 +17,7 @@ class BearerAuth(httpx.Auth):
     def auth_flow(self, request):
         request.headers["Authorization"] = self.authorization
         yield request
+
+
+def is_async(f):
+    return inspect.isasyncgenfunction(f) or asyncio.iscoroutinefunction(f)

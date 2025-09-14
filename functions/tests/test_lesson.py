@@ -10,8 +10,8 @@ from functions.lesson import create_lessons
 
 
 @pytest.fixture
-def course_term(session, user_password):
-    with session.begin():
+async def course_term(session, user_password):
+    async with session.begin():
         user_password[0].role = models.UserRole.INSTRUCTOR
         session.add(user_password[0])
         text = mimesis.Text()
@@ -58,12 +58,12 @@ def parser_result(course_term, user_password):
     )
 
 
-def test_create_one_lesson(session, user_password, course_term, parser_result):
+async def test_create_one_lesson(session, user_password, course_term, parser_result):
     course, term = course_term
     lesson = parser_result.lessons[0]
-    result = create_lessons(parser_result, user_password[0].id)
-    session.refresh(course)
-    session.refresh(term)
+    result = await create_lessons(parser_result, user_password[0].id)
+    await session.refresh(course)
+    await session.refresh(term, ["lessons"])
     assert not result.errors
     assert result.course_id == course.id
     assert result.term_id == term.id
@@ -77,7 +77,7 @@ def test_create_one_lesson(session, user_password, course_term, parser_result):
     assert term.lessons[0].instructor_id == user_password[0].id
 
 
-def test_instructor_not_found(session, user_password, course_term, parser_result):
+async def test_instructor_not_found(session, user_password, course_term, parser_result):
     text = mimesis.Text()
     num = mimesis.Numeric()
     lesson = LessonItem(
@@ -90,10 +90,10 @@ def test_instructor_not_found(session, user_password, course_term, parser_result
         line_number=num.integer_number(0, 10),
     )
     parser_result.lessons.append(lesson)
-    result = create_lessons(parser_result, user_password[0].id)
+    result = await create_lessons(parser_result, user_password[0].id)
     assert not result.course_id
     assert not result.term_id
     assert len(result.errors) == 1
     assert result.errors[0][0] == lesson.line_number
     assert "not found" in result.errors[0][1]
-    assert not len(session.exec(select(models.Lesson)).all())
+    assert not len((await session.exec(select(models.Lesson))).all())

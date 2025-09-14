@@ -2,7 +2,6 @@ from uuid import UUID
 from http import HTTPStatus
 
 from api import models
-from tests.factories import factory
 
 
 def test_get_course_term(client, token, course_term):
@@ -15,7 +14,7 @@ def test_get_course_term(client, token, course_term):
     assert str(course_term.end_date) == term["end_date"]
 
 
-def test_create_course_term(client, token, session, course, admin):
+async def test_create_course_term(client, token, session, course, admin):
     create = {
         "status": "FINISHED",
         "start_date": "2025-01-01",
@@ -27,13 +26,15 @@ def test_create_course_term(client, token, session, course, admin):
     created = response.json()
     for k, v in create.items():
         assert created[k] == v
-    term = session.get(models.CourseTerm, UUID(created["id"]))
+    term = await session.get(models.CourseTerm, UUID(created["id"]))
     assert term
     assert term.term_number == 0
     assert term.course.id == course.id
 
 
-def test_create_course_term_number(client, token, session, course, admin):
+async def test_create_course_term_number(
+    client, token, session, course, admin, factory
+):
     i = 0
     for i in range(4):
         create = {
@@ -46,9 +47,9 @@ def test_create_course_term_number(client, token, session, course, admin):
         assert response.status_code == HTTPStatus.CREATED
         created = response.json()
         assert created["term_number"] == i
-        session.expire_all()
+        await session.refresh(course)
         assert course.terms_count == i + 1
-    course2 = factory.course(session)
+    course2 = await factory.course(session)
     create = {
         "status": "FINISHED",
         "start_date": "2025-01-01",
@@ -59,19 +60,23 @@ def test_create_course_term_number(client, token, session, course, admin):
     assert response.status_code == HTTPStatus.CREATED
     created = response.json()
     assert created["term_number"] == 0
-    session.expire_all()
+    await session.refresh(course)
+    await session.refresh(course2)
     assert course.terms_count == i + 1
     assert course2.terms_count == 1
 
 
-def test_delete_course_term_number(client, token, session, course, admin):
+async def test_delete_course_term_number(
+    client, token, session, course, admin, factory
+):
     count = 5
-    terms = factory.list_course_term(count, session, course)
+    terms = await factory.list_course_term(count, session, course)
     id_delete = terms[0].id
-    session.expire_all()
+    await session.refresh(course)
     assert course.terms_count == count
     response = client.delete(f"/logged/course-term/{id_delete}", auth=token, params={})
     assert response.status_code == HTTPStatus.OK
-    session.expire_all()
+    await session.refresh(course)
     assert course.terms_count == count - 1
-    assert not session.get(models.CourseTerm, id_delete)
+    session.expire_all()
+    assert not await session.get(models.CourseTerm, id_delete)

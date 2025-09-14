@@ -50,26 +50,34 @@ def crud_router(
             status_code=HTTPStatus.CREATED,
             response_model=model.response_model(create_relationship),
         )
-        def create(data: create_dto, user_id: LoggedUserId, session: SessionDep):
+        async def create(data: create_dto, user_id: LoggedUserId, session: SessionDep):
             if create_auth:
-                user = session.get(User, user_id)
+                user = await session.get(User, user_id)
                 if not create_auth(data, user, None):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
             obj = model(**data.model_dump())
             session.add(obj)
-            session.commit()
-            session.refresh(obj)
+            await session.commit()
+            if create_relationship:
+                obj = await session.get(
+                    model, obj.id, options=model.selectload(create_relationship)
+                )
+            else:
+                await session.refresh(obj)
             return obj
 
     if "list" in methods:
 
         @router.get("/", response_model=list[model.response_model(list_relationship)])
-        def _list(user_id: LoggedUserId, session: SessionDep):
+        async def _list(user_id: LoggedUserId, session: SessionDep):
             if list_auth:
-                user = session.get(User, user_id)
+                user = await session.get(User, user_id)
                 if not list_auth(None, user, None):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-            objs = session.exec(select(model)).all()
+            stmt = select(model)
+            if list_relationship:
+                stmt = select(model).options(*model.selectload(list_relationship))
+            objs = (await session.exec(stmt)).all()
             return objs
 
     if "get" in methods:
@@ -77,12 +85,20 @@ def crud_router(
         @router.get(
             "/{resource_id}", response_model=model.response_model(get_relationship)
         )
-        def get(resource_id: UUID, user_id: LoggedUserId, session: SessionDep):
+        async def get(resource_id: UUID, user_id: LoggedUserId, session: SessionDep):
             if get_auth:
-                user = session.get(User, user_id)
+                user = await session.get(User, user_id)
                 if not get_auth(None, user, resource_id):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-            obj = session.get(model, resource_id)
+            if get_relationship:
+                rel = await session.exec(
+                    select(model)
+                    .options(*model.selectload(get_relationship))
+                    .where(model.id == resource_id)
+                )
+                obj = rel.first()
+            else:
+                obj = await session.get(model, resource_id)
             if obj:
                 return obj
             else:
@@ -93,45 +109,51 @@ def crud_router(
         @router.put(
             "/{resource_id}", response_model=model.response_model(update_relationship)
         )
-        def put(
+        async def put(
             resource_id: UUID,
             data: update_dto,
             user_id: LoggedUserId,
             session: SessionDep,
         ):
             if update_auth:
-                user = session.get(User, user_id)
+                user = await session.get(User, user_id)
                 if not update_auth(data, user, resource_id):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-            obj = session.get(model, resource_id)
+            obj = await session.get(model, resource_id)
             if obj:
                 for key, value in data.model_dump().items():
                     if hasattr(obj, key):
                         setattr(obj, key, value)
                 session.add(obj)
-                session.commit()
-                session.refresh(obj)
+                await session.commit()
+                if update_relationship:
+                    rel = await session.exec(
+                        select(model)
+                        .options(*model.selectload(update_relationship))
+                        .where(model.id == resource_id)
+                    )
+                    obj = rel.first()
+                return obj
             else:
                 raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-            return obj
 
     if "delete" in methods:
 
         @router.delete("/{resource_id}")
-        def delete(
+        async def delete(
             resource_id: UUID,
             user_id: LoggedUserId,
             session: SessionDep,
             data: delete_dto = None,
         ):
             if delete_auth:
-                user = session.get(User, user_id)
+                user = await session.get(User, user_id)
                 if not delete_auth(data, user, resource_id):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
-            obj = session.get(model, resource_id)
+            obj = await session.get(model, resource_id)
             if obj:
-                session.delete(obj)
-                session.commit()
+                await session.delete(obj)
+                await session.commit()
             else:
                 raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 

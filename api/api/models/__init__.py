@@ -1,5 +1,6 @@
-from sqlmodel import create_engine
-from sqlmodel import Session as _Session
+from sqlmodel.ext.asyncio.session import AsyncSession as _AsyncSession
+from sqlalchemy.ext.asyncio import create_async_engine
+
 
 from api import settings
 from api.models.term_user import TermUser
@@ -21,8 +22,8 @@ from api.models.user import (
 )
 
 
-_engine = create_engine(settings.DB_URL)
+_async_engine = create_async_engine(settings.DB_URL)
 
 
-def Session():
-    return _Session(_engine)
+def AsyncSession():
+    return _AsyncSession(_async_engine, expire_on_commit=False)

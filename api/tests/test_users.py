@@ -6,10 +6,9 @@ from sqlmodel import select
 
 from api import settings
 from api.models import User
-from tests.factories import factory
 
 
-def test_create(session, client, token):
+async def test_create(session, client, token):
     person = mimesis.Person()
     user = {
         "username": person.username(),
@@ -19,7 +18,9 @@ def test_create(session, client, token):
     }
     resp = client.post("logged/user/", json=user, auth=token)
     assert resp.status_code == HTTPStatus.CREATED
-    u = session.exec(select(User).where(User.username == user["username"])).one()
+    u = (
+        await session.exec(select(User).where(User.username == user["username"]))
+    ).one()
     assert u.fullname == user["fullname"]
     assert u.email == user["email"]
     phash = scrypt(
@@ -30,7 +31,7 @@ def test_create(session, client, token):
     assert u.password_hash == phash.hex()
 
 
-def test_exlude_columns(client, token, user_password):
+def test_exclude_columns(client, token, user_password):
     user = user_password[0]
     response = client.get("/logged/user/me", auth=token)
     result = response.json()
@@ -44,10 +45,11 @@ def test_exlude_columns(client, token, user_password):
     assert not result.get("password_salt")
 
 
-def test_list_users(client, token, session, user_password, admin):
+async def test_list_users(client, token, session, user_password, admin, factory):
     logged_user, _ = user_password
     users = [logged_user] + [
-        users_password[0] for users_password in factory.list_user_password(3, session)
+        users_password[0]
+        for users_password in await factory.list_user_password(3, session)
     ]
     response = client.get("/logged/user/", auth=token)
     assert response.status_code == HTTPStatus.OK
@@ -59,7 +61,7 @@ def test_list_users(client, token, session, user_password, admin):
         assert user.is_admin == user_res["is_admin"]
 
 
-def test_update_user(client, session, token, user_password, admin):
+async def test_update_user(client, session, token, user_password, admin):
     person = mimesis.Person()
     update = {
         "username": user_password[0].username,
@@ -72,13 +74,15 @@ def test_update_user(client, session, token, user_password, admin):
     response = client.put(f"logged/user/{user_password[0].id}", json=update, auth=token)
     assert response.status_code == HTTPStatus.OK
     user = user_password[0]
-    session.refresh(user)
+    await session.refresh(user)
     assert user.username == update["username"]
     assert user.fullname == update["fullname"]
     assert user.email == update["email"]
 
 
-def test_user_cannot_promote_himself_to_admin(client, session, token, user_password):
+async def test_user_cannot_promote_himself_to_admin(
+    client, session, token, user_password
+):
     person = mimesis.Person()
     update = {
         "username": user_password[0].username,
@@ -90,33 +94,76 @@ def test_user_cannot_promote_himself_to_admin(client, session, token, user_passw
     }
     response = client.put(f"logged/user/{user_password[0].id}", json=update, auth=token)
     assert response.status_code == HTTPStatus.UNAUTHORIZED
-    user = session.get(User, user_password[0].id)
+    user = await session.get(User, user_password[0].id)
     assert not user.is_admin
 
 
-def test_user_cannot_delete_another(client, session, token, user_password):
-    user_id = factory.user_password(session)[0].id
+async def test_user_cannot_delete_another(
+    client, session, token, user_password, factory
+):
+    user_id = (await factory.user_password(session))[0].id
     response = client.delete(
         f"/logged/user/{user_id}", auth=token, params={"password": user_password[1]}
     )
     assert response.status_code == HTTPStatus.UNAUTHORIZED
 
 
-def test_user_can_delete_itself(client, token, session, user_password):
+async def test_user_can_delete_itself(client, token, session, user_password):
     user_id = user_password[0].id
     response = client.delete(
         f"/logged/user/{user_id}", auth=token, params={"password": user_password[1]}
     )
     assert response.status_code == HTTPStatus.OK
     session.expire_all()
-    assert not session.get(User, user_id)
+    assert not await session.get(User, user_id)
 
 
-def test_admin_can_delete_anyone(client, token, session, user_password, admin):
-    user_id = factory.user_password(session)[0].id
+async def test_admin_can_delete_anyone(
+    client, token, session, user_password, admin, factory
+):
+    user_id = (await factory.user_password(session))[0].id
     response = client.delete(
         f"/logged/user/{user_id}", auth=token, params={"password": user_password[1]}
     )
     assert response.status_code == HTTPStatus.OK
     session.expire_all()
-    assert not session.get(User, user_id)
+    assert not await session.get(User, user_id)
+
+
+async def test_user_me(
+    client, token, session, user_password, lesson, lesson_user, course_term, term_user
+):
+    user, _ = user_password
+    response = client.get(
+        "/logged/user/me", auth=token, params={"password": user_password[1]}
+    )
+    assert response.status_code == HTTPStatus.OK
+    result = response.json()
+    assert str(user.id) == result["id"]
+    assert user.username == result["username"]
+    assert user.fullname == result["fullname"]
+    assert user.email == result["email"]
+    assert len(result["lesson_users"]) == 1
+    assert str(lesson.id) == result["lesson_users"][0]["lesson_id"]
+    assert str(user.id) == result["lesson_users"][0]["user_id"]
+    assert str(lesson.id) == result["lesson_users"][0]["lesson"]["id"]
+    assert lesson.title == result["lesson_users"][0]["lesson"]["title"]
+    assert len(result["term_users"]) == 1
+    assert str(course_term.id) == result["term_users"][0]["term_id"]
+    assert str(user.id) == result["term_users"][0]["user_id"]
+    assert str(course_term.id) == result["term_users"][0]["term"]["id"]
+
+
+async def test_get_user(client, token, session, user_password, course_term, term_user):
+    user, _ = user_password
+    response = client.get(f"/logged/user/{user.id}", auth=token)
+    assert response.status_code == HTTPStatus.OK
+    result = response.json()
+    assert str(user.id) == result["id"]
+    assert user.username == result["username"]
+    assert user.fullname == result["fullname"]
+    assert user.email == result["email"]
+    assert len(result["term_users"]) == 1
+    assert str(course_term.id) == result["term_users"][0]["term_id"]
+    assert str(user.id) == result["term_users"][0]["user_id"]
+    assert str(course_term.id) == result["term_users"][0]["term"]["id"]

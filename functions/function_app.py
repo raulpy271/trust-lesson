@@ -20,10 +20,10 @@ app = func.FunctionApp()
 @app.timer_trigger(
     schedule="0 3 * * *", arg_name="timer", run_on_startup=False, use_monitor=False
 )
-def updateStatusLesson(timer: func.TimerRequest) -> None:
+async def updateStatusLesson(timer: func.TimerRequest) -> None:
     logging.info("Python timer trigger function running.")
     try:
-        update_status_lesson.run()
+        await update_status_lesson.run()
         logging.info("Python timer trigger function executed.")
     except Exception as e:
         logging.error(str(e))
@@ -36,7 +36,7 @@ async def validateImages(timer: func.TimerRequest) -> None:
     logging.info("Python timer trigger function running.")
     try:
         validator = ValidatorStorage()
-        validate_images.run(validator)
+        await validate_images.run(validator)
     except Exception as e:
         logging.error(str(e))
 
@@ -58,7 +58,7 @@ async def uploadSpreadsheet(req: func.HttpRequest) -> func.HttpResponse:
             parse_result = parse(df)
             if not parse_result.errors:
                 logging.info(f"Creating lessons {len(parse_result.lessons)}")
-                result = create_lessons(parse_result, UUID(data["instructor_id"]))
+                result = await create_lessons(parse_result, UUID(data["instructor_id"]))
                 if not result.errors:
                     res = {
                         "course_id": str(result.course_id),

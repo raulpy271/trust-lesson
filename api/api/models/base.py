@@ -4,14 +4,15 @@ from datetime import datetime
 from sqlmodel import SQLModel, Field
 from sqlalchemy.inspection import inspect
 from sqlalchemy import event
-from sqlalchemy.orm import RelationshipDirection
+from sqlalchemy.orm import RelationshipDirection, selectinload
+from sqlalchemy.ext.asyncio import AsyncAttrs
 from pydantic import create_model
 from pydantic_core import PydanticUndefined
 
 from api.utils import set_dict_to_tuple
 
 
-class Base(SQLModel):
+class Base(AsyncAttrs, SQLModel):
     __exclude__ = ()
 
     """
@@ -30,6 +31,40 @@ class Base(SQLModel):
     ):
         relationships_tuple = set_dict_to_tuple(relationships)
         return cls._cached_response_model(relationships_tuple)
+
+    """
+    Create a Load object to include a set of relationships of a given model inside
+    a query using the parameter `options`.
+
+    Example:
+    session.get(Model, model_id,
+        options=Model.selectload({"model_relation_a", "model_relation_b"})
+    )
+
+    The statement above will load the model entity and his relationships
+    `model_relation_a` and `model_relation_b`.
+
+    This method is usefull because it also accept a nested structure of relationships.
+    """
+
+    @classmethod
+    def selectload(cls, relationships: set[str] | dict[str, dict | set[str]] = set()):
+        if isinstance(relationships, set):
+            relationships = {r: {} for r in relationships}
+        mapper = inspect(cls).mapper
+        subloads = []
+        for rel, subrel in relationships.items():
+            if rel in mapper.relationships:
+                entity = mapper.relationships[rel].entity.entity
+                opts = entity.selectload(subrel)
+                if opts:
+                    load = selectinload(getattr(cls, rel)).options(*opts)
+                else:
+                    load = selectinload(getattr(cls, rel))
+                subloads.append(load)
+            else:
+                raise ValueError(f"Relation {rel} doesn't exist")
+        return tuple(subloads)
 
     @classmethod
     @cache

@@ -8,7 +8,15 @@ import pandas
 from sqlmodel import select
 from pydantic import BaseModel
 
-from api.models import Session, User, UserRole, TermUser, Course, CourseTerm, Lesson
+from api.models import (
+    AsyncSession,
+    User,
+    UserRole,
+    TermUser,
+    Course,
+    CourseTerm,
+    Lesson,
+)
 from api.azure.storage import get_container_spreadsheet
 from functions.lessons_parser import LessonParserResult
 
@@ -28,12 +36,12 @@ async def read_df_from_storage(filename):
     return pandas.read_excel(file)
 
 
-def create_lessons(
+async def create_lessons(
     lessons: LessonParserResult, instructor_id: UUID
 ) -> CreateLessonsResult:
     errors = []
-    with Session() as session:
-        course = session.exec(
+    async with AsyncSession() as session:
+        result = await session.exec(
             select(
                 Course.id,
                 Course.name,
@@ -45,14 +53,19 @@ def create_lessons(
                 Course.name == lessons.course_name,
                 CourseTerm.term_number == lessons.term_number,
             )
-        ).one()
-        instructors = session.exec(
-            select(User.id, User.username)
-            .join(TermUser)
-            .where(User.role == UserRole.INSTRUCTOR, TermUser.term_id == course.term_id)
+        )
+        course = result.one()
+        instructors = (
+            await session.exec(
+                select(User.id, User.username)
+                .join(TermUser)
+                .where(
+                    User.role == UserRole.INSTRUCTOR, TermUser.term_id == course.term_id
+                )
+            )
         ).all()
     try:
-        with Session() as session, session.begin():
+        async with AsyncSession() as session, session.begin():
             for lesson in lessons.lessons:
                 instructor = instructor_id
                 if lesson.instructor:

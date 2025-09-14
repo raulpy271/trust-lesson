@@ -25,7 +25,7 @@ def check_hash(user, password):
     return phash.hex() == user.password_hash
 
 
-def create_token(user):
+async def create_token(user):
     exp = int(datetime.now().timestamp() + settings.TOKEN_EXP)
     data = {
         "email": user.email,
@@ -36,19 +36,19 @@ def create_token(user):
     }
     token = jwt.encode(data, user.password_hash, algorithm=settings.JWT_ALGORITHM)
     redis = get_default_client()
-    pipe = redis.pipeline()
     mapping = {
         "id": str(user.id),
         "email": user.email,
         "password_hash": user.password_hash,
     }
-    pipe.hset(token, mapping=mapping)
-    pipe.expire(token, settings.TOKEN_EXP)
-    pipe.execute()
+    async with redis.pipeline(transaction=True) as pipe:
+        pipe.hset(token, mapping=mapping)
+        pipe.expire(token, settings.TOKEN_EXP)
+        await pipe.execute()
     return token, exp
 
 
-def generate_new_token(old_token, mapping):
+async def generate_new_token(old_token, mapping):
     exp = int(datetime.now().timestamp() + settings.TOKEN_EXP)
     data = {
         "email": mapping["email"],
@@ -59,9 +59,9 @@ def generate_new_token(old_token, mapping):
     }
     token = jwt.encode(data, mapping["password_hash"], algorithm=settings.JWT_ALGORITHM)
     redis = get_default_client()
-    pipe = redis.pipeline()
-    pipe.delete(old_token)
-    pipe.hset(token, mapping=mapping)
-    pipe.expire(token, settings.TOKEN_EXP)
-    pipe.execute()
+    async with redis.pipeline(transaction=True) as pipe:
+        pipe.delete(old_token)
+        pipe.hset(token, mapping=mapping)
+        pipe.expire(token, settings.TOKEN_EXP)
+        await pipe.execute()
     return token, exp

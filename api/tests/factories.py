@@ -1,8 +1,10 @@
+from api.models.user import UserRole
 import mimesis
 import pytest
 
 from api import models
 from api.auth import create_hash_salt
+from tests.utils import is_async
 
 
 class Factory:
@@ -16,20 +18,32 @@ class Factory:
             raise ValueError(f"Attribute {name} not found")
 
     def register(self, func):
-        def func_factory(n, *args, **kwargs):
-            return [func(*args, **kwargs) for _ in range(n)]
+        if is_async(func):
+
+            async def func_factory(n, *args, **kwargs):
+                return [await func(*args, **kwargs) for _ in range(n)]
+
+        else:
+
+            def func_factory(n, *args, **kwargs):
+                return [func(*args, **kwargs) for _ in range(n)]
 
         self.factories["list_" + func.__name__] = func_factory
         self.factories[func.__name__] = func
         return func
 
 
-factory = Factory()
+_factory = Factory()
 
 
 @pytest.fixture
-@factory.register
-def user_password(session):
+def factory():
+    return _factory
+
+
+@pytest.fixture
+@_factory.register
+async def user_password(session):
     person = mimesis.Person()
     password = person.password()
 
@@ -43,36 +57,36 @@ def user_password(session):
         password_salt=salt,
     )
     session.add(u)
-    session.commit()
+    await session.commit()
     return (u, password)
 
 
 @pytest.fixture
-@factory.register
-def admin(user_password, session):
+@_factory.register
+async def admin(user_password, session):
     user, _ = user_password
     user.is_admin = True
     session.add(user)
-    session.commit()
+    await session.commit()
     return user
 
 
 @pytest.fixture
-@factory.register
-def course(session):
+@_factory.register
+async def course(session):
     text = mimesis.Text()
     course = models.Course(
         name=text.title(),
         description=text.sentence(),
     )
     session.add(course)
-    session.commit()
+    await session.commit()
     return course
 
 
 @pytest.fixture
-@factory.register
-def course_term(session, course):
+@_factory.register
+async def course_term(session, course):
     datetime = mimesis.Datetime()
     term = models.CourseTerm(
         term_number=1,
@@ -82,13 +96,26 @@ def course_term(session, course):
         course=course,
     )
     session.add(term)
-    session.commit()
+    await session.commit()
     return term
 
 
 @pytest.fixture
-@factory.register
-def lesson(session, course_term, user_password, start_date=None):
+@_factory.register
+async def term_user(session, course_term, user_password, role=UserRole.STUDANT):
+    tu = models.TermUser(
+        term_id=course_term.id,
+        user_id=user_password[0].id,
+        role=role,
+    )
+    session.add(tu)
+    await session.commit()
+    return tu
+
+
+@pytest.fixture
+@_factory.register
+async def lesson(session, course_term, user_password, start_date=None):
     user, _ = user_password
     text = mimesis.Text()
     datetime = mimesis.Datetime()
@@ -104,13 +131,13 @@ def lesson(session, course_term, user_password, start_date=None):
         term=course_term,
     )
     session.add(lesson)
-    session.commit()
+    await session.commit()
     return lesson
 
 
 @pytest.fixture
-@factory.register
-def lesson_user(
+@_factory.register
+async def lesson_user(
     session, user_password, lesson, validated=False, validated_success=False
 ):
     user, _ = user_password
@@ -121,13 +148,13 @@ def lesson_user(
         validated_success=validated_success,
     )
     session.add(lesson_user)
-    session.commit()
+    await session.commit()
     return lesson_user
 
 
 @pytest.fixture
-@factory.register
-def lesson_validation(
+@_factory.register
+async def lesson_validation(
     session,
     user_password,
     lesson,
@@ -146,5 +173,5 @@ def lesson_validation(
         lesson_user=lesson_user,
     )
     session.add(validation)
-    session.commit()
+    await session.commit()
     return validation
