@@ -5,20 +5,23 @@ from sqlalchemy.ext.asyncio import create_async_engine
 from api import settings
 from api.models.term_user import TermUser
 from api.models.lesson_user import LessonUser
+from api.models.validation import (
+    MediaType,
+    LessonValidation,
+)
 from api.models.course import (
     TermStatus,
     Course,
     CourseTerm,
 )
 from api.models.lesson import (
-    MediaType,
     LessonStatus,
     Lesson,
-    LessonValidation,
 )
 from api.models.user import (
     UserRole,
     User,
+    UserIdentity,
 )
 
 
