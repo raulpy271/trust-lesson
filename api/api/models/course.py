@@ -1,7 +1,7 @@
 import enum
 from uuid import UUID, uuid4
 from datetime import date
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from sqlmodel import Field, Relationship
 
@@ -21,7 +21,7 @@ class TermStatus(enum.Enum):
 class Course(TimestempMixin, Base, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str
-    description: str
+    description: Optional[str]
     terms_count: int = Field(default=0)
     terms: list["CourseTerm"] = Relationship(back_populates="course")
 

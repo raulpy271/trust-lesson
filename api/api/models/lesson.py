@@ -35,7 +35,7 @@ class Lesson(TimestempMixin, Base, table=True):
     start_date: datetime
     effective_duration_min: Optional[int]
     duration_min: int
-    description: str
+    description: Optional[str]
     instructor_id: UUID = Field(foreign_key="user.id")
     term_id: UUID = Field(foreign_key="course_term.id")
     instructor: "User" = Relationship(back_populates="ministrate_lessons")
