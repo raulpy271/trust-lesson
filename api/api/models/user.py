@@ -1,5 +1,6 @@
 import enum
-from typing import TYPE_CHECKING
+from datetime import date
+from typing import TYPE_CHECKING, Optional
 from uuid import UUID, uuid4
 
 from sqlmodel import Field, Relationship
@@ -10,12 +11,20 @@ if TYPE_CHECKING:
     from api.models.term_user import TermUser
     from api.models.lesson_user import LessonUser
     from api.models.lesson import Lesson, LessonValidation
+    from api.models.validation import IdentityValidation
 
 
 class UserRole(str, enum.Enum):
     STUDANT = "STUDANT"
     INSTRUCTOR = "INSTRUCTOR"
     ADMIN = "ADMIN"
+
+
+class IdentityType(str, enum.Enum):
+    IDENTITY_CARD = "IDENTITY_CARD"
+    DRIVER_LICENSE = "DRIVER_LICENSE"
+    PASSPORT = "PASSPORT"
+    OTHER = "OTHER"
 
 
 class User(TimestempMixin, Base, table=True):
@@ -33,3 +42,23 @@ class User(TimestempMixin, Base, table=True):
     ministrate_lessons: list["Lesson"] = Relationship(back_populates="instructor")
     lesson_users: list["LessonUser"] = Relationship(back_populates="user")
     validations: list["LessonValidation"] = Relationship(back_populates="user")
+    identity: Optional["UserIdentity"] = Relationship(back_populates="user")
+    identity_validation: Optional["IdentityValidation"] = Relationship(
+        back_populates="user"
+    )
+
+
+class UserIdentity(TimestempMixin, Base, table=True):
+    __tablename__ = "user_identity"
+
+    user_id: UUID = Field(foreign_key="user.id", primary_key=True)
+    identity_code: str = Field(unique=True)
+    type: IdentityType
+    fullname: str
+    parent_fullname: Optional[str]
+    birth_date: date
+    expiration_date: date
+    issued_date: Optional[date]
+    issuing_authority: Optional[str]
+    country_state: Optional[str]
+    user: "User" = Relationship(back_populates="identity")
