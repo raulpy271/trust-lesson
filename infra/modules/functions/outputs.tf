@@ -8,7 +8,7 @@ output "vision_access_key" {
 }
 
 output "function_url" {
-  value = "https://${azurerm_linux_function_app.schedule_functions.default_hostname}"
+  value = "https://${azurerm_linux_function_app.functions.default_hostname}"
 }
 
 output "function_key" {
