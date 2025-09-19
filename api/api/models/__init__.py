@@ -8,6 +8,7 @@ from api.models.lesson_user import LessonUser
 from api.models.validation import (
     MediaType,
     LessonValidation,
+    IdentityValidation,
 )
 from api.models.course import (
     TermStatus,
