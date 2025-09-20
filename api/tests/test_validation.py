@@ -37,7 +37,7 @@ async def test_create(
         "lesson_id": str(lesson.id),
     }
     resp = client.post(
-        "logged/validation/create", auth=token, data=data, files={"file": image}
+        "logged/validation/lesson", auth=token, data=data, files={"file": image}
     )
     validation_res = resp.json()
     assert resp.status_code == HTTPStatus.CREATED
@@ -59,7 +59,7 @@ def test_create_invalid_lesson(client, token, image):
         "lesson_id": str(uuid4()),
     }
     resp = client.post(
-        "logged/validation/create", auth=token, data=data, files={"file": image}
+        "logged/validation/lesson", auth=token, data=data, files={"file": image}
     )
     assert resp.status_code == HTTPStatus.NOT_FOUND
 
@@ -70,7 +70,7 @@ def test_create_invalid_media(client, token, lesson):
     }
     image = BytesIO(randbytes(100))
     resp = client.post(
-        "logged/validation/create", auth=token, data=data, files={"file": image}
+        "logged/validation/lesson", auth=token, data=data, files={"file": image}
     )
     assert resp.status_code == HTTPStatus.UNSUPPORTED_MEDIA_TYPE
 
@@ -80,6 +80,6 @@ def test_create_wrong_media(client, token, lesson, spreadsheet):
         "lesson_id": str(lesson.id),
     }
     resp = client.post(
-        "logged/validation/create", auth=token, data=data, files={"file": spreadsheet}
+        "logged/validation/lesson", auth=token, data=data, files={"file": spreadsheet}
     )
     assert resp.status_code == HTTPStatus.UNSUPPORTED_MEDIA_TYPE

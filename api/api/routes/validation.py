@@ -16,7 +16,7 @@ router = APIRouter(prefix="/validation", tags=["validation"])
 
 
 @router.post(
-    "/create",
+    "/lesson",
     status_code=HTTPStatus.CREATED,
     response_model=LessonValidation.response_model(),
 )
