@@ -22,6 +22,7 @@ from api.models.lesson import (
 from api.models.user import (
     UserRole,
     User,
+    IdentityType,
     UserIdentity,
 )
 

@@ -51,7 +51,8 @@ class User(TimestempMixin, Base, table=True):
 class UserIdentity(TimestempMixin, Base, table=True):
     __tablename__ = "user_identity"
 
-    user_id: UUID = Field(foreign_key="user.id", primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    user_id: UUID = Field(foreign_key="user.id", unique=True)
     identity_code: str = Field(unique=True)
     type: IdentityType
     fullname: str
