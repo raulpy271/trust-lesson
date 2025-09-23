@@ -11,8 +11,6 @@ terraform {
 locals {
   local_app_settings = {
     SCM_DO_BUILD_DURING_DEPLOYMENT = true
-    VISION_APIKEY                  = azurerm_cognitive_account.vision.primary_access_key
-    VISION_ENDPOINT                = azurerm_cognitive_account.vision.endpoint
   }
   app_settings = merge(local.local_app_settings, var.app_envs)
 }
@@ -25,19 +23,6 @@ resource "azurerm_service_plan" "functions_sp" {
   sku_name            = "B2"
   tags = {
     "stage" = var.stage
-  }
-}
-
-resource "azurerm_cognitive_account" "vision" {
-  name                          = "vision-${var.stage}"
-  resource_group_name           = var.rg_name
-  location                      = var.rg_location
-  kind                          = "ComputerVision"
-  sku_name                      = "F0"
-  public_network_access_enabled = true
-  tags = {
-    "stage"    = var.stage
-    Acceptance = "Test"
   }
 }
 

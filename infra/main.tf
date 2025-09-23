@@ -42,12 +42,16 @@ module "functions" {
   storage_access_key           = module.storage.access_key
   insights_instrumentation_key = module.logging.insights_instrumentation_key
   app_envs = {
-    DB_HOST      = module.database.db_domain
-    DB_USER      = module.database.db_user
-    DB_NAME      = module.database.db_name
-    DB_PASSWORD  = module.database.db_password
-    STORAGE_URL  = module.storage.endpoint
-    ACCOUNT_NAME = module.storage.account_name
+    DB_HOST                        = module.database.db_domain
+    DB_USER                        = module.database.db_user
+    DB_NAME                        = module.database.db_name
+    DB_PASSWORD                    = module.database.db_password
+    STORAGE_URL                    = module.storage.endpoint
+    ACCOUNT_NAME                   = module.storage.account_name
+    VISION_ENDPOINT                = module.cognitive.vision_endpoint
+    VISION_APIKEY                  = module.cognitive.vision_apikey
+    DOCUMENT_INTELLIGENCE_ENDPOINT = module.cognitive.document_intelligence_endpoint
+    DOCUMENT_INTELLIGENCE_APIKEY   = module.cognitive.document_intelligence_apikey
 
   }
 }
@@ -75,6 +79,13 @@ module "storage" {
 
 module "logging" {
   source      = "./modules/logging"
+  stage       = var.stage
+  rg_name     = azurerm_resource_group.rg.name
+  rg_location = azurerm_resource_group.rg.location
+}
+
+module "cognitive" {
+  source      = "./modules/cognitive"
   stage       = var.stage
   rg_name     = azurerm_resource_group.rg.name
   rg_location = azurerm_resource_group.rg.location
