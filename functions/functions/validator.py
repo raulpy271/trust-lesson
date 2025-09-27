@@ -1,17 +1,29 @@
 import logging
 from typing import Optional
+from uuid import UUID
 
 from azure.core.credentials import AzureKeyCredential
 from azure.identity.aio import DefaultAzureCredential
 from azure.storage.blob.aio import BlobServiceClient
 from azure.ai.vision.imageanalysis.aio import ImageAnalysisClient
+from azure.ai.documentintelligence.aio import DocumentIntelligenceClient
 from azure.ai.vision.imageanalysis.models import VisualFeatures
+from azure.ai.documentintelligence.models import (
+    AnalyzeDocumentRequest,
+    AnalyzeResult,
+)
 
 from api.settings import STORAGE_URL
-from api.models import LessonValidation
+from api.models import LessonValidation, IdentityValidation
 from api.azure.storage import generate_sas
 from api.jobs.validate_images import Validator
-from functions.settings import VISION_ENDPOINT, VISION_APIKEY
+from functions.settings import (
+    VISION_ENDPOINT,
+    VISION_APIKEY,
+    DOCUMENT_INTELLIGENCE_ENDPOINT,
+    DOCUMENT_INTELLIGENCE_APIKEY,
+    DOCUMENT_INTELLIGENCE_LOCALE,
+)
 
 
 class ValidatorStorage(Validator):
@@ -51,3 +63,38 @@ class ValidatorStorage(Validator):
             confidence = max(map(lambda v: v.get("confidence", 0), persons))
         logging.info(f"Confidence: {confidence}")
         return confidence
+
+
+async def validate_identity(user_id: UUID, filename: str) -> AnalyzeResult:
+    async with (
+        DefaultAzureCredential() as credential,
+        BlobServiceClient(STORAGE_URL, credential) as blob_service,
+    ):
+        img_url = await generate_sas(blob_service, filename)
+        di_args = {
+            "endpoint": DOCUMENT_INTELLIGENCE_ENDPOINT,
+            "credential": AzureKeyCredential(DOCUMENT_INTELLIGENCE_APIKEY),
+        }
+        async with DocumentIntelligenceClient(**di_args) as client:
+            request = AnalyzeDocumentRequest(url_source=img_url)
+            poller = await client.begin_analyze_document(
+                "prebuilt-idDocument",
+                request,
+                locale=DOCUMENT_INTELLIGENCE_LOCALE,
+            )
+            result = await poller.result()
+            if result.warnings:
+                exc_msg = "There are some warnings in the document"
+                for warn in result.warnings:
+                    exc_msg += ". " + warn.message
+                    logging.info(f"Warning: {warn.as_dict()}")
+                raise Exception(exc_msg)
+            if not result.documents:
+                raise Exception("There are not documents to validate.")
+            return result
+
+
+async def create_validation_identity(
+    validation_res: AnalyzeResult, user_id: UUID, filename: str
+) -> IdentityValidation:
+    pass
