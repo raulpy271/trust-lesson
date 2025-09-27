@@ -20,6 +20,7 @@ azure-identity = "^1.19.0"
 pandas = "^2.3.1"
 openpyxl = "^3.1.5"
 sqlmodel = "^0.0.24"
+azure-ai-documentintelligence = "^1.0.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
