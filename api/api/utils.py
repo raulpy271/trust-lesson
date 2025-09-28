@@ -1,6 +1,11 @@
 import re
+import asyncio
+import inspect
+from types import UnionType
+from typing import Union, get_origin, get_args
 from http import HTTPStatus
 
+from sqlalchemy.orm import Mapped
 from fastapi import UploadFile, HTTPException
 
 
@@ -59,3 +64,30 @@ def set_dict_to_tuple(value: set | dict) -> tuple:
         return tuple(values)
     else:
         raise TypeError(f"Value should be set or dict, got: {type(value)}")
+
+
+def is_optional_type(cls, attr):
+    hints = cls.__annotations__
+    type_hint = hints.get(attr, None)
+    if type_hint:
+        origin = get_origin(type_hint)
+        args = get_args(type_hint)
+        if origin is Mapped:
+            origin = get_origin(args[0])
+            args = get_args(args[0])
+        if (origin is Union or origin == UnionType) and type(None) in args:
+            return True
+        return False
+    else:
+        raise ValueError(f"There is no type hint for the attribute {attr}")
+
+
+def is_async(f):
+    return inspect.isasyncgenfunction(f) or asyncio.iscoroutinefunction(f)
+
+
+def to_async(f):
+    async def asyncf(*args, **kwargs):
+        return f(*args, **kwargs)
+
+    return asyncf
