@@ -1,10 +1,10 @@
-from api.models.user import UserRole
+from api.models.user import IdentityType, UserRole
 import mimesis
 import pytest
 
 from api import models
 from api.auth import create_hash_salt
-from tests.utils import is_async
+from api.utils import is_async
 
 
 class Factory:
@@ -175,3 +175,25 @@ async def lesson_validation(
     session.add(validation)
     await session.commit()
     return validation
+
+
+@pytest.fixture
+@_factory.register
+async def user_identity(session, user_password):
+    user, _ = user_password
+    person = mimesis.Person()
+    ui = models.UserIdentity(
+        identity_code=person.identifier(),
+        type=IdentityType.OTHER,
+        fullname=person.full_name(),
+        parent_fullname=person.full_name(),
+        birth_date=person.birthdate(),
+        expiration_date=person.birthdate(),
+        issued_date=person.birthdate(),
+        issuing_authority="Federal Reserve",
+        country_state=None,
+        user=user,
+    )
+    session.add(ui)
+    await session.commit()
+    return ui

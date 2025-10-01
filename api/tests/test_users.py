@@ -152,9 +152,12 @@ async def test_user_me(
     assert str(course_term.id) == result["term_users"][0]["term_id"]
     assert str(user.id) == result["term_users"][0]["user_id"]
     assert str(course_term.id) == result["term_users"][0]["term"]["id"]
+    assert not result["identity"]
 
 
-async def test_get_user(client, token, session, user_password, course_term, term_user):
+async def test_get_user(
+    client, token, session, user_password, course_term, term_user, user_identity
+):
     user, _ = user_password
     response = client.get(f"/logged/user/{user.id}", auth=token)
     assert response.status_code == HTTPStatus.OK
@@ -167,3 +170,6 @@ async def test_get_user(client, token, session, user_password, course_term, term
     assert str(course_term.id) == result["term_users"][0]["term_id"]
     assert str(user.id) == result["term_users"][0]["user_id"]
     assert str(course_term.id) == result["term_users"][0]["term"]["id"]
+    assert str(user_identity.id) == result["identity"]["id"]
+    assert user_identity.identity_code == result["identity"]["identity_code"]
+    assert user_identity.fullname == result["identity"]["fullname"]
