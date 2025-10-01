@@ -15,6 +15,7 @@ user_relationship = {
     "ministrate_lessons": {},
     "term_users": {"term"},
     "lesson_users": {"lesson"},
+    "identity": {},
 }
 
 

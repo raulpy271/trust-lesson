@@ -42,8 +42,11 @@ class User(TimestempMixin, Base, table=True):
     ministrate_lessons: list["Lesson"] = Relationship(back_populates="instructor")
     lesson_users: list["LessonUser"] = Relationship(back_populates="user")
     validations: list["LessonValidation"] = Relationship(back_populates="user")
-    identity: Optional["UserIdentity"] = Relationship(back_populates="user")
-    identity_validation: Optional["IdentityValidation"] = Relationship(
+    identity: Optional["UserIdentity"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"uselist": False},
+    )
+    identity_validation: list["IdentityValidation"] = Relationship(
         back_populates="user"
     )
 
