@@ -6,6 +6,7 @@ from api.routes import (
     lesson,
     validation,
     user,
+    identity,
 )
 
 
@@ -21,4 +22,5 @@ logged = [
     lesson.router,
     validation.router,
     user.router,
+    identity.router,
 ]
