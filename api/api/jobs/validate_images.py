@@ -30,7 +30,7 @@ async def run(validator: Validator):
                     try:
                         confidence = await validator.get_confidence(validation)
                         validation.validated_success = True
-                        validation.validated_value = confidence
+                        validation.confidence = confidence
                         validated_success_count += 1
                     except Exception:
                         validation.validated_success = False

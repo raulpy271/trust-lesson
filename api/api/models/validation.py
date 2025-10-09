@@ -27,7 +27,7 @@ class LessonValidation(TimestempMixin, Base, table=True):
     user_id: UUID = Field(foreign_key="user.id")
     validated: bool = Field(default=False)
     validated_success: bool = Field(default=False)
-    validated_value: Optional[float]
+    confidence: Optional[float]
     media_path: str
     media_type: MediaType
     lesson_user_id: UUID = Field(foreign_key="lesson_user.id")
