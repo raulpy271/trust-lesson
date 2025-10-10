@@ -30,16 +30,6 @@ class UpdateLessonIn(BaseModel):
     instructor_id: UUID
 
 
-class ValidationIn(BaseModel):
-    lesson_id: UUID
-    file: Annotated[
-        UploadFile,
-        AfterValidator(
-            check_media_type(["png", "jpeg", "jpg"], mime_types=["image", "video"])
-        ),
-    ]
-
-
 class UploadSpreadsheetLessons(BaseModel):
     file: Annotated[
         UploadFile,
