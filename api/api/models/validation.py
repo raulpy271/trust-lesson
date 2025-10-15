@@ -27,6 +27,8 @@ class LessonValidation(TimestempMixin, Base, table=True):
     user_id: UUID = Field(foreign_key="user.id")
     validated: bool = Field(default=False)
     validated_success: bool = Field(default=False)
+    error_message: Optional[str]
+    error_traceback: Optional[str]
     confidence: Optional[float]
     media_path: str
     media_type: MediaType
@@ -43,6 +45,8 @@ class IdentityValidation(TimestempMixin, Base, table=True):
     user_id: UUID = Field(foreign_key="user.id")
     validated: bool = Field(default=False)
     validated_success: bool = Field(default=False)
+    error_message: Optional[str]
+    error_traceback: Optional[str]
     image_path: str
     identity_code: Optional[str]
     identity_code_confidence: Optional[float]
