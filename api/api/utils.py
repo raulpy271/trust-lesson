@@ -2,6 +2,7 @@ import re
 import asyncio
 import inspect
 from types import UnionType
+from traceback import format_tb
 from typing import Union, get_origin, get_args
 from http import HTTPStatus
 
@@ -91,3 +92,8 @@ def to_async(f):
         return f(*args, **kwargs)
 
     return asyncf
+
+
+def format_traceback(e: BaseException) -> str:
+    tb = format_tb(e.__traceback__)
+    return "\n".join(tb)
