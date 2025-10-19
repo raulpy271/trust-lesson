@@ -17,6 +17,7 @@ from azure.ai.documentintelligence.models import (
 from api.settings import STORAGE_URL
 from api.azure.storage import generate_sas
 from api.jobs.validate_images import Validator
+from api.utils import format_traceback
 from api.models import (
     AsyncSession,
     LessonValidation,
@@ -119,46 +120,55 @@ async def create_validation_identity(
         "idDocument.driverLicense": IdentityType.DRIVER_LICENSE,
         "idDocument.passport": IdentityType.PASSPORT,
     }
-    validation_args = {}
-    for document in validation_res.documents:
-        logging.info(document.doc_type)
-        logging.info(str(document.fields))
-        validation_args["type"] = doctypes.get(document.doc_type, None)
-        validation_args["type_confidence"] = document.confidence
-        for field_key, field in document.fields.items():
-            if field_key in fields_mapping and field.get("content"):
-                if field["type"] == "string":
-                    validation_args[fields_mapping[field_key]] = field["valueString"]
-                elif field["type"] == "date":
-                    validation_args[fields_mapping[field_key]] = field["valueDate"]
-                validation_args[fields_mapping[field_key] + "_confidence"] = field[
-                    "confidence"
-                ]
-        if "MotherFullname" in document.fields and document.fields[
-            "MotherFullname"
-        ].get("valueString"):
-            validation_args["parent_fullname"] = document.fields["MotherFullname"][
-                "valueString"
-            ]
-            validation_args["parent_fullname_confidence"] = document.fields[
+    iv_args = {
+        "user_id": user_id,
+        "image_path": filename,
+    }
+    try:
+        for document in validation_res.documents:
+            if document.doc_type in doctypes:
+                iv_args["type"] = doctypes.get(document.doc_type, None)
+            else:
+                iv_args["type"] = IdentityType.OTHER
+            iv_args["type_confidence"] = document.confidence
+            for field_key, field in document.fields.items():
+                if field_key in fields_mapping and field.get("content"):
+                    if field["type"] == "string":
+                        iv_args[fields_mapping[field_key]] = field["valueString"]
+                    elif field["type"] == "date":
+                        iv_args[fields_mapping[field_key]] = field["valueDate"]
+                    conf_key = fields_mapping[field_key] + "_confidence"
+                    iv_args[conf_key] = field["confidence"]
+            if "MotherFullname" in document.fields and document.fields[
                 "MotherFullname"
-            ]["confidence"]
-        elif "FatherFullname" in document.fields and document.fields[
-            "FatherFullname"
-        ].get("valueString"):
-            validation_args["parent_fullname"] = document.fields["FatherFullname"][
-                "valueString"
-            ]
-            validation_args["parent_fullname_confidence"] = document.fields[
+            ].get("valueString"):
+                iv_args["parent_fullname"] = document.fields["MotherFullname"][
+                    "valueString"
+                ]
+                iv_args["parent_fullname_confidence"] = document.fields[
+                    "MotherFullname"
+                ]["confidence"]
+            elif "FatherFullname" in document.fields and document.fields[
                 "FatherFullname"
-            ]["confidence"]
-    logging.info(str(validation_args))
-    async with AsyncSession() as session:
-        validation_args["user_id"] = user_id
-        validation_args["image_path"] = filename
-        validation_args["validated"] = True
-        validation_args["validated_success"] = True
-        validation = IdentityValidation(**validation_args)
-        session.add(validation)
-        await session.commit()
-    return validation
+            ].get("valueString"):
+                iv_args["parent_fullname"] = document.fields["FatherFullname"][
+                    "valueString"
+                ]
+                iv_args["parent_fullname_confidence"] = document.fields[
+                    "FatherFullname"
+                ]["confidence"]
+        iv_args["validated"] = True
+        iv_args["validated_success"] = True
+    except Exception as e:
+        logging.error(f"Error when validating image {filename} of user {user_id}")
+        logging.error(str(e))
+        iv_args["validated"] = True
+        iv_args["validated_success"] = False
+        iv_args["error_message"] = str(e)
+        iv_args["error_traceback"] = format_traceback(e)
+    finally:
+        async with AsyncSession() as session:
+            validation = IdentityValidation(**iv_args)
+            session.add(validation)
+            await session.commit()
+        return validation
