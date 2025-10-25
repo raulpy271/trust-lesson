@@ -13,4 +13,8 @@ from api.dto.course import CreateCourseIn, CreateCourseTermIn
 from api.dto.auth import LoginIn
 from api.dto.public import HealthOut
 from api.dto.identity import CreateUserIdentityIn
-from api.dto.validation import LessonValidationIn, IdentityValidationIn
+from api.dto.validation import (
+    LessonValidationIn,
+    IdentityValidationIn,
+    IdentityComparisonOut,
+)

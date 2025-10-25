@@ -97,3 +97,12 @@ def to_async(f):
 def format_traceback(e: BaseException) -> str:
     tb = format_tb(e.__traceback__)
     return "\n".join(tb)
+
+
+def remove_mask(s: str) -> str:
+    mask_chars_re = re.compile(r"[.\/\-]")
+    return mask_chars_re.sub("", s)
+
+
+def compare_code(c1: str, c2: str) -> bool:
+    return int(remove_mask(c1)) == int(remove_mask(c2))
