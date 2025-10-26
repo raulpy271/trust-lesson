@@ -21,6 +21,7 @@ class MediaType(enum.Enum):
 
 class LessonValidation(TimestempMixin, Base, table=True):
     __tablename__ = "lesson_validation"
+    __exclude__ = ("error_traceback",)
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     lesson_id: UUID = Field(foreign_key="lesson.id")
@@ -40,6 +41,7 @@ class LessonValidation(TimestempMixin, Base, table=True):
 
 class IdentityValidation(TimestempMixin, Base, table=True):
     __tablename__ = "identity_validation"
+    __exclude__ = ("error_traceback",)
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     user_id: UUID = Field(foreign_key="user.id")
