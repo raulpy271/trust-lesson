@@ -21,9 +21,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     op.add_column("user_identity", sa.Column("id", sa.Uuid(), nullable=False))
+    op.drop_constraint("user_identity_pkey", "user_identity", type_="primary")
+    op.create_primary_key("user_identity_pkey", "user_identity", ["id"])
     op.create_unique_constraint(None, "user_identity", ["user_id"])
 
 
 def downgrade() -> None:
     op.drop_constraint("user_identity_user_id_key", "user_identity", type_="unique")
+    op.drop_constraint("user_identity_pkey", "user_identity", type_="primary")
+    op.create_primary_key("user_identity_pkey", "user_identity", ["user_id"])
     op.drop_column("user_identity", "id")
