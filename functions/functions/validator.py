@@ -121,15 +121,13 @@ async def create_validation_identity(
         "idDocument.passport": IdentityType.PASSPORT,
     }
     iv_args = {
+        "validated": True,
         "user_id": user_id,
         "image_path": filename,
     }
     try:
         for document in validation_res.documents:
-            if document.doc_type in doctypes:
-                iv_args["type"] = doctypes.get(document.doc_type, None)
-            else:
-                iv_args["type"] = IdentityType.OTHER
+            iv_args["type"] = doctypes.get(document.doc_type, IdentityType.OTHER)
             iv_args["type_confidence"] = document.confidence
             for field_key, field in document.fields.items():
                 if field_key in fields_mapping and field.get("content"):
@@ -137,6 +135,8 @@ async def create_validation_identity(
                         iv_args[fields_mapping[field_key]] = field["valueString"]
                     elif field["type"] == "date":
                         iv_args[fields_mapping[field_key]] = field["valueDate"]
+                    else:
+                        iv_args[fields_mapping[field_key]] = field["content"]
                     conf_key = fields_mapping[field_key] + "_confidence"
                     iv_args[conf_key] = field["confidence"]
             if "MotherFullname" in document.fields and document.fields[
@@ -157,12 +157,10 @@ async def create_validation_identity(
                 iv_args["parent_fullname_confidence"] = document.fields[
                     "FatherFullname"
                 ]["confidence"]
-        iv_args["validated"] = True
         iv_args["validated_success"] = True
     except Exception as e:
         logging.error(f"Error when validating image {filename} of user {user_id}")
         logging.error(str(e))
-        iv_args["validated"] = True
         iv_args["validated_success"] = False
         iv_args["error_message"] = str(e)
         iv_args["error_traceback"] = format_traceback(e)

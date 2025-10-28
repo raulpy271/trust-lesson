@@ -130,9 +130,9 @@ async def identity_create(
                     "validation": None,
                 },
             )
+    except HTTPException as e:
+        logging.error(str(e))
+        raise e
     except Exception as e:
         logging.error(str(e))
-        if isinstance(e, HTTPException):
-            raise e
-        else:
-            raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR)
+        raise HTTPException(HTTPStatus.INTERNAL_SERVER_ERROR)
