@@ -1,79 +1,28 @@
 from datetime import datetime
 from typing import Annotated
 from http import HTTPStatus
-from uuid import UUID, uuid4
+from uuid import UUID
 import logging
 
-from sqlmodel import select
 from sqlalchemy.orm import selectinload
 from fastapi import APIRouter, Form, HTTPException
 from azure.storage.blob import ContentSettings
 
 from api.models import (
-    Lesson,
-    LessonUser,
-    MediaType,
-    LessonValidation,
     IdentityValidation,
 )
-from api.dto import LessonValidationIn, IdentityValidationIn, IdentityComparisonOut
+from api.dto import IdentityValidationIn, IdentityComparisonOut
 from api.azure.functions import function_session
 from api.azure.storage import get_container_image
 from api.models import User
 from api.depends import LoggedUserId, SessionDep
 from api.utils import parse_content_type
 
-router = APIRouter(prefix="/validation", tags=["validation"])
+router = APIRouter(prefix="/identity-validation", tags=["validation"])
 
 
 @router.post(
-    "/lesson",
-    status_code=HTTPStatus.CREATED,
-    response_model=LessonValidation.response_model(),
-)
-async def lesson_create(
-    data: Annotated[LessonValidationIn, Form()],
-    user_id: LoggedUserId,
-    session: SessionDep,
-):
-    mime_type, media_type = parse_content_type(data.file.content_type)
-    mime_type_enum = MediaType(mime_type.upper())
-    lesson = await session.get(Lesson, data.lesson_id)
-    if lesson:
-        result = await session.exec(
-            select(LessonUser).where(
-                LessonUser.lesson_id == lesson.id, LessonUser.user_id == user_id
-            )
-        )
-        lesson_user = result.one_or_none()
-        if lesson_user:
-            validation_id = uuid4()
-            key = f"{validation_id}.{media_type}"
-            container = get_container_image()
-            await container.upload_blob(
-                key,
-                data.file,
-                content_settings=ContentSettings(content_type=data.file.content_type),
-            )
-            validation = LessonValidation(
-                lesson_id=lesson.id,
-                user_id=user_id,
-                media_path=key,
-                media_type=mime_type_enum,
-                lesson_user=lesson_user,
-            )
-            session.add(validation)
-            await session.commit()
-            await session.refresh(validation)
-            return validation
-        else:
-            raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-    else:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
-
-
-@router.post(
-    "/identity",
+    "/",
     status_code=HTTPStatus.CREATED,
     response_model=IdentityComparisonOut,
 )
