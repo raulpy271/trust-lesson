@@ -140,7 +140,7 @@
 										{
 											"key": "file",
 											"type": "file",
-											"src": "/home/raul/Programming/trust-lesson/lessons.xlsx"
+											"src": "/home/raul/Programming/trust-lesson/assets/lessons.xlsx"
 										}
 									]
 								},
@@ -191,6 +191,86 @@
 				{
 					"name": "user",
 					"item": [
+						{
+							"name": "Identity",
+							"item": [
+								{
+									"name": "create",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"user_id\": \"099702b5-afb9-484e-b668-b380e95e2168\",\n    \"identity_code\": \"1234\",\n    \"type\": \"IDENTITY_CARD\",\n    \"fullname\": \"Raul Maria Jose\",\n    \"parent_fullname\": null,\n    \"birth_date\": \"2000-10-01\",\n    \"expiration_date\": \"2028-01-22\",\n    \"issued_date\": null,\n    \"issuing_authority\": \"FED\",\n    \"country_state\": \"PE\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/logged/user-identity/",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"logged",
+												"user-identity",
+												""
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "update",
+									"request": {
+										"method": "PUT",
+										"header": [],
+										"body": {
+											"mode": "raw",
+											"raw": "{\n    \"id\": \"e3b55676-972d-4838-b399-98f2f7335ff9\",\n    \"user_id\": \"099702b5-afb9-484e-b668-b380e95e2168\",\n    \"identity_code\": \"1234\",\n    \"type\": \"DRIVER_LICENSE\",\n    \"fullname\": \"Raul Maria Jose\",\n    \"parent_fullname\": null,\n    \"birth_date\": \"2000-10-01\",\n    \"expiration_date\": \"2023-05-23\",\n    \"issued_date\": \"2022-05-24\",\n    \"issuing_authority\": \"FED\",\n    \"country_state\": \"PE\"\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{base_url}}/logged/user-identity/e3b55676-972d-4838-b399-98f2f7335ff9",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"logged",
+												"user-identity",
+												"e3b55676-972d-4838-b399-98f2f7335ff9"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "get",
+									"request": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{base_url}}/logged/user-identity/e3b55676-972d-4838-b399-98f2f7335ff9",
+											"host": [
+												"{{base_url}}"
+											],
+											"path": [
+												"logged",
+												"user-identity",
+												"e3b55676-972d-4838-b399-98f2f7335ff9"
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
 						{
 							"name": "create",
 							"request": {
@@ -262,6 +342,34 @@
 								"method": "GET",
 								"header": [],
 								"url": {
+									"raw": "{{base_url}}/logged/user/099702b5-afb9-484e-b668-b380e95e2168",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"user",
+										"099702b5-afb9-484e-b668-b380e95e2168"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"Joao\",\n    \"fullname\": \"Joao Siamês\",\n    \"email\": \"joao@gmail.com\",\n    \"password\": \"raulzito\",\n    \"role\": \"STUDANT\",\n    \"is_admin\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
 									"raw": "{{base_url}}/logged/user/c441fa17-49a1-4de2-a343-4be258589756",
 									"host": [
 										"{{base_url}}"
@@ -281,7 +389,7 @@
 					"name": "validation",
 					"item": [
 						{
-							"name": "create",
+							"name": "create lesson validation",
 							"request": {
 								"method": "POST",
 								"header": [],
@@ -290,25 +398,88 @@
 									"formdata": [
 										{
 											"key": "lesson_id",
-											"value": "6f3e8591-b026-459e-9830-a8e002f7cdb2",
+											"value": "2c5abaf3-5839-487a-9503-e82a50212150",
 											"type": "text"
 										},
 										{
 											"key": "file",
 											"type": "file",
-											"src": "/home/raul/Downloads/procurado-detran.jpeg"
+											"src": "/home/raul/Pictures/Screenshot_2025-07-30_16-04-55.png"
 										}
 									]
 								},
 								"url": {
-									"raw": "{{base_url}}/logged/validation/create",
+									"raw": "{{base_url}}/logged/lesson-validation",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"logged",
-										"validation",
-										"create"
+										"lesson-validation"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "lesson validation",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/lesson-validation",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"lesson-validation"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "create identity validation",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/home/raul/Pictures/Screenshot_2025-08-22_13-19-25.png"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base_url}}/logged/identity-validation",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"identity-validation"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "identity validation",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/identity-validation",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"identity-validation"
 									]
 								}
 							},
@@ -436,6 +607,25 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "get",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/course-term/0089dd48-3cda-4f12-b725-538b9db06473",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"course-term",
+										"0089dd48-3cda-4f12-b725-538b9db06473"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				}
@@ -521,6 +711,34 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "validate user identity",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"filename\": \"Screenshot_2025-06-28_21-57-25.png\",\n    \"user_id\": \"c441fa17-49a1-4de2-a343-4be258589756\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{func_url}}/api/validation/user-identity",
+							"host": [
+								"{{func_url}}"
+							],
+							"path": [
+								"api",
+								"validation",
+								"user-identity"
+							]
+						}
+					},
+					"response": []
 				}
 			],
 			"auth": {
@@ -568,6 +786,7 @@
 			"script": {
 				"type": "text/javascript",
 				"packages": {},
+				"requests": {},
 				"exec": [
 					""
 				]
@@ -578,6 +797,7 @@
 			"script": {
 				"type": "text/javascript",
 				"packages": {},
+				"requests": {},
 				"exec": [
 					"if (pm.response.headers.has('Token')) {",
 					"    pm.collectionVariables.set(\"api-token\", pm.response.headers.get('Token'));",
@@ -589,23 +809,19 @@
 	"variable": [
 		{
 			"key": "base_url",
-			"value": "http://localhost:8000",
-			"type": "string"
+			"value": "http://localhost:8000"
 		},
 		{
 			"key": "api-token",
-			"value": "",
-			"type": "string"
+			"value": ""
 		},
 		{
 			"key": "func_url",
-			"value": "https://schedule-functions-test.azurewebsites.net",
-			"type": "string"
+			"value": "https://schedule-functions-test.azurewebsites.net"
 		},
 		{
 			"key": "func_key",
-			"value": "",
-			"type": "string"
+			"value": ""
 		}
 	]
 }
