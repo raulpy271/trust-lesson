@@ -4,6 +4,7 @@ from http import HTTPStatus
 from uuid import UUID
 import logging
 
+from sqlmodel import select
 from sqlalchemy.orm import selectinload
 from fastapi import APIRouter, Form, HTTPException
 from azure.storage.blob import ContentSettings
@@ -19,6 +20,13 @@ from api.depends import LoggedUserId, SessionDep
 from api.utils import parse_content_type
 
 router = APIRouter(prefix="/identity-validation", tags=["validation"])
+
+
+@router.get("/", response_model=list[IdentityValidation.response_model()])
+async def list_identity(user_id: LoggedUserId, session: SessionDep):
+    stmt = select(IdentityValidation).where(IdentityValidation.user_id == user_id)
+    result = await session.exec(stmt)
+    return result.all()
 
 
 @router.post(

@@ -20,6 +20,13 @@ from api.utils import parse_content_type
 router = APIRouter(prefix="/lesson-validation", tags=["validation"])
 
 
+@router.get("/", response_model=list[LessonValidation.response_model()])
+async def list_lesson(user_id: LoggedUserId, session: SessionDep):
+    stmt = select(LessonValidation).where(LessonValidation.user_id == user_id)
+    result = await session.exec(stmt)
+    return result.all()
+
+
 @router.post(
     "/",
     status_code=HTTPStatus.CREATED,
