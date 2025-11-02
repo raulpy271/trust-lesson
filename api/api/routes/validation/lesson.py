@@ -6,22 +6,36 @@ from sqlmodel import select
 from fastapi import APIRouter, Form, HTTPException
 from azure.storage.blob import ContentSettings
 
-from api.models import Lesson, LessonUser, MediaType, LessonValidation
-from api.dto import ValidationIn
+from api.models import (
+    Lesson,
+    LessonUser,
+    MediaType,
+    LessonValidation,
+)
+from api.dto import LessonValidationIn
 from api.azure.storage import get_container_image
 from api.depends import LoggedUserId, SessionDep
 from api.utils import parse_content_type
 
-router = APIRouter(prefix="/validation", tags=["validation"])
+router = APIRouter(prefix="/lesson-validation", tags=["validation"])
+
+
+@router.get("/", response_model=list[LessonValidation.response_model()])
+async def list_lesson(user_id: LoggedUserId, session: SessionDep):
+    stmt = select(LessonValidation).where(LessonValidation.user_id == user_id)
+    result = await session.exec(stmt)
+    return result.all()
 
 
 @router.post(
-    "/create",
+    "/",
     status_code=HTTPStatus.CREATED,
     response_model=LessonValidation.response_model(),
 )
-async def create(
-    data: Annotated[ValidationIn, Form()], user_id: LoggedUserId, session: SessionDep
+async def lesson_create(
+    data: Annotated[LessonValidationIn, Form()],
+    user_id: LoggedUserId,
+    session: SessionDep,
 ):
     mime_type, media_type = parse_content_type(data.file.content_type)
     mime_type_enum = MediaType(mime_type.upper())

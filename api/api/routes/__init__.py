@@ -4,9 +4,11 @@ from api.routes import (
     course,
     course_term,
     lesson,
-    validation,
     user,
+    identity,
 )
+from api.routes.validation import lesson as lesson_validation
+from api.routes.validation import identity as identity_validation
 
 
 routes = [
@@ -19,6 +21,8 @@ logged = [
     course.router,
     course_term.router,
     lesson.router,
-    validation.router,
     user.router,
+    identity.router,
+    lesson_validation.router,
+    identity_validation.router,
 ]

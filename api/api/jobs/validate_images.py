@@ -1,6 +1,7 @@
 from sqlmodel import select, not_
 from sqlalchemy.orm import selectinload
 
+from api.utils import format_traceback
 from api.models import AsyncSession, LessonUser, LessonValidation
 
 
@@ -30,10 +31,12 @@ async def run(validator: Validator):
                     try:
                         confidence = await validator.get_confidence(validation)
                         validation.validated_success = True
-                        validation.validated_value = confidence
+                        validation.confidence = confidence
                         validated_success_count += 1
-                    except Exception:
+                    except Exception as e:
                         validation.validated_success = False
+                        validation.error_message = str(e)
+                        validation.error_traceback = format_traceback(e)
                     validation.validated = True
                     validated_count += 1
                 else:

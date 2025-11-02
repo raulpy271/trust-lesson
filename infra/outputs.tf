@@ -17,7 +17,7 @@ output "db_password" {
 }
 
 output "function_url" {
-  value = module.schedule.function_url
+  value = module.functions.function_url
 }
 
 output "cache_hostname" {

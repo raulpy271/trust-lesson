@@ -1,17 +1,36 @@
 import logging
 from typing import Optional
+from uuid import UUID
 
 from azure.core.credentials import AzureKeyCredential
 from azure.identity.aio import DefaultAzureCredential
 from azure.storage.blob.aio import BlobServiceClient
 from azure.ai.vision.imageanalysis.aio import ImageAnalysisClient
+from azure.ai.documentintelligence.aio import DocumentIntelligenceClient
 from azure.ai.vision.imageanalysis.models import VisualFeatures
+from azure.ai.documentintelligence.models import (
+    AnalyzeDocumentRequest,
+    AnalyzeResult,
+    DocumentAnalysisFeature,
+)
 
 from api.settings import STORAGE_URL
-from api.models import LessonValidation
 from api.azure.storage import generate_sas
 from api.jobs.validate_images import Validator
-from functions.settings import VISION_ENDPOINT, VISION_APIKEY
+from api.utils import format_traceback
+from api.models import (
+    AsyncSession,
+    LessonValidation,
+    IdentityValidation,
+    IdentityType,
+)
+from functions.settings import (
+    VISION_ENDPOINT,
+    VISION_APIKEY,
+    DOCUMENT_INTELLIGENCE_ENDPOINT,
+    DOCUMENT_INTELLIGENCE_APIKEY,
+    DOCUMENT_INTELLIGENCE_LOCALE,
+)
 
 
 class ValidatorStorage(Validator):
@@ -51,3 +70,103 @@ class ValidatorStorage(Validator):
             confidence = max(map(lambda v: v.get("confidence", 0), persons))
         logging.info(f"Confidence: {confidence}")
         return confidence
+
+
+async def validate_identity(user_id: UUID, filename: str) -> AnalyzeResult:
+    async with (
+        DefaultAzureCredential() as credential,
+        BlobServiceClient(STORAGE_URL, credential) as blob_service,
+    ):
+        img_url = await generate_sas(blob_service, filename)
+        di_args = {
+            "endpoint": DOCUMENT_INTELLIGENCE_ENDPOINT,
+            "credential": AzureKeyCredential(DOCUMENT_INTELLIGENCE_APIKEY),
+        }
+        async with DocumentIntelligenceClient(**di_args) as client:
+            request = AnalyzeDocumentRequest(url_source=img_url)
+            poller = await client.begin_analyze_document(
+                "prebuilt-idDocument",
+                request,
+                locale=DOCUMENT_INTELLIGENCE_LOCALE,
+                query_fields=["Fullname", "MotherFullname", "FatherFullname"],
+                features=[DocumentAnalysisFeature.QUERY_FIELDS],
+            )
+            result = await poller.result()
+            if result.warnings:
+                exc_msg = "There are some warnings in the document"
+                for warn in result.warnings:
+                    exc_msg += ". " + warn.message
+                    logging.info(f"Warning: {warn.as_dict()}")
+                raise Exception(exc_msg)
+            if not result.documents:
+                raise Exception("There are not documents to validate.")
+            return result
+
+
+async def create_validation_identity(
+    validation_res: AnalyzeResult, user_id: UUID, filename: str
+) -> IdentityValidation:
+    fields_mapping = {
+        "Fullname": "fullname",
+        "DocumentNumber": "identity_code",
+        "DateOfBirth": "birth_date",
+        "DateOfExpiration": "expiration_date",
+        "DateOfIssue": "issued_date",
+        "IssuingAuthority": "issuing_authority",
+        "Region": "country_state",
+    }
+    doctypes = {
+        "idDocument.nationalIdentityCard": IdentityType.IDENTITY_CARD,
+        "idDocument.driverLicense": IdentityType.DRIVER_LICENSE,
+        "idDocument.passport": IdentityType.PASSPORT,
+    }
+    iv_args = {
+        "validated": True,
+        "user_id": user_id,
+        "image_path": filename,
+    }
+    try:
+        for document in validation_res.documents:
+            iv_args["type"] = doctypes.get(document.doc_type, IdentityType.OTHER)
+            iv_args["type_confidence"] = document.confidence
+            for field_key, field in document.fields.items():
+                if field_key in fields_mapping and field.get("content"):
+                    if field["type"] == "string":
+                        iv_args[fields_mapping[field_key]] = field["valueString"]
+                    elif field["type"] == "date":
+                        iv_args[fields_mapping[field_key]] = field["valueDate"]
+                    else:
+                        iv_args[fields_mapping[field_key]] = field["content"]
+                    conf_key = fields_mapping[field_key] + "_confidence"
+                    iv_args[conf_key] = field["confidence"]
+            if "MotherFullname" in document.fields and document.fields[
+                "MotherFullname"
+            ].get("valueString"):
+                iv_args["parent_fullname"] = document.fields["MotherFullname"][
+                    "valueString"
+                ]
+                iv_args["parent_fullname_confidence"] = document.fields[
+                    "MotherFullname"
+                ]["confidence"]
+            elif "FatherFullname" in document.fields and document.fields[
+                "FatherFullname"
+            ].get("valueString"):
+                iv_args["parent_fullname"] = document.fields["FatherFullname"][
+                    "valueString"
+                ]
+                iv_args["parent_fullname_confidence"] = document.fields[
+                    "FatherFullname"
+                ]["confidence"]
+        iv_args["validated_success"] = True
+    except Exception as e:
+        logging.error(f"Error when validating image {filename} of user {user_id}")
+        logging.error(str(e))
+        iv_args["validated_success"] = False
+        iv_args["error_message"] = str(e)
+        iv_args["error_traceback"] = format_traceback(e)
+    finally:
+        async with AsyncSession() as session:
+            validation = IdentityValidation(**iv_args)
+            session.add(validation)
+            await session.commit()
+        return validation

@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException
 from api.models import User
 from api.models.base import Base
 from api.depends import LoggedUserId, SessionDep
+from api.utils import is_async, to_async
 
 
 def crud_router(
@@ -29,10 +30,20 @@ def crud_router(
     delete_dto = dtos.get("delete", default_dto)
     default_auth = authorizations.get("default")
     get_auth = authorizations.get("get", default_auth)
+    if get_auth and not is_async(get_auth):
+        get_auth = to_async(get_auth)
     create_auth = authorizations.get("create", default_auth)
+    if create_auth and not is_async(create_auth):
+        create_auth = to_async(create_auth)
     list_auth = authorizations.get("list", default_auth)
+    if list_auth and not is_async(list_auth):
+        list_auth = to_async(list_auth)
     update_auth = authorizations.get("update", default_auth)
+    if update_auth and not is_async(update_auth):
+        update_auth = to_async(update_auth)
     delete_auth = authorizations.get("delete", default_auth)
+    if delete_auth and not is_async(delete_auth):
+        delete_auth = to_async(delete_auth)
     default_relationship = response_model_relationship.get("default", {})
     get_relationship = response_model_relationship.get("get", default_relationship)
     create_relationship = response_model_relationship.get(
@@ -53,7 +64,7 @@ def crud_router(
         async def create(data: create_dto, user_id: LoggedUserId, session: SessionDep):
             if create_auth:
                 user = await session.get(User, user_id)
-                if not create_auth(data, user, None):
+                if not await create_auth(data, user, None):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
             obj = model(**data.model_dump())
             session.add(obj)
@@ -72,7 +83,7 @@ def crud_router(
         async def _list(user_id: LoggedUserId, session: SessionDep):
             if list_auth:
                 user = await session.get(User, user_id)
-                if not list_auth(None, user, None):
+                if not await list_auth(None, user, None):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
             stmt = select(model)
             if list_relationship:
@@ -88,7 +99,7 @@ def crud_router(
         async def get(resource_id: UUID, user_id: LoggedUserId, session: SessionDep):
             if get_auth:
                 user = await session.get(User, user_id)
-                if not get_auth(None, user, resource_id):
+                if not await get_auth(None, user, resource_id):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
             if get_relationship:
                 rel = await session.exec(
@@ -117,7 +128,7 @@ def crud_router(
         ):
             if update_auth:
                 user = await session.get(User, user_id)
-                if not update_auth(data, user, resource_id):
+                if not await update_auth(data, user, resource_id):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
             obj = await session.get(model, resource_id)
             if obj:
@@ -148,7 +159,7 @@ def crud_router(
         ):
             if delete_auth:
                 user = await session.get(User, user_id)
-                if not delete_auth(data, user, resource_id):
+                if not await delete_auth(data, user, resource_id):
                     raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED)
             obj = await session.get(model, resource_id)
             if obj:

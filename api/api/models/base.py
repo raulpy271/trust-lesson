@@ -1,5 +1,6 @@
 from functools import cache
 from datetime import datetime
+from typing import Optional
 
 from sqlmodel import SQLModel, Field
 from sqlalchemy.inspection import inspect
@@ -9,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 from pydantic import create_model
 from pydantic_core import PydanticUndefined
 
-from api.utils import set_dict_to_tuple
+from api.utils import set_dict_to_tuple, is_optional_type
 
 
 class Base(AsyncAttrs, SQLModel):
@@ -84,8 +85,12 @@ class Base(AsyncAttrs, SQLModel):
                 if (
                     mapper.relationships[rel].direction
                     == RelationshipDirection.MANYTOONE
-                ):
-                    fields[rel] = res
+                ) or (not mapper.relationships[rel].uselist):
+                    is_optional = is_optional_type(mapper.class_, rel)
+                    if is_optional:
+                        fields[rel] = Optional[res]
+                    else:
+                        fields[rel] = res
                 else:
                     fields[rel] = list[res]
             else:

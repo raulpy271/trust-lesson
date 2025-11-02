@@ -54,14 +54,14 @@ async def test_validation(
         await session.refresh(validation)
         assert validation.validated
         assert validation.validated_success
-        assert validation.validated_value == validator.get_real_confidence(validation)
+        assert validation.confidence == validator.get_real_confidence(validation)
     assert lesson_user_validated.validated
     assert not lesson_user_validated.validated_success
     for validation in validations_validated:
         await session.refresh(validation)
         assert validation.validated
         assert not validation.validated_success
-        assert not validation.validated_value
+        assert not validation.confidence
 
 
 async def test_validate_only_one(
@@ -83,11 +83,11 @@ async def test_validate_only_one(
     assert not lesson_user.validated_success
     assert lesson_validation.validated
     assert lesson_validation.validated_success
-    assert lesson_validation.validated_value == validator.get_real_confidence(
+    assert lesson_validation.confidence == validator.get_real_confidence(
         lesson_validation
     )
     for validation in validations_validated:
         await session.refresh(validation)
         assert validation.validated
         assert not validation.validated_success
-        assert not validation.validated_value
+        assert not validation.confidence

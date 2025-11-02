@@ -1,10 +1,10 @@
-from api.models.user import UserRole
+from api.models.user import IdentityType, UserRole
 import mimesis
 import pytest
 
 from api import models
 from api.auth import create_hash_salt
-from tests.utils import is_async
+from api.utils import is_async
 
 
 class Factory:
@@ -175,3 +175,62 @@ async def lesson_validation(
     session.add(validation)
     await session.commit()
     return validation
+
+
+@pytest.fixture
+@_factory.register
+async def identity_validation(
+    session,
+    user_password,
+    validated=False,
+    validated_success=False,
+):
+    user, _ = user_password
+    person = mimesis.Person()
+    rand = mimesis.random.Random()
+
+    def conf():
+        mimesis.Numeric().float_number(0, 1)
+
+    validation = models.IdentityValidation(
+        validated=validated,
+        validated_success=validated_success,
+        image_path="image.jpg",
+        user=user,
+        identity_code=person.identifier(),
+        identity_code_confidence=conf(),
+        type=rand.choice_enum_item(IdentityType),
+        type_confidence=conf(),
+        fullname=person.full_name(),
+        fullname_confidence=conf(),
+        parent_fullname=person.full_name(),
+        parent_fullname_confidence=conf(),
+        birth_date=person.birthdate(),
+        birth_date_confidence=conf(),
+    )
+    session.add(validation)
+    await session.commit()
+    return validation
+
+
+@pytest.fixture
+@_factory.register
+async def user_identity(session, user_password):
+    user, _ = user_password
+    person = mimesis.Person()
+    rand = mimesis.random.Random()
+    ui = models.UserIdentity(
+        identity_code=person.identifier(),
+        type=rand.choice_enum_item(IdentityType),
+        fullname=person.full_name(),
+        parent_fullname=person.full_name(),
+        birth_date=person.birthdate(),
+        expiration_date=person.birthdate(),
+        issued_date=person.birthdate(),
+        issuing_authority="Federal Reserve",
+        country_state=None,
+        user=user,
+    )
+    session.add(ui)
+    await session.commit()
+    return ui

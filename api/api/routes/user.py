@@ -11,10 +11,10 @@ from api.depends import LoggedUserId, SessionDep
 
 
 user_relationship = {
-    "validations": {},
     "ministrate_lessons": {},
     "term_users": {"term"},
     "lesson_users": {"lesson"},
+    "identity": {},
 }
 
 
