@@ -11,6 +11,7 @@ terraform {
 locals {
   local_app_settings = {
     SCM_DO_BUILD_DURING_DEPLOYMENT = true
+    ENABLE_ORYX_BUILD = true
   }
   app_settings = merge(local.local_app_settings, var.app_envs)
 }
@@ -20,7 +21,7 @@ resource "azurerm_service_plan" "functions_sp" {
   resource_group_name = var.rg_name
   location            = var.rg_location
   os_type             = "Linux"
-  sku_name            = "B2"
+  sku_name            = "S1"
   tags = {
     "stage" = var.stage
   }
