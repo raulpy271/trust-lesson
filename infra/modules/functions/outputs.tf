@@ -1,6 +1,6 @@
 
 output "function_url" {
-  value = "https://${azurerm_linux_function_app.functions.default_hostname}"
+  value = "https://${azurerm_function_app_flex_consumption.functions.default_hostname}"
 }
 
 output "function_key" {

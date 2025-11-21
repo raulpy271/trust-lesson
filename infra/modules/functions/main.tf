@@ -10,8 +10,9 @@ terraform {
 
 locals {
   local_app_settings = {
-    SCM_DO_BUILD_DURING_DEPLOYMENT = true
-    ENABLE_ORYX_BUILD = true
+    # SCM_DO_BUILD_DURING_DEPLOYMENT = true
+    # ENABLE_ORYX_BUILD = true
+    #WEBSITE_RUN_FROM_PACKAGE=1
   }
   app_settings = merge(local.local_app_settings, var.app_envs)
 }
@@ -21,7 +22,7 @@ resource "azurerm_service_plan" "functions_sp" {
   resource_group_name = var.rg_name
   location            = var.rg_location
   os_type             = "Linux"
-  sku_name            = "S1"
+  sku_name            = "FC1"
   tags = {
     "stage" = var.stage
   }
@@ -40,39 +41,18 @@ resource "terraform_data" "requirements" {
   }
 }
 
-resource "terraform_data" "functions_pkg" {
-  triggers_replace = {
-    always = uuid()
-  }
-  provisioner "local-exec" {
-    command     = "./create-zip.sh"
-    working_dir = "../functions"
-  }
-  depends_on = [
-    terraform_data.requirements
-  ]
-}
-
-data "archive_file" "api_zip" {
-  type        = "zip"
-  output_path = "../functions/dist/functions-${uuid()}.zip"
-  source_dir  = "../functions/dist"
-  excludes    = ["Dockerfile*", "*.env", "tests", "dist", "**/__pycache__", ".pytest_cache", ".poetry", "functions-*.zip"]
-  depends_on = [
-    terraform_data.functions_pkg
-  ]
-}
-
-resource "azurerm_linux_function_app" "functions" {
-  name                       = "trust-lesson-functions-${var.stage}"
-  resource_group_name        = var.rg_name
-  location                   = var.rg_location
-  service_plan_id            = azurerm_service_plan.functions_sp.id
-  storage_account_name       = var.storage_account_name
-  storage_account_access_key = var.storage_access_key
-  zip_deploy_file            = data.archive_file.api_zip.output_path
-  app_settings               = local.app_settings
-  builtin_logging_enabled    = true
+resource "azurerm_function_app_flex_consumption" "functions" {
+  name                        = "trust-lesson-functions-${var.stage}"
+  resource_group_name         = var.rg_name
+  location                    = var.rg_location
+  service_plan_id             = azurerm_service_plan.functions_sp.id
+  storage_container_type      = "blobContainer"
+  storage_container_endpoint  = "${var.storage_endpoint}function-flex-consumption"
+  storage_authentication_type = "StorageAccountConnectionString"
+  storage_access_key          = var.storage_access_key
+  runtime_name                = "python"
+  runtime_version             = "3.12"
+  app_settings                = local.app_settings
   identity {
     type = "SystemAssigned"
   }
@@ -80,10 +60,6 @@ resource "azurerm_linux_function_app" "functions" {
     health_check_path                 = "/api/health"
     health_check_eviction_time_in_min = 5
     application_insights_key          = var.insights_instrumentation_key
-    always_on                         = true
-    application_stack {
-      python_version = "3.12"
-    }
     app_service_logs {
       disk_quota_mb         = 25
       retention_period_days = 60
