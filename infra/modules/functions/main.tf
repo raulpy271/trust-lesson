@@ -68,14 +68,27 @@ resource "azurerm_function_app_flex_consumption" "functions" {
   tags = {
     "stage" = var.stage
   }
+}
+
+resource "terraform_data" "deploy_pkg" {
+  triggers_replace = {
+    always = uuid()
+  }
+  provisioner "local-exec" {
+    command     = "./deploy-func.sh ${azurerm_function_app_flex_consumption.functions.name}"
+    working_dir = "../functions"
+  }
   provisioner "local-exec" {
     command = "rm -r ../functions/dist/*"
     when    = destroy
   }
+  depends_on = [
+    terraform_data.requirements
+  ]
 }
 
 data "azurerm_function_app_host_keys" "functions" {
-  name                = azurerm_linux_function_app.functions.name
+  name                = azurerm_function_app_flex_consumption.functions.name
   resource_group_name = var.rg_name
 }
 
@@ -85,12 +98,12 @@ data "azurerm_subscription" "primary" {
 resource "azurerm_role_assignment" "blob_delegator_role" {
   scope                = data.azurerm_subscription.primary.id
   role_definition_name = "Storage Blob Delegator"
-  principal_id         = azurerm_linux_function_app.functions.identity[0].principal_id
+  principal_id         = azurerm_function_app_flex_consumption.functions.identity[0].principal_id
 }
 
 resource "azurerm_role_assignment" "storage_role" {
   scope                = data.azurerm_subscription.primary.id
   role_definition_name = "Storage Blob Data Contributor"
-  principal_id         = azurerm_linux_function_app.functions.identity[0].principal_id
+  principal_id         = azurerm_function_app_flex_consumption.functions.identity[0].principal_id
 }
 
