@@ -1,0 +1,39 @@
+services:
+  redis:
+    image: "redis:7.2.4-alpine3.19"
+    command: "redis-server --requirepass $REDIS_PASSWORD"
+    networks:
+      - api_network
+
+  postgres:
+    image: "postgres:17.1-alpine3.20"
+    networks:
+      - api_network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - "POSTGRES_USER=$DB_USER"
+      - "POSTGRES_PASSWORD=$DB_PASSWORD"
+      - "POSTGRES_DB=$DB_NAME"
+    ports:
+      - "$DB_PORT_EXT:$DB_PORT"
+
+  api:
+    build:
+      context: api
+      dockerfile: Dockerfile-dev
+    volumes:
+      - ./api:/api
+    networks:
+      - api_network
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+
+volumes:
+  pgdata:
+    driver: local
+
+networks:
+  api_network:
