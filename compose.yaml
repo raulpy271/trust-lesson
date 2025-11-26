@@ -5,6 +5,16 @@ services:
     networks:
       - api_network
 
+  azurite:
+    build:
+      context: functions
+      dockerfile: Dockerfile-azurite
+    networks:
+      - api_network
+    volumes:
+      - ./azurite:/data
+      - certs:/etc/ssl/certs
+
   postgres:
     image: "postgres:17.1-alpine3.20"
     networks:
@@ -48,15 +58,20 @@ services:
     volumes:
       - ./api:/api
       - ./functions:/functions
+      - certs:/etc/ssl/certs
     networks:
       - api_network
     ports:
       - 7071:7071
     env_file:
       - .env
+    depends_on:
+      - azurite
 
 volumes:
   pgdata:
+    driver: local
+  certs:
     driver: local
 
 networks:
