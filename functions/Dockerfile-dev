@@ -21,4 +21,6 @@ COPY api/ /api/
 
 RUN poetry install
 
-CMD ["poetry", "run", "func", "start", "--port", "7071"]
+CMD poetry install && \
+    poetry run python create_containers.py && \
+    poetry run func start --port 7071
