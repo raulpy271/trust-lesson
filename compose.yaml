@@ -12,7 +12,7 @@ services:
     networks:
       - api_network
     volumes:
-      - ./azurite:/data
+      - azurite:/opt/azurite
       - certs:/etc/ssl/certs
 
   postgres:
@@ -39,6 +39,7 @@ services:
       dockerfile: Dockerfile-dev
     volumes:
       - ./api:/api
+      - certs:/etc/ssl/certs
     networks:
       - api_network
     ports:
@@ -72,6 +73,8 @@ volumes:
   pgdata:
     driver: local
   certs:
+    driver: local
+  azurite:
     driver: local
 
 networks:

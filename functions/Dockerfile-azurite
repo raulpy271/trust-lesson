@@ -1,38 +1,17 @@
 FROM mcr.microsoft.com/azure-storage/azurite:3.35.0
 
-#RUN apk add --no-cache \
-#    nss-tools \
-#    ca-certificates \
-#    openssl
-#RUN update-ca-certificates
-
 RUN apk add --no-cache openssl ca-certificates openssl-dev
 
+# Azurite needs to run with HTTPS to be connected to Azure SDK
+# Generates SSL certificates to run azurite with HTTPS connection
 RUN openssl req -newkey rsa:2048 -x509 -nodes \
     -keyout key.pem -new -out cert.pem -sha256 -days 365 \
     -addext "subjectAltName=DNS:azurite" \
     -subj "/C=CO/ST=ST/L=LO/O=OR/OU=OU/CN=CN"
 
-#RUN openssl genrsa -out /etc/ssl/private/server.key 2048
-
-#RUN openssl req -new -key /etc/ssl/private/server.key -out server.csr \
-#    -addext "subjectAltName=DNS:azurite" \
-#    -subj "/C=CO/ST=ST/L=LO/O=OR/OU=OU/CN=CN"
-
-#RUN openssl x509 -req -days 365 -in server.csr -signkey /etc/ssl/private/server.key -out /etc/ssl/certs/server.crt
-
 RUN update-ca-certificates
 
-RUN cp cert.pem /usr/local/share/ca-certificates/cert.crt && \
-    cat /usr/local/share/ca-certificates/cert.crt >> /etc/ssl/certs/ca-certificates.crt
-
-#RUN cp server.crt /usr/local/share/ca-certificates/server.crt
-
-
-#RUN wget -O mkcert-linux-amd64 "https://dl.filippo.io/mkcert/latest?for=linux/amd64" && \
-#    chmod +x mkcert-linux-amd64 && mv mkcert-linux-amd64 /usr/local/bin/mkcert
-
-#RUN mkcert -install && mkcert azurite
+RUN cp cert.pem /usr/local/share/ca-certificates/cert.crt
 
 ENTRYPOINT ["azurite"]
 
