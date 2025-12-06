@@ -17,6 +17,7 @@ DB_USER = environ.get("DB_USER")
 DB_PASSWORD = environ.get("DB_PASSWORD")
 
 STORAGE_URL = environ.get("STORAGE_URL")
+STORAGE_ACCOUNT_KEY = environ.get("STORAGE_ACCOUNT_KEY")
 FUNCTION_URL = environ.get("FUNCTION_URL")
 FUNCTION_KEY = environ.get("FUNCTION_KEY")
 ACCOUNT_NAME = environ.get("ACCOUNT_NAME")

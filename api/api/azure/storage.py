@@ -11,6 +11,7 @@ from azure.storage.blob import (
 
 from api.settings import (
     ACCOUNT_NAME,
+    STORAGE_ACCOUNT_KEY,
     STORAGE_URL,
     CONTAINER_IMAGE_NAME,
     CONTAINER_SPREADSHEET_NAME,
@@ -40,7 +41,10 @@ def get_default_credential():
 
 def get_container_image():
     global _container_image
-    credential = get_default_credential()
+    if ACCOUNT_NAME and STORAGE_ACCOUNT_KEY:
+        credential = {"account_name": ACCOUNT_NAME, "account_key": STORAGE_ACCOUNT_KEY}
+    else:
+        credential = get_default_credential()
     if not _container_image:
         _container_image = ContainerClient(
             STORAGE_URL, CONTAINER_IMAGE_NAME, credential=credential
@@ -50,7 +54,10 @@ def get_container_image():
 
 def get_container_spreadsheet():
     global _container_spreadsheet
-    credential = get_default_credential()
+    if ACCOUNT_NAME and STORAGE_ACCOUNT_KEY:
+        credential = {"account_name": ACCOUNT_NAME, "account_key": STORAGE_ACCOUNT_KEY}
+    else:
+        credential = get_default_credential()
     if not _container_spreadsheet:
         _container_spreadsheet = ContainerClient(
             STORAGE_URL, CONTAINER_SPREADSHEET_NAME, credential=credential

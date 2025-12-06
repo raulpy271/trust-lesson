@@ -39,6 +39,7 @@ module "functions" {
   rg_name                      = azurerm_resource_group.rg.name
   rg_location                  = azurerm_resource_group.rg.location
   storage_account_name         = module.storage.account_name
+  storage_endpoint             = module.storage.endpoint
   storage_access_key           = module.storage.access_key
   insights_instrumentation_key = module.logging.insights_instrumentation_key
   app_envs = {

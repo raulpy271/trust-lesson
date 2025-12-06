@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/azure-storage/azurite:3.35.0
+
+RUN apk add --no-cache openssl ca-certificates openssl-dev
+
+# Azurite needs to run with HTTPS to be connected to Azure SDK
+# Generates SSL certificates to run azurite with HTTPS connection
+RUN openssl req -newkey rsa:2048 -x509 -nodes \
+    -keyout key.pem -new -out cert.pem -sha256 -days 365 \
+    -addext "subjectAltName=DNS:azurite" \
+    -subj "/C=CO/ST=ST/L=LO/O=OR/OU=OU/CN=CN"
+
+RUN update-ca-certificates
+
+RUN cp cert.pem /usr/local/share/ca-certificates/cert.crt
+
+ENTRYPOINT ["azurite"]
+
+CMD ["--oauth", "basic", "--cert", "cert.pem", "--key", "key.pem", "--blobHost", "0.0.0.0", "--queueHost", "0.0.0.0", "--tableHost", "0.0.0.0"]
