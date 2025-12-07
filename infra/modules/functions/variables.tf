@@ -30,3 +30,15 @@ variable "app_envs" {
 variable "insights_instrumentation_key" {
   type = string
 }
+
+variable "storage_account_id" {
+  type = string
+}
+
+variable "storage_lesson_image_id" {
+  type = string
+}
+
+variable "storage_lesson_spreadsheet_id" {
+  type = string
+}

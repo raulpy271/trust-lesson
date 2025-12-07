@@ -13,11 +13,13 @@ provider "azurerm" {
 }
 
 module "api" {
-  source                       = "./modules/api"
-  stage                        = var.stage
-  rg_name                      = azurerm_resource_group.rg.name
-  rg_location                  = azurerm_resource_group.rg.location
-  insights_instrumentation_key = module.logging.insights_instrumentation_key
+  source                        = "./modules/api"
+  stage                         = var.stage
+  rg_name                       = azurerm_resource_group.rg.name
+  rg_location                   = azurerm_resource_group.rg.location
+  insights_instrumentation_key  = module.logging.insights_instrumentation_key
+  storage_lesson_image_id       = module.storage.storage_lesson_image_id
+  storage_lesson_spreadsheet_id = module.storage.storage_lesson_spreadsheet_id
   app_envs = {
     REDIS_HOST     = module.cache.hostname
     REDIS_PORT     = module.cache.ssl_port
@@ -34,14 +36,17 @@ module "api" {
 }
 
 module "functions" {
-  source                       = "./modules/functions"
-  stage                        = var.stage
-  rg_name                      = azurerm_resource_group.rg.name
-  rg_location                  = azurerm_resource_group.rg.location
-  storage_account_name         = module.storage.account_name
-  storage_endpoint             = module.storage.endpoint
-  storage_access_key           = module.storage.access_key
-  insights_instrumentation_key = module.logging.insights_instrumentation_key
+  source                        = "./modules/functions"
+  stage                         = var.stage
+  rg_name                       = azurerm_resource_group.rg.name
+  rg_location                   = azurerm_resource_group.rg.location
+  storage_account_name          = module.storage.account_name
+  storage_endpoint              = module.storage.endpoint
+  storage_access_key            = module.storage.access_key
+  insights_instrumentation_key  = module.logging.insights_instrumentation_key
+  storage_account_id            = module.storage.storage_account_id
+  storage_lesson_image_id       = module.storage.storage_lesson_image_id
+  storage_lesson_spreadsheet_id = module.storage.storage_lesson_spreadsheet_id
   app_envs = {
     DB_HOST                        = module.database.db_domain
     DB_USER                        = module.database.db_user

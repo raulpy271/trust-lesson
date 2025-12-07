@@ -96,14 +96,19 @@ data "azurerm_subscription" "primary" {
 }
 
 resource "azurerm_role_assignment" "blob_delegator_role" {
-  scope                = data.azurerm_subscription.primary.id
+  scope                = var.storage_account_id
   role_definition_name = "Storage Blob Delegator"
   principal_id         = azurerm_function_app_flex_consumption.functions.identity[0].principal_id
 }
 
-resource "azurerm_role_assignment" "storage_role" {
-  scope                = data.azurerm_subscription.primary.id
+resource "azurerm_role_assignment" "contribute_storage_lesson_role" {
+  scope                = var.storage_lesson_image_id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_function_app_flex_consumption.functions.identity[0].principal_id
 }
 
+resource "azurerm_role_assignment" "contribute_storage_spreadsheet_role" {
+  scope                = var.storage_lesson_spreadsheet_id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_function_app_flex_consumption.functions.identity[0].principal_id
+}
