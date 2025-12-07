@@ -45,7 +45,7 @@ router = APIRouter(prefix="/user", tags=["user"])
 
 
 @router.post(
-    "/",
+    "",
     status_code=HTTPStatus.CREATED,
     response_model=User.response_model(),
 )

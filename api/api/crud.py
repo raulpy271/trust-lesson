@@ -57,7 +57,7 @@ def crud_router(
     if "create" in methods:
 
         @router.post(
-            "/",
+            "",
             status_code=HTTPStatus.CREATED,
             response_model=model.response_model(create_relationship),
         )
@@ -79,7 +79,7 @@ def crud_router(
 
     if "list" in methods:
 
-        @router.get("/", response_model=list[model.response_model(list_relationship)])
+        @router.get("", response_model=list[model.response_model(list_relationship)])
         async def _list(user_id: LoggedUserId, session: SessionDep):
             if list_auth:
                 user = await session.get(User, user_id)
