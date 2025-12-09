@@ -11,7 +11,7 @@ def change_auth(data: CreateUserIdentityIn, logged_user: User, _identity_id: Non
 
 async def get_auth(_: None, logged_user: User, identity_id: UUID):
     identity = await logged_user.awaitable_attrs.identity
-    return identity.id == identity_id
+    return identity and identity.id == identity_id
 
 
 router = crud_router(

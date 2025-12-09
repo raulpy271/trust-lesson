@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from uuid import uuid4
 
 import mimesis
 
@@ -48,4 +49,9 @@ async def test_cannot_get_identity_of_another_user(
     user_password2 = await factory.user_password(session)
     identity = await factory.user_identity(session, user_password2)
     resp = client.get(f"logged/user-identity/{identity.id}", auth=token)
+    assert resp.status_code == HTTPStatus.UNAUTHORIZED
+
+
+async def test_user_doesnt_have_identity(client, token):
+    resp = client.get(f"logged/user-identity/{uuid4()}", auth=token)
     assert resp.status_code == HTTPStatus.UNAUTHORIZED
