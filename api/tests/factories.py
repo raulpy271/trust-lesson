@@ -45,7 +45,7 @@ def factory():
 @_factory.register
 async def user_password(session):
     person = mimesis.Person()
-    password = person.password()
+    password = person.password(length=10) + "Ra$0"
 
     phash, salt = create_hash_salt(password)
     u = models.User(

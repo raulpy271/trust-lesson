@@ -10,11 +10,12 @@ from api.models import User
 
 async def test_create(session, client, token):
     person = mimesis.Person()
+    password = person.username() + "Ra$0"
     user = {
         "username": person.username(),
         "fullname": person.full_name(),
         "email": person.email(),
-        "password": person.password(),
+        "password": password,
     }
     resp = client.post("logged/user/", json=user, auth=token)
     assert resp.status_code == HTTPStatus.CREATED
