@@ -50,16 +50,21 @@ router = APIRouter(prefix="/user", tags=["user"])
     response_model=User.response_model(),
 )
 async def create(data: dto.CreateUserIn, session: SessionDep):
-    data = data.model_dump()
-    password = data.pop("password")
-    phash, salt = create_hash_salt(password)
-    data["password_hash"] = phash
-    data["password_salt"] = salt
-    user = User(**data)
-    session.add(user)
-    await session.commit()
-    await session.refresh(user)
-    return user
+    try:
+        data = data.model_dump()
+        password = data.pop("password")
+        phash, salt = create_hash_salt(password)
+        data["password_hash"] = phash
+        data["password_salt"] = salt
+        user = User(**data)
+        session.add(user)
+        await session.commit()
+        await session.refresh(user)
+        return user
+    except HTTPException as e:
+        raise e
+    except Exception as e:
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail=str(e))
 
 
 @router.get(
