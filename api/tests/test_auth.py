@@ -6,6 +6,7 @@ import pytest
 import jwt
 
 from api import settings
+from api.auth import validate_password
 from tests.utils import authenticate, BearerAuth
 
 
@@ -120,3 +121,18 @@ def test_invalidate_old_token(monkeypatch, client, redis, user_password):
     assert resp.status_code == HTTPStatus.UNAUTHORIZED
     resp = client.get("logged/user/me", auth=new_token)
     assert resp.status_code == HTTPStatus.OK
+
+
+@pytest.mark.parametrize(
+    "password,valid",
+    [
+        ("RAULhello1234", False),
+        ("RAULHE$LLO888", False),
+        ("RAULhe$LLO888", True),
+        ("RAULhe$LL4#_-O888", True),
+        ("?@RAULhe$LL4#_-O888", True),
+        ("?@RAULhe$LL4#_-O8880000000", False),
+    ],
+)
+def test_validate_password(password, valid):
+    assert validate_password(password) == valid

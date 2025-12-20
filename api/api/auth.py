@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from hashlib import scrypt
 from secrets import token_hex
@@ -6,6 +7,12 @@ import jwt
 
 from api import settings
 from api.redis import get_default_client
+
+
+VALID_SIMBOLS = r"!^@#$%^&*()\-_=+?:"
+UPPER_CASE_AND_LOWER_CASE_RE = re.compile(r"[a-z].*[A-Z]|[A-Z].*[a-z]")
+DIGITS_AND_SIMBOLS = re.compile(rf"[0-9].*[{VALID_SIMBOLS}]|[{VALID_SIMBOLS}].*[0-9]")
+VALID_CHARS = re.compile(rf"[a-zA-Z0-9{VALID_SIMBOLS}]{{10,25}}")
 
 
 def create_hash_salt(password):
@@ -65,3 +72,14 @@ async def generate_new_token(old_token, mapping):
         pipe.expire(token, settings.TOKEN_EXP)
         await pipe.execute()
     return token, exp
+
+
+def validate_password(password: str) -> bool:
+    if (
+        VALID_CHARS.fullmatch(password)
+        and UPPER_CASE_AND_LOWER_CASE_RE.search(password)
+        and DIGITS_AND_SIMBOLS.search(password)
+    ):
+        return True
+    else:
+        return False

@@ -1,20 +1,23 @@
 from hashlib import scrypt
 from http import HTTPStatus
 
+import pytest
 import mimesis
 from sqlmodel import select
 
 from api import settings
+from api.dto.user import PASSWORD_DESCRIPTION
 from api.models import User
 
 
 async def test_create(session, client, token):
     person = mimesis.Person()
+    password = person.username() + "Ra$0"
     user = {
         "username": person.username(),
         "fullname": person.full_name(),
         "email": person.email(),
-        "password": person.password(),
+        "password": password,
     }
     resp = client.post("logged/user/", json=user, auth=token)
     assert resp.status_code == HTTPStatus.CREATED
@@ -29,6 +32,27 @@ async def test_create(session, client, token):
         **settings.SCRYPT_SETTINGS,
     )
     assert u.password_hash == phash.hex()
+
+
+@pytest.mark.parametrize(
+    "password",
+    [
+        "hello marry lu 2",  # missing upper case
+        "HEE marry lu 2",  # missing symbol
+    ],
+)
+def test_invalid_password(client, token, password):
+    person = mimesis.Person()
+    user = {
+        "username": person.username(),
+        "fullname": person.full_name(),
+        "email": person.email(),
+        "password": password,
+    }
+    resp = client.post("logged/user/", json=user, auth=token)
+    error = resp.json()
+    assert resp.status_code == HTTPStatus.BAD_REQUEST
+    assert error["detail"] == PASSWORD_DESCRIPTION
 
 
 def test_exclude_columns(client, token, user_password):

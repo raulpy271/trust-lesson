@@ -112,12 +112,14 @@ resource "azurerm_linux_web_app" "api_webapp" {
   ]
 }
 
-data "azurerm_subscription" "primary" {
-}
-
-resource "azurerm_role_assignment" "storage_role" {
-  scope                = data.azurerm_subscription.primary.id
+resource "azurerm_role_assignment" "contribute_storage_image_role" {
+  scope                = var.storage_lesson_image_id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_linux_web_app.api_webapp.identity[0].principal_id
 }
 
+resource "azurerm_role_assignment" "contribute_storage_spreadsheet_role" {
+  scope                = var.storage_lesson_spreadsheet_id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_linux_web_app.api_webapp.identity[0].principal_id
+}
