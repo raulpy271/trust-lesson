@@ -4,6 +4,7 @@ from uuid import UUID
 from http import HTTPStatus
 
 import logging
+from api.models.term_user import TermUser
 from sqlmodel import select
 from api.dto import CreateLessonIn, UpdateLessonIn, UploadSpreadsheetLessons
 from api.azure.functions import function_session
@@ -167,6 +168,33 @@ async def upload_spreadsheet(
             status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
             detail=str(e),
         )
+
+
+@router.get("/student/{lesson_id}", response_model=list[User.response_model()])
+async def lesson_user(lesson_id: UUID, session: SessionDep):
+    lesson = await session.get(Lesson, lesson_id)
+    if lesson:
+        term = await lesson.awaitable_attrs.term
+        term_students_ids = await session.exec(
+            select(User.id)
+            .join(TermUser)
+            .where(TermUser.term_id == term.id, TermUser.role == UserRole.STUDANT)
+        )
+        term_students_ids = set(term_students_ids)
+        all_users = await session.exec(
+            select(User).join(LessonUser).where(LessonUser.lesson_id == lesson_id)
+        )
+        students = [student for student in all_users if student.id in term_students_ids]
+        return students
+    else:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
+
+
+@router.get("/instructor/{lesson_id}", response_model=User.response_model())
+async def lesson_instructor(
+    lesson_id: UUID, user_id: LoggedUserId, session: SessionDep
+):
+    pass
 
 
 crud_router(

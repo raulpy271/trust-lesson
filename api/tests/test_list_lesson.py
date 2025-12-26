@@ -114,3 +114,31 @@ async def test_list_lessons_of_instructor(
     lessons = response.json()
     assert len(lessons) == 1
     assert lessons[0]["id"] == str(lesson.id)
+
+
+async def test_students_of_a_lesson(
+    client, user_password, token, session, course_term, lesson, factory
+):
+    students_with_passwords = await factory.list_user_password(5, session)
+    [
+        await factory.term_user(session, course_term, student)
+        for student in students_with_passwords
+    ]
+    await factory.term_user(
+        session, course_term, user_password, role=models.UserRole.INSTRUCTOR
+    )
+    [
+        await factory.lesson_user(session, student, lesson)
+        for student in students_with_passwords
+    ]
+    await factory.lesson_user(session, user_password, lesson)
+    response = client.get(f"/logged/lesson/student/{lesson.id}", auth=token)
+    assert response.status_code == HTTPStatus.OK
+    students_resp = response.json()
+    students_map = {str(up[0].id): up[0] for up in students_with_passwords}
+    assert len(students_with_passwords) == len(students_resp)
+    for student_resp in students_resp:
+        assert student_resp["id"] in students_map
+        student = students_map[student_resp["id"]]
+        assert student_resp["username"] == student.username
+        assert student_resp["email"] == student.email
