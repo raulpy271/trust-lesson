@@ -42,7 +42,7 @@ async def user_password(session):
         username=person.username(),
         fullname=person.full_name(),
         email=person.email(),
-        role=models.UserRole.STUDANT,
+        role=models.UserRole.STUDENT,
         password_hash=phash,
         password_salt=salt,
     )

@@ -19,7 +19,7 @@ async def test_insert(session):
         username="Raul",
         fullname="Jose Raul",
         email="raul@gmail.com",
-        role=models.UserRole.STUDANT,
+        role=models.UserRole.STUDENT,
         password_hash="0000",
         password_salt="0000",
     )

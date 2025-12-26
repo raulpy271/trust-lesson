@@ -43,7 +43,7 @@ async def lesson_list(
     date_filter = (start_date <= Lesson.start_date) & (end_date >= Lesson.start_date)
     role = (await session.exec(select(User.role).filter_by(id=user_id))).one()
     loads = Lesson.selectload({"term", "instructor"})
-    if role == UserRole.STUDANT:
+    if role == UserRole.STUDENT:
         stmt = (
             select(Lesson)
             .options(*loads)
@@ -178,7 +178,7 @@ async def lesson_user(lesson_id: UUID, session: SessionDep):
         term_students_ids = await session.exec(
             select(User.id)
             .join(TermUser)
-            .where(TermUser.term_id == term.id, TermUser.role == UserRole.STUDANT)
+            .where(TermUser.term_id == term.id, TermUser.role == UserRole.STUDENT)
         )
         term_students_ids = set(term_students_ids)
         all_users = await session.exec(
