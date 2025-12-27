@@ -4,6 +4,7 @@ from uuid import UUID
 from http import HTTPStatus
 
 import logging
+from api.dto.lesson import LessonInstructorOut
 from api.models.term_user import TermUser
 from sqlmodel import select
 from api.dto import CreateLessonIn, UpdateLessonIn, UploadSpreadsheetLessons
@@ -192,11 +193,28 @@ async def lesson_user(lesson_id: UUID, session: SessionDep):
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
 
-@router.get("/instructor/{lesson_id}", response_model=User.response_model())
-async def lesson_instructor(
-    lesson_id: UUID, user_id: LoggedUserId, session: SessionDep
-):
-    pass
+@router.get("/instructor/{lesson_id}", response_model=LessonInstructorOut)
+async def lesson_instructor(lesson_id: UUID, session: SessionDep):
+    lesson = await session.get(Lesson, lesson_id)
+    if lesson:
+        term = await lesson.awaitable_attrs.term
+        instructor = await lesson.awaitable_attrs.instructor
+        term_instructors_ids = await session.exec(
+            select(User.id)
+            .join(TermUser)
+            .where(TermUser.term_id == term.id, TermUser.role == UserRole.INSTRUCTOR)
+        )
+        term_instructors_ids = set(term_instructors_ids)
+        all_users = await session.exec(
+            select(User).join(LessonUser).where(LessonUser.lesson_id == lesson_id)
+        )
+        instructors = [user for user in all_users if user.id in term_instructors_ids]
+        return {
+            "main": instructor,
+            "instructors": instructors,
+        }
+    else:
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
 
 
 crud_router(

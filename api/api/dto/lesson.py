@@ -2,6 +2,7 @@ from uuid import UUID
 from typing import Annotated, Optional
 from datetime import datetime
 
+from api.models.user import User
 from pydantic import BaseModel, AfterValidator
 from fastapi import UploadFile
 
@@ -35,3 +36,8 @@ class UploadSpreadsheetLessons(BaseModel):
         UploadFile,
         AfterValidator(check_media_type(["xlsx"])),
     ]
+
+
+class LessonInstructorOut(BaseModel):
+    main: User.response_model()
+    instructors: list[User.response_model()]
