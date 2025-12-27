@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from http import HTTPStatus
 
-from api import models
+from api.models import UserRole
 from tests.utils import authenticate
 
 
@@ -94,7 +94,7 @@ async def test_list_lessons_of_instructor(
 ):
     user, _ = user_password
     # Register user as instructor of the lesson
-    user.role = models.UserRole.INSTRUCTOR
+    user.role = UserRole.INSTRUCTOR
     lesson.instructor = user
     lesson.start_date = datetime.now()
     # Create lesson when the user is not the instructor
@@ -125,7 +125,7 @@ async def test_students_of_a_lesson(
         for student in students_with_passwords
     ]
     await factory.term_user(
-        session, course_term, user_password, role=models.UserRole.INSTRUCTOR
+        session, course_term, user_password, role=UserRole.INSTRUCTOR
     )
     [
         await factory.lesson_user(session, student, lesson)
@@ -142,3 +142,36 @@ async def test_students_of_a_lesson(
         student = students_map[student_resp["id"]]
         assert student_resp["username"] == student.username
         assert student_resp["email"] == student.email
+
+
+async def test_instructor_of_a_lesson(
+    client, token, session, course_term, lesson, factory
+):
+    instructors_with_passwords = await factory.list_user_password(
+        3, session, role=UserRole.INSTRUCTOR
+    )
+    main_instructor = instructors_with_passwords[0][0]
+    lesson.instructor = main_instructor
+    session.add(lesson)
+    await session.commit()
+    students_with_passwords = await factory.list_user_password(5, session)
+    [
+        await factory.term_user(session, course_term, user, role=user[0].role)
+        for user in students_with_passwords + instructors_with_passwords
+    ]
+    [
+        await factory.lesson_user(session, student, lesson)
+        for student in students_with_passwords + instructors_with_passwords
+    ]
+    response = client.get(f"/logged/lesson/instructor/{lesson.id}", auth=token)
+    assert response.status_code == HTTPStatus.OK
+    instructors_resp = response.json()
+    assert instructors_resp["main"]["id"] == str(main_instructor.id)
+    assert instructors_resp["main"]["username"] == str(main_instructor.username)
+    assert len(instructors_resp["instructors"]) == len(instructors_with_passwords)
+    instructors_map = {str(up[0].id): up[0] for up in instructors_with_passwords}
+    for instructor_resp in instructors_resp["instructors"]:
+        assert instructor_resp["id"] in instructors_map
+        instructor = instructors_map[instructor_resp["id"]]
+        assert instructor_resp["username"] == instructor.username
+        assert instructor_resp["email"] == instructor.email
