@@ -48,13 +48,15 @@ async def lesson_list(
             select(Lesson)
             .options(*loads)
             .join(LessonUser)
-            .where(date_filter & (LessonUser.user_id == user_id))
+            .where(date_filter)
+            .where(LessonUser.user_id == user_id)
         )
     else:
         stmt = (
             select(Lesson)
             .options(*loads)
-            .where(date_filter & (Lesson.instructor_id == user_id))
+            .where(date_filter)
+            .where(Lesson.instructor_id == user_id)
         )
     lessons = (await session.exec(stmt)).all()
     return lessons
