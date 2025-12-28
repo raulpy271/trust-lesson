@@ -5,6 +5,26 @@ from api.models import UserRole
 from tests.utils import authenticate
 
 
+async def populate_users_of_lesson(session, factory, course_term, lesson):
+    instructors_with_passwords = await factory.list_user_password(
+        3, session, role=UserRole.INSTRUCTOR
+    )
+    main_instructor = instructors_with_passwords[0][0]
+    lesson.instructor = main_instructor
+    session.add(lesson)
+    await session.commit()
+    students_with_passwords = await factory.list_user_password(5, session)
+    [
+        await factory.term_user(session, course_term, user, role=user[0].role)
+        for user in students_with_passwords + instructors_with_passwords
+    ]
+    [
+        await factory.lesson_user(session, student, lesson)
+        for student in students_with_passwords + instructors_with_passwords
+    ]
+    return instructors_with_passwords, students_with_passwords
+
+
 def test_list_one_lesson(client, user_password, token, session, lesson, lesson_user):
     start_date = lesson.start_date.date()
     end_date = (lesson.start_date + timedelta(days=1)).date()
@@ -117,21 +137,11 @@ async def test_list_lessons_of_instructor(
 
 
 async def test_students_of_a_lesson(
-    client, user_password, token, session, course_term, lesson, factory
+    client, token, session, course_term, lesson, factory
 ):
-    students_with_passwords = await factory.list_user_password(5, session)
-    [
-        await factory.term_user(session, course_term, student)
-        for student in students_with_passwords
-    ]
-    await factory.term_user(
-        session, course_term, user_password, role=UserRole.INSTRUCTOR
+    _, students_with_passwords = await populate_users_of_lesson(
+        session, factory, course_term, lesson
     )
-    [
-        await factory.lesson_user(session, student, lesson)
-        for student in students_with_passwords
-    ]
-    await factory.lesson_user(session, user_password, lesson)
     response = client.get(f"/logged/lesson/student/{lesson.id}", auth=token)
     assert response.status_code == HTTPStatus.OK
     students_resp = response.json()
@@ -147,22 +157,10 @@ async def test_students_of_a_lesson(
 async def test_instructor_of_a_lesson(
     client, token, session, course_term, lesson, factory
 ):
-    instructors_with_passwords = await factory.list_user_password(
-        3, session, role=UserRole.INSTRUCTOR
+    instructors_with_passwords, _ = await populate_users_of_lesson(
+        session, factory, course_term, lesson
     )
     main_instructor = instructors_with_passwords[0][0]
-    lesson.instructor = main_instructor
-    session.add(lesson)
-    await session.commit()
-    students_with_passwords = await factory.list_user_password(5, session)
-    [
-        await factory.term_user(session, course_term, user, role=user[0].role)
-        for user in students_with_passwords + instructors_with_passwords
-    ]
-    [
-        await factory.lesson_user(session, student, lesson)
-        for student in students_with_passwords + instructors_with_passwords
-    ]
     response = client.get(f"/logged/lesson/instructor/{lesson.id}", auth=token)
     assert response.status_code == HTTPStatus.OK
     instructors_resp = response.json()
