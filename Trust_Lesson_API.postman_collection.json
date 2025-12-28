@@ -102,6 +102,84 @@
 							"response": []
 						},
 						{
+							"name": "get",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/lesson/2c5abaf3-5839-487a-9503-e82a50212150",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"lesson",
+										"2c5abaf3-5839-487a-9503-e82a50212150"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "start",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/lesson/start/210e063a-66e6-456e-9cdf-2ee37944d980",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"lesson",
+										"start",
+										"210e063a-66e6-456e-9cdf-2ee37944d980"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "stop",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/lesson/stop/210e063a-66e6-456e-9cdf-2ee37944d980",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"lesson",
+										"stop",
+										"210e063a-66e6-456e-9cdf-2ee37944d980"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/lesson/a737c622-7462-48bd-ab63-141fa132e595",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"lesson",
+										"a737c622-7462-48bd-ab63-141fa132e595"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "create",
 							"request": {
 								"method": "POST",
@@ -116,14 +194,13 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/logged/lesson/",
+									"raw": "{{base_url}}/logged/lesson",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"logged",
-										"lesson",
-										""
+										"lesson"
 									]
 								}
 							},
@@ -209,14 +286,13 @@
 											}
 										},
 										"url": {
-											"raw": "{{base_url}}/logged/user-identity/",
+											"raw": "{{base_url}}/logged/user-identity",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"logged",
-												"user-identity",
-												""
+												"user-identity"
 											]
 										}
 									},
@@ -229,7 +305,7 @@
 										"header": [],
 										"body": {
 											"mode": "raw",
-											"raw": "{\n    \"id\": \"e3b55676-972d-4838-b399-98f2f7335ff9\",\n    \"user_id\": \"099702b5-afb9-484e-b668-b380e95e2168\",\n    \"identity_code\": \"1234\",\n    \"type\": \"DRIVER_LICENSE\",\n    \"fullname\": \"Raul Maria Jose\",\n    \"parent_fullname\": null,\n    \"birth_date\": \"2000-10-01\",\n    \"expiration_date\": \"2023-05-23\",\n    \"issued_date\": \"2022-05-24\",\n    \"issuing_authority\": \"FED\",\n    \"country_state\": \"PE\"\n}",
+											"raw": "{\n    \"id\": \"b9117422-e2f5-42bb-851a-71f06470fa00\",\n    \"user_id\": \"099702b5-afb9-484e-b668-b380e95e2168\",\n    \"identity_code\": \"1236\",\n    \"type\": \"DRIVER_LICENSE\",\n    \"fullname\": \"Raul Maria Jose\",\n    \"parent_fullname\": null,\n    \"birth_date\": \"2000-10-01\",\n    \"expiration_date\": \"2023-05-23\",\n    \"issued_date\": \"2022-05-24\",\n    \"issuing_authority\": \"FED\",\n    \"country_state\": \"PE\"\n}",
 											"options": {
 												"raw": {
 													"language": "json"
@@ -237,14 +313,14 @@
 											}
 										},
 										"url": {
-											"raw": "{{base_url}}/logged/user-identity/e3b55676-972d-4838-b399-98f2f7335ff9",
+											"raw": "{{base_url}}/logged/user-identity/b9117422-e2f5-42bb-851a-71f06470fa00",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"logged",
 												"user-identity",
-												"e3b55676-972d-4838-b399-98f2f7335ff9"
+												"b9117422-e2f5-42bb-851a-71f06470fa00"
 											]
 										}
 									},
@@ -256,14 +332,14 @@
 										"method": "GET",
 										"header": [],
 										"url": {
-											"raw": "{{base_url}}/logged/user-identity/e3b55676-972d-4838-b399-98f2f7335ff9",
+											"raw": "{{base_url}}/logged/user-identity/b9117422-e2f5-42bb-851a-71f06470fa00",
 											"host": [
 												"{{base_url}}"
 											],
 											"path": [
 												"logged",
 												"user-identity",
-												"e3b55676-972d-4838-b399-98f2f7335ff9"
+												"b9117422-e2f5-42bb-851a-71f06470fa00"
 											]
 										}
 									},
@@ -278,7 +354,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"email\": \"raul@gmail.com\",\n    \"password\": \"raulzito\",\n    \"username\": \"Raul\",\n    \"fullname\": \"Raul Siamês\"\n\n}",
+									"raw": "{\n    \"email\": \"raul12334328@gmail.com\",\n    \"password\": \"raulzito$234CAR\",\n    \"username\": \"Raul\",\n    \"fullname\": \"Raul Siamês\"\n\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -323,14 +399,13 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/logged/user/",
+									"raw": "{{base_url}}/logged/user",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"logged",
-										"user",
-										""
+										"user"
 									]
 								}
 							},
@@ -356,13 +431,38 @@
 							"response": []
 						},
 						{
+							"name": "delete",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/user/6a63de5a-11fe-4a28-8b93-f71be4193f85?password=raulzito",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"user",
+										"6a63de5a-11fe-4a28-8b93-f71be4193f85"
+									],
+									"query": [
+										{
+											"key": "password",
+											"value": "raulzito"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "update",
 							"request": {
 								"method": "PUT",
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"username\": \"Joao\",\n    \"fullname\": \"Joao Siamês\",\n    \"email\": \"joao@gmail.com\",\n    \"password\": \"raulzito\",\n    \"role\": \"STUDANT\",\n    \"is_admin\": false\n}",
+									"raw": "{\n    \"username\": \"Joao\",\n    \"fullname\": \"Joao Siamês\",\n    \"email\": \"joao@gmail.com\",\n    \"password\": \"raulzito\",\n    \"role\": \"STUDENT\",\n    \"is_admin\": false\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -404,7 +504,7 @@
 										{
 											"key": "file",
 											"type": "file",
-											"src": "/home/raul/Pictures/Screenshot_2025-07-30_16-04-55.png"
+											"src": "/home/raul/Pictures/Screenshot_2025-08-31_09-52-46.png"
 										}
 									]
 								},
@@ -450,7 +550,7 @@
 										{
 											"key": "file",
 											"type": "file",
-											"src": "/home/raul/Pictures/Screenshot_2025-08-22_13-19-25.png"
+											"src": "/home/raul/Downloads/cnh-digital-ja-esta-disponivel-em-sao-paulo.jpg"
 										}
 									]
 								},
@@ -497,7 +597,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"name\": \"Python do Zero\",\n    \"description\": \"Aprenda Python\"\n}",
+									"raw": "{\n    \"name\": \"Python do Nada\",\n    \"description\": \"Aprenda Python\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -505,14 +605,41 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/logged/course/",
+									"raw": "{{base_url}}/logged/course",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"course"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Python do Nada\",\n    \"description\": \"Aprenda Python como um Profissional\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/logged/course/9052e4ab-d52a-4465-9c60-2c6c83ec31bd",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"logged",
 										"course",
-										""
+										"9052e4ab-d52a-4465-9c60-2c6c83ec31bd"
 									]
 								}
 							},
@@ -524,14 +651,13 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/logged/course/",
+									"raw": "{{base_url}}/logged/course",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"logged",
-										"course",
-										""
+										"course"
 									]
 								}
 							},
@@ -555,6 +681,25 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "delete",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/course/af2a3e3b-436a-4710-a5e8-97c0f2c8114c",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"course",
+										"af2a3e3b-436a-4710-a5e8-97c0f2c8114c"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -568,7 +713,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n    \"status\": \"WAITING\",\n    \"start_date\": \"2025-01-01\",\n    \"end_date\": \"2025-12-20\",\n    \"course_id\": \"9052e4ab-d52a-4465-9c60-2c6c83ec31bd\"\n}",
+									"raw": "{\n    \"status\": \"WAITING\",\n    \"start_date\": \"2025-01-01\",\n    \"end_date\": \"2026-12-20\",\n    \"course_id\": \"dea7eb21-c744-46d6-ae11-5a39c34e7fe4\"\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -576,14 +721,41 @@
 									}
 								},
 								"url": {
-									"raw": "{{base_url}}/logged/course-term/",
+									"raw": "{{base_url}}/logged/course-term",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"course-term"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"WAITING\",\n    \"start_date\": \"2025-01-01\",\n    \"end_date\": \"2027-12-20\",\n    \"course_id\": \"9052e4ab-d52a-4465-9c60-2c6c83ec31bd\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base_url}}/logged/course-term/0089dd48-3cda-4f12-b725-538b9db06473",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"logged",
 										"course-term",
-										""
+										"0089dd48-3cda-4f12-b725-538b9db06473"
 									]
 								}
 							},
@@ -595,14 +767,13 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{base_url}}/logged/course-term/",
+									"raw": "{{base_url}}/logged/course-term",
 									"host": [
 										"{{base_url}}"
 									],
 									"path": [
 										"logged",
-										"course-term",
-										""
+										"course-term"
 									]
 								}
 							},
@@ -622,6 +793,25 @@
 										"logged",
 										"course-term",
 										"0089dd48-3cda-4f12-b725-538b9db06473"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "delete",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{base_url}}/logged/course-term/da108278-1045-4206-a244-52eee3bb7528",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"logged",
+										"course-term",
+										"da108278-1045-4206-a244-52eee3bb7528"
 									]
 								}
 							},
@@ -719,7 +909,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"filename\": \"Screenshot_2025-06-28_21-57-25.png\",\n    \"user_id\": \"c441fa17-49a1-4de2-a343-4be258589756\"\n}",
+							"raw": "{\n    \"filename\": \"identity-validation-099702b5-afb9-484e-b668-b380e95e2168-07-12-2025_12:46.jpeg\",\n    \"user_id\": \"c441fa17-49a1-4de2-a343-4be258589756\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -778,6 +968,25 @@
 					}
 				}
 			]
+		},
+		{
+			"name": "health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/public/health/",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"public",
+						"health",
+						""
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
