@@ -43,7 +43,7 @@ def factory():
 
 @pytest.fixture
 @_factory.register
-async def user_password(session):
+async def user_password(session, role=models.UserRole.STUDENT):
     person = mimesis.Person()
     password = person.password(length=10) + "Ra$0"
 
@@ -52,7 +52,7 @@ async def user_password(session):
         username=person.username(),
         fullname=person.full_name(),
         email=person.email(),
-        role=models.UserRole.STUDANT,
+        role=role,
         password_hash=phash,
         password_salt=salt,
     )
@@ -102,7 +102,7 @@ async def course_term(session, course):
 
 @pytest.fixture
 @_factory.register
-async def term_user(session, course_term, user_password, role=UserRole.STUDANT):
+async def term_user(session, course_term, user_password, role=UserRole.STUDENT):
     tu = models.TermUser(
         term_id=course_term.id,
         user_id=user_password[0].id,

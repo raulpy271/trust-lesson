@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 class UserRole(str, enum.Enum):
-    STUDANT = "STUDANT"
+    STUDENT = "STUDENT"
     INSTRUCTOR = "INSTRUCTOR"
     ADMIN = "ADMIN"
 
@@ -34,7 +34,7 @@ class User(TimestempMixin, Base, table=True):
     username: str
     fullname: str
     email: str = Field(unique=True)
-    role: UserRole = Field(default=UserRole.STUDANT)
+    role: UserRole = Field(default=UserRole.STUDENT)
     is_admin: bool = Field(default=False)
     password_hash: str
     password_salt: str
