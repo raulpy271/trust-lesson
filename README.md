@@ -41,6 +41,8 @@ Besides, the following tools are used in the development process:
  - Poetry to install dependencies and build Python packages.
  - The Black and Flake8 package to enforce code style and check syntax errors.
  - Pytest to automatically run unit tests.
+ - Azurite to simulates the Azure Storage locally.
+ - Azure Functions Core Tools to run the functions locally.
  - Postman to manually test the API.
 
 ## :gear: API Setup
@@ -72,31 +74,34 @@ pytest
 
 To make the test execution fast and run only the application code, the test runner uses a lightweight database(In memory SQLite), a fake Redis Client, and even doesn't start a web server.
 
-### Application setup in Docker and Terraform
+### Application setup with Docker Compose
 
-To run the application locally using a complete environment is used Terraform and Docker to create a collection of containers needed to create this environment. It will use three containers, a PostgreSQL database, a real Redis Server, and an HTTP Server.
+To run the application locally using a complete environment is used Docker Compose to create a collection of containers needed to create this environment.
 
-The environment setup is made using Terraform, which will read the files `*-dev.tf` and will build the required Docker images, and will run the containers as well.
+The containers created by docker are:
 
-The below commands will build and run the containers in the local machine, they should be run in the root of the project but before that, verify that your system has Terraform and Docker installed and the latter is running.
+ - PostgreSQL database.
+ - Redis server.
+ - FastAPI server.
+ - Azurite, this container will simulate the Azure Storage service.
+ - Azure Functions Core Tools, will run the functions as if it were the Azure Cloud.
+
+The below commands will build and run the containers in the local machine, they should be run in the root of the project but before that, verify that your system has Docker installed and running.
 
 ```
-# It will install the terraform back-end kreuzwerker/docker. Execute this command only in the first time
-terraform init
+# It will download the public images and build the project from the Dockerfile's.
+docker compose build
 
-# It will show what resources will be created
-terraform plan
-
-# It will create the resources after confirming with 'yes' 
-terraform apply
+# Run in background the containers
+docker compose up -d
 ```
 
-After the last command, the environment will be created, run `docker ps` to see which containers are running, execute `docker logs api` to see the Web Server logs, and access `localhost:8000/docs/` to see the API routes and how to make requests to them.
+After the last command, the environment will be created, run `docker ps` to see which containers are running, execute `docker compose logs` to see the containers logs, and access `localhost:8000/docs/` to see the API routes and how to make requests to them.
 
 To stop the containers run:
 
 ```
-terraform destroy
+docker compose down
 ```
 
 > Note to Postman users: You can use the Postman Collection [Trust_Lesson_API.postman_collection.json](./Trust_Lesson_API.postman_collection.json) to make requests to the API, import the file in Postman to be able to use the collection.
@@ -155,4 +160,5 @@ If you want to contribute to the project you are very welcome, the project is st
  - :robot: [Azure AI Vision](https://azure.microsoft.com/en-us/products/ai-services/ai-vision)
  - :test_tube: [SQLAlchemy 2.0 Documentation](https://docs.sqlalchemy.org/en/20/)
  - :alembic: [Alembic Documentation](https://alembic.sqlalchemy.org/en/latest/)
-
+ - :pick: [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local)
+ - :floppy_disk: [Azurite](https://github.com/Azure/Azurite)
