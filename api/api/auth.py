@@ -1,4 +1,7 @@
 import re
+import string
+import secrets
+import random
 from datetime import datetime
 from hashlib import scrypt
 from secrets import token_hex
@@ -83,3 +86,24 @@ def validate_password(password: str) -> bool:
         return True
     else:
         return False
+
+
+def create_password(length=15, length_numbers=3, length_symbols=3):
+    if length < 10:
+        raise ValueError("The password should have at least 10 characters")
+    ascii_length = length - (length_numbers + length_symbols)
+    if ascii_length < 0:
+        raise ValueError(
+            "The length of numbers and symbols is bigger than the password"
+        )
+    upper_len = random.randint(1, ascii_length - 1)
+    lower_len = ascii_length - upper_len
+    upper_chars = [secrets.choice(string.ascii_uppercase) for _ in range(upper_len)]
+    lower_chars = [secrets.choice(string.ascii_lowercase) for _ in range(lower_len)]
+    numbers = [secrets.choice(string.digits) for _ in range(length_numbers)]
+    symbols = [
+        secrets.choice(VALID_SIMBOLS.replace("\\", "")) for _ in range(length_symbols)
+    ]
+    password_chars = upper_chars + lower_chars + numbers + symbols
+    random.shuffle(password_chars)
+    return "".join(password_chars)
