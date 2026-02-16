@@ -25,7 +25,6 @@ async def _create_user(email, fullname, username, password, is_admin):
             while next_username in usernames:
                 next_username = username + str(next(counter))
             username = next_username
-        print(username)
         phash, salt = create_hash_salt(password)
         user = User(
             username=username,
