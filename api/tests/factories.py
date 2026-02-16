@@ -3,7 +3,7 @@ import mimesis
 import pytest
 
 from api import models
-from api.auth import create_hash_salt
+from api.auth import create_hash_salt, create_password
 from api.utils import is_async
 
 
@@ -45,8 +45,7 @@ def factory():
 @_factory.register
 async def user_password(session, role=models.UserRole.STUDENT):
     person = mimesis.Person()
-    password = person.password(length=10) + "Ra$0"
-
+    password = create_password()
     phash, salt = create_hash_salt(password)
     u = models.User(
         username=person.username(),

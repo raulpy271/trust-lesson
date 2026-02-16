@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 import pytest
 
 from api import models, settings
-from api.auth import create_hash_salt
+from api.auth import create_hash_salt, create_password
 
 
 @pytest.fixture
@@ -35,7 +35,7 @@ async def session(anyio_backend):
 @pytest.fixture
 async def user_password(session):
     person = mimesis.Person()
-    password = person.password()
+    password = create_password()
 
     phash, salt = create_hash_salt(password)
     u = models.User(

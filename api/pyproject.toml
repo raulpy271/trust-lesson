@@ -1,9 +1,13 @@
-
-[tool.poetry]
+[project]
 name = "api"
 version = "0.1.0"
 description = ""
-authors = ["raulpy271 <raulrufino0@gmail.com>"]
+authors = [
+    { name = "raulpy271", email = "raulrufino0@gmail.com" },
+]
+
+[project.scripts]
+api = 'api.cli.cli:main'
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
@@ -25,6 +29,7 @@ aiohttp = "^3.11.12"
 python-dateutil = "^2.9.0.post0"
 sqlmodel = "^0.0.24"
 pydantic = "^2.11.7"
+click = "^8.3.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"

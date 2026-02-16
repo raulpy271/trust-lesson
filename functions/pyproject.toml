@@ -1,8 +1,10 @@
-[tool.poetry]
+[project]
 name = "functions"
 version = "0.1.0"
 description = ""
-authors = ["raulpy271 <raulrufino0@gmail.com>"]
+authors = [
+    { name = "raulpy271", email = "raulrufino0@gmail.com" },
+]
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"

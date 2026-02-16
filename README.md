@@ -59,7 +59,8 @@ poetry install with --dev
 Now, it's possible to enter in the environment with all dependencies included:
 
 ```
-`poetry env activate`
+poetry env activate
+# Copy the output of the last command e paste it into your terminal.
 ```
 
 The above command opens a shell inside a virtual environment, which includes the pytest library, the following commands run the unit tests:

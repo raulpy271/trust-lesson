@@ -1,4 +1,5 @@
 from time import sleep
+import re
 from datetime import datetime, timedelta
 from http import HTTPStatus
 
@@ -6,7 +7,7 @@ import pytest
 import jwt
 
 from api import settings
-from api.auth import validate_password
+from api.auth import validate_password, create_password, VALID_SIMBOLS
 from tests.utils import authenticate, BearerAuth
 
 
@@ -136,3 +137,23 @@ def test_invalidate_old_token(monkeypatch, client, redis, user_password):
 )
 def test_validate_password(password, valid):
     assert validate_password(password) == valid
+
+
+@pytest.mark.parametrize(
+    "length,numbers,symbols",
+    [
+        (20, 3, 3),
+        (10, 2, 2),
+        (15, 3, 2),
+        (15, 1, 2),
+        (15, 5, 5),
+    ],
+)
+def test_create_password(length, numbers, symbols):
+    password = create_password(length, numbers, symbols)
+    assert isinstance(password, str)
+    assert len(password) == length
+    m = re.subn(r"\d", "", password)
+    assert m[1] == numbers
+    m = re.subn(rf"[{VALID_SIMBOLS}]", "", password)
+    assert m[1] == symbols
