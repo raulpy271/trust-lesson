@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install azure-functions-core-tools-4 libicu-dev pi
 
 ENV PATH="$PATH:/root/.local/bin"
 
-RUN pipx install poetry==2.2
+RUN pipx install poetry==2.2.1
 
 WORKDIR /functions/
 COPY functions/ /functions/
