@@ -27,7 +27,7 @@ jobs:
         sudo apt install pipx
         pipx ensurepath
     - name: Install Poetry
-      run: pipx install poetry==2.1.3
+      run: pipx install poetry==2.2.1
     - name: Install dependencies
       run: poetry -P api install --with=dev
     - name: Black code checking
