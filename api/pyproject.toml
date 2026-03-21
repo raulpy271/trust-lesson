@@ -2,8 +2,26 @@
 name = "api"
 version = "0.1.0"
 description = ""
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+license = "MIT"
 authors = [
     { name = "raulpy271", email = "raulrufino0@gmail.com" },
+]
+dependencies = [
+    "redis (>=5.2.1,<7.0.0)",
+    "sqlalchemy[asyncio] (>=2.0.43,<3.0.0)",
+    "psycopg[binary] (>=3.2.3,<4.0.0)",
+    "pyjwt (>=2.10.1,<3.0.0)",
+    "fastapi[standard] (>=0.116.1,<0.117.0)",
+    "azure-storage-blob (>=12.24.1,<12.27.0)",
+    "azure-identity (>=1.19.0,<2.0.0)",
+    "python-multipart (>=0.0.20,<0.1.0)",
+    "aiohttp (>=3.11.12,<4.0.0)",
+    "python-dateutil (>=2.9.0,<3.0.0)",
+    "sqlmodel (>=0.0.24,<0.1.0)",
+    "pydantic (>=2.11.7,<3.0.0)",
+    "click (>=8.3.1,<9.0.0)"
 ]
 
 [project.scripts]
@@ -12,36 +30,22 @@ api = 'api.cli.cli:main'
 [tool.poetry.requires-plugins]
 poetry-plugin-export = ">=1.8"
 
+[dependency-groups]
+dev = [
+    "pytest (>=8.3.4,<9.0.0)",
+    "python-dotenv (>=1.0.1,<2.0.0)",
+    "fakeredis (>=2.26.2,<3.0.0)",
+    "httpx (>=0.28.1,<0.29.0)",
+    "mimesis (>=18.0.0,<19.0.0)",
+    "black (>=25.1.0,<26.0.0)",
+    "flake8 (>=7.1.2,<8.0.0)",
+    "alembic (>=1.16.2,<2.0.0)",
+    "pre-commit (>=4.2.0,<5.0.0)",
+    "aiosqlite (>=0.21.0,<0.22.0)"
+]
+
 [tool.poetry.group.dev]
 optional = true
-
-[tool.poetry.dependencies]
-python = "^3.12"
-redis = "^5.2.1"
-sqlalchemy = {extras = ["asyncio"], version = "^2.0.43"}
-psycopg = {extras = ["binary"], version = "^3.2.3"}
-pyjwt = "^2.10.1"
-fastapi = {extras = ["standard"], version = "^0.116.1"}
-azure-storage-blob = "^12.24.1"
-azure-identity = "^1.19.0"
-python-multipart = "^0.0.20"
-aiohttp = "^3.11.12"
-python-dateutil = "^2.9.0.post0"
-sqlmodel = "^0.0.24"
-pydantic = "^2.11.7"
-click = "^8.3.1"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.3.4"
-python-dotenv = "^1.0.1"
-fakeredis = "^2.26.2"
-httpx = "^0.28.1"
-mimesis = "^18.0.0"
-black = "^25.1.0"
-flake8 = "^7.1.2"
-alembic = "^1.16.2"
-pre-commit = "^4.2.0"
-aiosqlite = "^0.21.0"
 
 [tool.black]
 target-version = ["py312"]
@@ -56,3 +60,6 @@ addopts = [
     "--import-mode=importlib",
 ]
 
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
